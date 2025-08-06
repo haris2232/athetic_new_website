@@ -31,7 +31,7 @@ export default function ForgotPasswordPage() {
     setError("")
 
     try {
-      const response = await fetch("http://34.18.0.53:5000/api/auth/forgot-password", {
+      const response = await fetch("https://athlekt.com/api/api/auth/forgot-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
     setError("")
 
     try {
-      const response = await fetch("http://34.18.0.53:5000/api/auth/reset-password", {
+      const response = await fetch("https://athlekt.com/api/api/auth/reset-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

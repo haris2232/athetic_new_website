@@ -51,7 +51,7 @@ export default function ProfilePage() {
         return;
       }
 
-      const response = await fetch("http://34.18.0.53:5000/api/users/profile", {
+      const response = await fetch("https://athlekt.com/api/api/users/profile", {
         headers: {
           "Authorization": `Bearer ${token}`
         }

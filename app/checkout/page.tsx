@@ -106,7 +106,7 @@ export default function CheckoutPage() {
     setCouponError("");
 
     try {
-      const response = await fetch("http://34.18.0.53:5000/api/coupons/validate", {
+      const response = await fetch("https://athlekt.com/api/api/coupons/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -202,7 +202,7 @@ export default function CheckoutPage() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
-      const response = await fetch("http://34.18.0.53:5000/api/orders/public/create", {
+      const response = await fetch("https://athlekt.com/api/api/orders/public/create", {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
