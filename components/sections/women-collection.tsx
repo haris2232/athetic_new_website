@@ -37,7 +37,7 @@ export default function WomenCollection() {
 
   const fetchCategories = async () => {
     try {
-      const response = await fetch('https://athlekt.com/api/api/categories/public/women')
+      const response = await fetch('http://34.18.0.53:5000/api/categories/public/women')
       if (response.ok) {
         const data = await response.json()
         if (data.data && data.data.length > 0) {

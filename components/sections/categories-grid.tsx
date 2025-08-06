@@ -48,7 +48,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
       setLoading(true)
       console.log("🔍 Fetching products for gender:", selectedGender)
       
-      const response = await fetch('https://athlekt.com/api/api/public/products/public/all')
+      const response = await fetch('http://34.18.0.53:5000/api/public/products/public/all')
       if (response.ok) {
         const data = await response.json()
         console.log("📦 API Response:", data)

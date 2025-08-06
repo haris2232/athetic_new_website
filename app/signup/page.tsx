@@ -37,7 +37,7 @@ export default function SignupPage() {
 
     try {
       // First send OTP
-      const otpResponse = await fetch("https://athlekt.com/api/api/auth/send-signup-otp", {
+      const otpResponse = await fetch("http://34.18.0.53:5000/api/auth/send-signup-otp", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -67,7 +67,7 @@ export default function SignupPage() {
     setError("")
 
     try {
-      const response = await fetch("https://athlekt.com/api/api/auth/signup", {
+      const response = await fetch("http://34.18.0.53:5000/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
