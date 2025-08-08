@@ -1,0 +1,1 @@
+how :2:components/sections/product-carousel.tsx
