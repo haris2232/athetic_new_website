@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew/api'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew/api'
 
 export async function POST(request: NextRequest) {
   try {

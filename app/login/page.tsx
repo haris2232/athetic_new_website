@@ -25,9 +25,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-
       const response = await fetch("https://athlekt.com/backendnew/api/auth/login", {
-
         method: "POST",
         headers: {
           "Content-Type": "application/json"

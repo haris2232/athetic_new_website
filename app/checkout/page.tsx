@@ -106,9 +106,7 @@ export default function CheckoutPage() {
     setCouponError("");
 
     try {
-
       const response = await fetch("https://athlekt.com/backendnew/api/coupons/validate", {
-
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

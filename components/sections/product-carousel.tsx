@@ -45,9 +45,7 @@ export default function ProductCarousel() {
 
   const fetchCategories = async () => {
     try {
-
       const response = await fetch('https://athlekt.com/backendnew/api/categories/public/carousel')
-
       if (response.ok) {
         const data = await response.json()
         console.log('🎠 Carousel categories response:', data)

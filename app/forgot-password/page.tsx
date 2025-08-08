@@ -31,9 +31,7 @@ export default function ForgotPasswordPage() {
     setError("")
 
     try {
-
       const response = await fetch("https://athlekt.com/backendnew/api/auth/forgot-password", {
-
         method: "POST",
         headers: {
           "Content-Type": "application/json",

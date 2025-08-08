@@ -67,9 +67,7 @@ export default function MenSalePage() {
       setLoading(true)
       console.log("🔍 Fetching men's products for sale page...")
       
-
       const response = await fetch('https://athlekt.com/backendnew/api/public/products/public/all')
-
       if (response.ok) {
         const data = await response.json()
         console.log("📦 API Response:", data)

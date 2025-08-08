@@ -10,7 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import ProductReviews from "./product-reviews"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
-import { getAllProducts } from "@/lib/api"
+import { getAllProducts, submitForm, FormSubmission } from "@/lib/api"
 import { formatCurrency } from "@/lib/utils"
 import type { Product } from "@/lib/types"
 
@@ -24,6 +24,16 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [carouselItems, setCarouselItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
+  
+  // Form state
+  const [formData, setFormData] = useState<FormSubmission>({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState('')
   
   const nextImage = () => {
     if (product.images && product.images.length > 1) {
@@ -245,6 +255,44 @@ export default function ProductDetail({ product }: { product: Product }) {
     }
   }
 
+  // Form submission handler
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitMessage('')
+
+    try {
+      const response = await submitForm(formData)
+      
+      if (response.success) {
+        setSubmitMessage('Thank you for joining the Athlekt family! Check your email for a welcome message.')
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: ''
+        })
+      } else {
+        setSubmitMessage(response.message || 'Something went wrong. Please try again.')
+      }
+    } catch (error) {
+      console.error('Form submission error:', error)
+      setSubmitMessage('Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Handle form input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
   // Check if product is already in cart
   const isProductInCart = cartItems.some(item => 
     item.id === product.id && 
@@ -448,9 +496,9 @@ export default function ProductDetail({ product }: { product: Product }) {
               {/* Shop the Look */}
               <div className="space-y-4 pt-8">
                 <div className="flex items-center justify-between">
-                  <span className="text-white font-medium uppercase tracking-wide">SHOP THE LOOK</span>
+                  {/* <span className="text-white font-medium uppercase tracking-wide">SHOP THE LOOK</span> */}
                   <div className="flex space-x-2">
-                    <div className="w-12 h-12 bg-white rounded-md overflow-hidden">
+                    <div className="w-12 h-12 bg-red rounded-md overflow-hidden">
                       <Image
                         src="/placeholder.svg?height=48&width=48"
                         alt="Shop the look item 1"
@@ -471,10 +519,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                {/* <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-[#2B2B2B] rounded-full"></div>
                   <span className="text-white text-sm uppercase tracking-wide">ONLINE EXCLUSIVE</span>
-                </div>
+                </div> */}
               </div>
             </div>
           </div>
@@ -771,12 +819,14 @@ export default function ProductDetail({ product }: { product: Product }) {
                 </div>
 
                 {/* Form */}
-                <form className="space-y-6">
+                <form onSubmit={handleFormSubmit} className="space-y-6">
                   {/* First Name */}
                   <div>
                     <input
                       type="text"
                       name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
                       placeholder="First Name"
                       className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
                       required
@@ -788,6 +838,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                     <input
                       type="text"
                       name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
                       placeholder="Last Name"
                       className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
                       required
@@ -799,6 +851,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                     <input
                       type="email"
                       name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
                       placeholder="Email"
                       className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
                       required
@@ -810,6 +864,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                     <input
                       type="tel"
                       name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
                       placeholder="Phone"
                       className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
                       required
@@ -820,11 +876,19 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <div className="pt-4">
                     <button
                       type="submit"
-                      className="bg-[#4a4a4a] text-white hover:bg-[#5a5a5a] font-semibold px-8 py-4 h-auto rounded-none border-l-4 border-[#cbf26c] transition-all duration-300 hover:border-l-[#9fcc3b]"
+                      disabled={isSubmitting}
+                      className="bg-[#4a4a4a] text-white hover:bg-[#5a5a5a] font-semibold px-8 py-4 h-auto rounded-none border-l-4 border-[#cbf26c] transition-all duration-300 hover:border-l-[#9fcc3b] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Send
+                      {isSubmitting ? 'Sending...' : 'Send'}
                     </button>
                   </div>
+
+                  {/* Success/Error Message */}
+                  {submitMessage && (
+                    <div className={`text-sm ${submitMessage.includes('Thank you') ? 'text-[#cbf26c]' : 'text-red-400'}`}>
+                      {submitMessage}
+                    </div>
+                  )}
                 </form>
               </div>
             </div>

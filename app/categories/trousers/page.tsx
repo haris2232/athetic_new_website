@@ -43,9 +43,7 @@ function TrousersContent() {
       setLoading(true)
       
       // Fetch products from backend API
-
       const response = await fetch('https://athlekt.com/backendnew/api/public/products/public/all')
-
       
       if (response.ok) {
         const data = await response.json()

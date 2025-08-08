@@ -1,6 +1,5 @@
-
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew/api';
-
+// const API_BASE_URL =  'http://localhost:5000/api';
 
 export interface Product {
   _id: string;
@@ -99,6 +98,13 @@ export interface ApiResponse<T> {
   data: T;
   message?: string;
   error?: string;
+}
+
+export interface FormSubmission {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
 }
 
 class ApiService {
@@ -267,6 +273,23 @@ class ApiService {
       return null;
     }
   }
+
+  // Submit form
+  async submitForm(formData: FormSubmission): Promise<ApiResponse<any>> {
+    try {
+      const response = await this.request<ApiResponse<any>>('/form/submit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      return response;
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      throw error;
+    }
+  }
 }
 
 // Create API service instance
@@ -321,4 +344,9 @@ export async function getBundles(category?: string): Promise<Bundle[]> {
 
 export async function calculateBundleDiscount(cartItems: any[]): Promise<any> {
   return apiService.calculateBundleDiscount(cartItems);
+}
+
+// Form submission function
+export async function submitForm(formData: FormSubmission): Promise<ApiResponse<any>> {
+  return apiService.submitForm(formData);
 } 

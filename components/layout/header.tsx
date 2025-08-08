@@ -35,9 +35,7 @@ export default function Header() {
 
   const fetchSubCategories = async () => {
     try {
-
       const response = await fetch('https://athlekt.com/backendnew/api/subcategories/public')
-
       if (response.ok) {
         const data = await response.json()
         setSubCategories(data.data || [])
@@ -69,9 +67,7 @@ export default function Header() {
 
   const checkBanStatus = async (token: string, email: string) => {
     try {
-
       const response = await fetch(`https://athlekt.com/backendnew/api/users/profile`, {
-
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

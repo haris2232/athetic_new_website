@@ -37,9 +37,7 @@ export default function MenCollection() {
 
   const fetchCategories = async () => {
     try {
-
       const response = await fetch('https://athlekt.com/backendnew/api/categories/public/men')
-
       if (response.ok) {
         const data = await response.json()
         if (data.data && data.data.length > 0) {

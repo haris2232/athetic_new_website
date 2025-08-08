@@ -11,7 +11,6 @@ export async function GET() {
 
 
     const response = await fetch('https://athlekt.com/backendnew/api/settings/public')
-
     if (response.ok) {
       const backendSettings = await response.json()
       settings = { ...settings, ...backendSettings }
@@ -38,9 +37,7 @@ export async function POST(request: NextRequest) {
     
     // Also update the backend
     try {
-
       const backendResponse = await fetch('https://athlekt.com/backendnew/api/settings/currency', {
-
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -48,9 +48,7 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
 
   const fetchReviews = async () => {
     try {
-
       const response = await fetch(`https://athlekt.com/backendnew/api/reviews/public/${product.id}`)
-
       if (response.ok) {
         const data = await response.json()
         setReviews(data.data || [])
@@ -74,9 +72,7 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
 
     setSubmitting(true)
     try {
-
       const response = await fetch('https://athlekt.com/backendnew/api/reviews/public/create', {
-
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

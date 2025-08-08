@@ -6,14 +6,17 @@ import { useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { submitForm, FormSubmission } from "@/lib/api"
 
 export default function JoinFamily() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormSubmission>({
     firstName: "",
     lastName: "",
     email: "",
     phone: "",
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState('')
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -23,10 +26,32 @@ export default function JoinFamily() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
-    console.log("Form submitted:", formData)
+    setIsSubmitting(true)
+    setSubmitMessage('')
+
+    try {
+      const response = await submitForm(formData)
+      
+      if (response.success) {
+        setSubmitMessage('Thank you for joining the Athlekt family! Check your email for a welcome message.')
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: ''
+        })
+      } else {
+        setSubmitMessage(response.message || 'Something went wrong. Please try again.')
+      }
+    } catch (error) {
+      console.error('Form submission error:', error)
+      setSubmitMessage('Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -105,11 +130,19 @@ export default function JoinFamily() {
                 <div className="pt-4">
                   <Button
                     type="submit"
-                    className="bg-[#4a4a4a] text-white hover:bg-[#5a5a5a] font-semibold px-8 py-4 h-auto rounded-none border-l-4 border-[#cbf26c] transition-all duration-300 hover:border-l-[#9fcc3b]"
+                    disabled={isSubmitting}
+                    className="bg-[#4a4a4a] text-white hover:bg-[#5a5a5a] font-semibold px-8 py-4 h-auto rounded-none border-l-4 border-[#cbf26c] transition-all duration-300 hover:border-l-[#9fcc3b] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Send
+                    {isSubmitting ? 'Sending...' : 'Send'}
                   </Button>
                 </div>
+
+                {/* Success/Error Message */}
+                {submitMessage && (
+                  <div className={`text-sm ${submitMessage.includes('Thank you') ? 'text-[#cbf26c]' : 'text-red-400'}`}>
+                    {submitMessage}
+                  </div>
+                )}
               </form>
             </div>
           </div>

@@ -45,7 +45,7 @@ function ShortsContent() {
       // Fetch products from backend API
 
       const response = await fetch('https://athlekt.com/backendnew/api/public/products/public/all')
-
+>>>>>>> 3754911 (Your commit message)
       
       if (response.ok) {
         const data = await response.json()
