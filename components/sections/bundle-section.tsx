@@ -110,7 +110,7 @@ export function BundleSection({ category }: BundleSectionProps) {
                   <div key={productIndex} className="bg-[#2a2a2a] rounded-lg p-4">
                     <img 
                       src={product.images[0] || "/placeholder.svg"} 
-                      alt={product.name} 
+                      alt={product.title || product.name} 
                       className="w-full h-32 object-cover rounded-lg mb-2" 
                     />
                     <h3 className="text-white text-sm font-medium">{product.title || product.name}</h3>
