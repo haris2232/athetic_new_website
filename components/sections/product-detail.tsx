@@ -677,7 +677,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="relative">
               <div className="relative h-[600px] overflow-hidden rounded-lg">
                 <Image
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Untitled.png-sLs0eMOJM0ysIcvO4cGs2DA7laNfRI.jpeg"
+                  src="https://theirongear.com/cdn/shop/files/best.jpg?v=1745213468&width=1200"
                   alt="Person wearing coral shorts with white socks and sneakers"
                   fill
                   className="object-cover"
