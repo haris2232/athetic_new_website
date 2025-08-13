@@ -6,27 +6,16 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 
-interface Category {
-  _id: string
-  name: string
-  description?: string
-  image?: string
-  carouselImage?: string
-  showInCarousel?: boolean
-  carouselOrder?: number
-  discountPercentage?: number
-  displaySection?: string
-  sectionOrder?: number
-  isActive: boolean
-  createdAt: string
-}
-
 interface SubCategory {
   _id: string
   name: string
   category: string
   description?: string
   image?: string
+  carouselImage?: string
+  showInCarousel?: boolean
+  carouselOrder?: number
+  discountPercentage?: number
   isActive: boolean
   createdAt: string
 }
@@ -35,58 +24,62 @@ export default function ProductCarousel() {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
-  const [categories, setCategories] = useState<Category[]>([])
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    fetchCategories()
+    fetchSubCategories()
   }, [])
 
-  const fetchCategories = async () => {
+  const fetchSubCategories = async () => {
     try {
-      const response = await fetch('https://athlekt.com/backendnew/api/categories/public/carousel')
+      const response = await fetch('https://athlekt.com/backendnew/api/subcategories/public')
       if (response.ok) {
         const data = await response.json()
-        console.log('🎠 Carousel categories response:', data)
+        console.log('🎠 Carousel sub-categories response:', data)
         if (data.data && data.data.length > 0) {
-          setCategories(data.data)
-          console.log('✅ Set carousel categories:', data.data)
+          // Filter sub-categories that should be shown in carousel
+          const carouselSubCategories = data.data.filter((subCat: SubCategory) => 
+            subCat.showInCarousel !== false && subCat.isActive
+          )
+          setSubCategories(carouselSubCategories)
+          console.log('✅ Set carousel sub-categories:', carouselSubCategories)
         } else {
-          console.log('⚠️ No carousel categories found')
-          setCategories([])
+          console.log('⚠️ No carousel sub-categories found')
+          setSubCategories([])
         }
       } else {
         console.error('❌ Carousel API response not ok:', response.status)
-        setCategories([])
+        setSubCategories([])
       }
     } catch (error) {
-      console.error('Error fetching carousel categories:', error)
-      setCategories([])
+      console.error('Error fetching carousel sub-categories:', error)
+      setSubCategories([])
     } finally {
       setLoading(false)
     }
   }
 
-  const handleCategoryClick = async (category: Category) => {
+  const handleSubCategoryClick = async (subCategory: SubCategory) => {
     try {
-      // Determine gender based on category name if displaySection is missing or incorrect
+      // Determine gender based on category
       let gender = 'all';
       
-      if (category.displaySection === 'men' || category.name.toLowerCase() === 'men') {
+      if (subCategory.category.toLowerCase() === 'men') {
         gender = 'men';
-      } else if (category.displaySection === 'women' || category.name.toLowerCase() === 'women') {
+      } else if (subCategory.category.toLowerCase() === 'women') {
         gender = 'women';
       }
       
-      const url = `/categories?gender=${gender}`;
-      console.log(`🔄 Navigating to category: ${url} for category: ${category.name} (displaySection: ${category.displaySection})`);
+      const url = `/categories/${subCategory.name.toLowerCase().replace(/\s+/g, '-')}?gender=${gender}`;
+      console.log(`🔄 Navigating to sub-category: ${url} for sub-category: ${subCategory.name} (category: ${subCategory.category})`);
       router.push(url);
       
     } catch (error) {
-      console.error('Error handling category click:', error);
+      console.error('Error handling sub-category click:', error);
       // Fallback to main category page
-      const gender = category.name.toLowerCase() === 'men' ? 'men' : category.name.toLowerCase() === 'women' ? 'women' : 'all';
+      const gender = subCategory.category.toLowerCase() === 'men' ? 'men' : subCategory.category.toLowerCase() === 'women' ? 'women' : 'all';
       const url = `/categories?gender=${gender}`;
       console.log(`🔄 Fallback navigation to: ${url}`);
       router.push(url);
@@ -185,31 +178,31 @@ export default function ProductCarousel() {
             msOverflowStyle: "none",
           }}
         >
-          {categories.map((category) => (
+          {subCategories.map((subCategory) => (
             <div 
-              key={category._id} 
+              key={subCategory._id} 
               className="flex-shrink-0 w-64 group cursor-pointer"
-              onClick={() => handleCategoryClick(category)}
+              onClick={() => handleSubCategoryClick(subCategory)}
             >
               <div className="relative overflow-hidden bg-white p-1 shadow-lg hover:shadow-xl transition-all duration-300">
                 <Image
-                  src={category.carouselImage || category.image || "/placeholder.svg"}
-                  alt={category.name}
+                  src={subCategory.carouselImage || subCategory.image || "/placeholder.svg"}
+                  alt={subCategory.name}
                   width={256}
                   height={400}
                   className="w-full h-[400px] object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
-                {category.discountPercentage && category.discountPercentage > 0 && (
+                {subCategory.discountPercentage && subCategory.discountPercentage > 0 && (
                   <div className="absolute top-4 left-4 bg-[#cbf26c] text-[#212121] px-3 py-1 rounded-md font-bold text-sm">
-                    {category.discountPercentage}% OFF
+                    {subCategory.discountPercentage}% OFF
                   </div>
                 )}
               </div>
 
-              {/* Category Label */}
+              {/* Sub-Category Label */}
               <div className="mt-4 text-center">
-                <p className="text-white text-sm font-medium uppercase tracking-wide">{category.name}</p>
+                <p className="text-white text-sm font-medium uppercase tracking-wide">{subCategory.name}</p>
               </div>
             </div>
           ))}

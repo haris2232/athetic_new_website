@@ -8,7 +8,7 @@ import { formatCurrency } from "@/lib/utils"
 import { Package } from "lucide-react"
 
 interface BundleSectionProps {
-  category: 'men' | 'women'
+  category?: 'men' | 'women' | 'mixed'
 }
 
 export function BundleSection({ category }: BundleSectionProps) {
@@ -20,10 +20,21 @@ export function BundleSection({ category }: BundleSectionProps) {
     const fetchBundles = async () => {
       try {
         setLoading(true)
-        const bundlesData = await getBundles(category)
+        console.log('🔍 Fetching bundles...', category ? `for category: ${category}` : 'all bundles')
+        
+        // If category is specified, use it; otherwise fetch all bundles
+        let bundlesData
+        if (category && category !== 'mixed') {
+          bundlesData = await getBundles(category)
+        } else {
+          // For 'mixed' or no category, fetch all bundles
+          bundlesData = await getBundles()
+        }
+        
+        console.log('📦 Bundles received:', bundlesData)
         setBundles(bundlesData)
       } catch (error) {
-        console.error('Error fetching bundles:', error)
+        console.error('❌ Error fetching bundles:', error)
       } finally {
         setLoading(false)
       }
@@ -66,7 +77,15 @@ export function BundleSection({ category }: BundleSectionProps) {
   }
 
   if (bundles.length === 0) {
-    return null // Don't show anything if no bundles
+    console.log('⚠️ No bundles found, returning null')
+    return (
+      <div className="w-full px-6 py-10">
+        <div className="text-center">
+          <p className="text-gray-600">No active bundles available at the moment.</p>
+          <p className="text-gray-400 text-sm mt-2">Check back later for special offers!</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -80,7 +99,13 @@ export function BundleSection({ category }: BundleSectionProps) {
             <div key={bundle._id} className="flex-1 bg-[#1a1a1a] rounded-lg p-6">
               <h2 className="text-white text-2xl font-bold mb-6 text-center">{bundle.name}</h2>
               
-              <div className={`grid grid-cols-2 gap-4 mb-6 ${bundle.bundleType === '6-products' ? 'grid-cols-3' : ''}`}>
+              <div className={`grid gap-4 mb-6 ${
+                bundle.products.length === 2 ? 'grid-cols-2' : 
+                bundle.products.length === 3 ? 'grid-cols-3' : 
+                bundle.products.length === 4 ? 'grid-cols-2' : 
+                bundle.products.length === 5 ? 'grid-cols-3' : 
+                'grid-cols-3'
+              }`}>
                 {bundle.products.map((product, productIndex) => (
                   <div key={productIndex} className="bg-[#2a2a2a] rounded-lg p-4">
                     <img 

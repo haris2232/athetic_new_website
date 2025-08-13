@@ -368,7 +368,7 @@ export default function MenSalePage() {
       </div>
 
       {/* Bundle Section */}
-      <BundleSection category="men" />
+      <BundleSection category="mixed" />
 
       <Footer />
     </div>

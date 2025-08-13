@@ -242,6 +242,7 @@ export default function Header() {
                   <div className="grid grid-cols-2 min-w-[400px]">
                     {/* Left Column - Gender Categories */}
                     <div className="bg-white">
+                      <Link href="/sale/men">
                       <button
                         onClick={() => setSelectedGender("men")}
                         className={`block w-full text-left px-6 py-3 transition-colors font-medium ${
@@ -250,6 +251,11 @@ export default function Header() {
                       >
                         Men
                       </button>
+                      </Link>
+
+<Link href="/sale/women">
+
+
                       <button
                         onClick={() => setSelectedGender("women")}
                         className={`block w-full text-left px-6 py-3 transition-colors font-medium ${
@@ -258,6 +264,8 @@ export default function Header() {
                       >
                         Women
                       </button>
+</Link>
+
                     </div>
 
                     {/* Right Column - Product Types */}
@@ -300,23 +308,22 @@ export default function Header() {
               onMouseEnter={() => setIsSaleOpen(true)}
               onMouseLeave={() => setIsSaleOpen(false)}
             >
-              <button
-                className={`transition-colors font-medium tracking-wide uppercase text-sm ${
-                  isActivePath("/sale") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
-                }`}
-              >
-                SALE
-              </button>
+              <Link href="/sale">
+                <button
+                  className="transition-colors font-medium tracking-wide uppercase text-sm text-white hover:text-[#cbf26c]"
+                >
+                  SALE
+                </button>
+              </Link>
 
               {/* Dropdown Menu */}
-              <div
+              {/* <div
                 className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ${
                   isSaleOpen ? "opacity-100 visible" : "opacity-0 invisible"
                 }`}
               >
                 <div className="bg-white shadow-lg rounded-md overflow-hidden z-50">
                   <div className="min-w-[200px]">
-                    {/* Sale Categories */}
                     <div className="bg-white">
                       <Link
                         href="/sale/men"
@@ -335,7 +342,7 @@ export default function Header() {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </nav>
 

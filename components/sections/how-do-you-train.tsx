@@ -3,17 +3,18 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
+import { useRouter } from "next/navigation"
 
-interface Category {
+interface SubCategory {
   _id: string
   name: string
+  category: string
   description?: string
   image?: string
   carouselImage?: string
   discountPercentage?: number
-  displaySection?: string
-  sectionOrder?: number
   isActive: boolean
+  createdAt: string
 }
 
 const trainingCategories = [
@@ -44,27 +45,41 @@ const trainingCategories = [
 ]
 
 export default function HowDoYouTrain() {
-  const [categories, setCategories] = useState<Category[]>([])
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
-    fetchCategories()
+    fetchSubCategories()
   }, [])
 
-  const fetchCategories = async () => {
+  const fetchSubCategories = async () => {
     try {
-      const response = await fetch('https://athlekt.com/backendnew/api/categories/public/training')
+      const response = await fetch('https://athlekt.com/backendnew/api/subcategories/public')
       if (response.ok) {
         const data = await response.json()
         if (data.data && data.data.length > 0) {
-          setCategories(data.data)
+          // Filter active sub-categories for training section
+          const trainingSubCategories = data.data.filter((subCat: SubCategory) => 
+            subCat.isActive
+          )
+          setSubCategories(trainingSubCategories)
         }
       }
     } catch (error) {
-      console.error("Failed to fetch training categories:", error)
+      console.error("Failed to fetch training sub-categories:", error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSubCategoryClick = (subCategory: SubCategory) => {
+    // Navigate to the specific sub-category page
+    const gender = subCategory.category.toLowerCase() === 'men' ? 'men' : 
+                   subCategory.category.toLowerCase() === 'women' ? 'women' : 'all'
+    const url = `/categories/${subCategory.name.toLowerCase().replace(/\s+/g, '-')}?gender=${gender}`
+    console.log(`🔄 Navigating to sub-category: ${url} for training: ${subCategory.name}`)
+    router.push(url)
   }
 
   return (
@@ -92,29 +107,29 @@ export default function HowDoYouTrain() {
                 </div>
               </div>
             ))
-          ) : categories.length > 0 ? (
-            // Display actual categories
-            categories.slice(0, 4).map((category, index) => (
-              <div key={category._id} className="group cursor-pointer">
+          ) : subCategories.length > 0 ? (
+            // Display actual sub-categories
+            subCategories.slice(0, 4).map((subCategory, index) => (
+              <div key={subCategory._id} className="group cursor-pointer" onClick={() => handleSubCategoryClick(subCategory)}>
                 <div className="relative overflow-hidden rounded-lg mb-6">
                   <Image
-                    src={category.carouselImage || category.image || "/placeholder.svg?height=600&width=400"}
-                    alt={category.name}
+                    src={subCategory.carouselImage || subCategory.image || "/placeholder.svg?height=600&width=400"}
+                    alt={subCategory.name}
                     width={400}
                     height={600}
                     className="w-full h-[500px] object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
-                  {category.discountPercentage && category.discountPercentage > 0 && (
+                  {subCategory.discountPercentage && subCategory.discountPercentage > 0 && (
                     <div className="absolute top-4 left-4 bg-[#cbf26c] text-[#212121] px-3 py-1 rounded-md font-bold text-sm">
-                      {category.discountPercentage}% OFF
+                      {subCategory.discountPercentage}% OFF
                     </div>
                   )}
                 </div>
                 <div className="mb-4">
-                  <h3 className="text-2xl font-bold text-white uppercase tracking-wide text-center">{category.name}</h3>
+                  <h3 className="text-2xl font-bold text-white uppercase tracking-wide text-center">{subCategory.name}</h3>
                   <p className="text-sm text-gray-300 text-center mt-2">
-                    {category.description || "Premium training gear for your workout."}
+                    {subCategory.description || "Premium training gear for your workout."}
                   </p>
                 </div>
                 <div className="flex justify-center">

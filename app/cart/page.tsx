@@ -298,7 +298,7 @@ export default function CartPage() {
                     <span className="text-sm font-medium text-[#212121]">
                       {shippingInfo.isFreeShipping 
                         ? "Free Shipping Applied!" 
-                        : `You're $${Math.floor(amountForFreeShipping)} away from Free Standard Shipping`
+                        : `You're  ${Math.floor(amountForFreeShipping)} AED away from Free Standard Shipping`
                       }
                     </span>
                   </div>

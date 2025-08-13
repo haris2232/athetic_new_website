@@ -4,62 +4,56 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 
-interface Category {
-  _id: string
-  name: string
-  description?: string
-  image?: string
-  carouselImage?: string
-  discountPercentage?: number
-  displaySection?: string
-  sectionOrder?: number
-  isActive: boolean
-}
-
 interface SubCategory {
   _id: string
   name: string
   category: string
   description?: string
   image?: string
+  carouselImage?: string
+  discountPercentage?: number
   isActive: boolean
   createdAt: string
 }
 
 export default function MenCollection() {
-  const [categories, setCategories] = useState<Category[]>([])
+  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    fetchCategories()
+    fetchSubCategories()
   }, [])
 
-  const fetchCategories = async () => {
+  const fetchSubCategories = async () => {
     try {
-      const response = await fetch('https://athlekt.com/backendnew/api/categories/public/men')
+      const response = await fetch('https://athlekt.com/backendnew/api/subcategories/public')
       if (response.ok) {
         const data = await response.json()
         if (data.data && data.data.length > 0) {
-          setCategories(data.data)
+          // Filter only men's sub-categories
+          const menSubCategories = data.data.filter((subCat: SubCategory) => 
+            subCat.category.toLowerCase() === 'men' && subCat.isActive
+          )
+          setSubCategories(menSubCategories)
         }
       }
     } catch (error) {
-      console.error("Failed to fetch men collection categories:", error)
+      console.error("Failed to fetch men collection sub-categories:", error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleCategoryClick = async (category: Category) => {
+  const handleSubCategoryClick = async (subCategory: SubCategory) => {
     try {
-      // Navigate directly to the main category page for men
-      const url = `/categories?gender=men`
-      console.log(`🔄 Navigating to category: ${url} for men's category: ${category.name}`)
+      // Navigate to the specific sub-category page
+      const url = `/categories/${subCategory.name.toLowerCase().replace(/\s+/g, '-')}?gender=men`
+      console.log(`🔄 Navigating to sub-category: ${url} for men's sub-category: ${subCategory.name}`)
       router.push(url)
       
     } catch (error) {
-      console.error('Error handling category click:', error)
+      console.error('Error handling sub-category click:', error)
       // Fallback to main category page
       const url = `/categories?gender=men`
       console.log(`🔄 Fallback navigation to: ${url}`)
@@ -99,33 +93,33 @@ export default function MenCollection() {
                   </div>
                 </div>
               ))
-            ) : categories.length > 0 ? (
-              // Display actual categories
-              categories.slice(0, 4).map((category) => (
+            ) : subCategories.length > 0 ? (
+              // Display actual sub-categories
+              subCategories.slice(0, 4).map((subCategory) => (
                 <div 
-                  key={category._id} 
+                  key={subCategory._id} 
                   className="group cursor-pointer"
-                  onClick={() => handleCategoryClick(category)}
+                  onClick={() => handleSubCategoryClick(subCategory)}
                 >
                   <div className="relative overflow-hidden rounded-lg mb-4">
                     <Image
-                      src={category.carouselImage || category.image || "/placeholder.svg?height=380&width=300"}
-                      alt={category.name}
+                      src={subCategory.carouselImage || subCategory.image || "/placeholder.svg?height=380&width=300"}
+                      alt={subCategory.name}
                       width={300}
                       height={380}
                       className="w-full h-[380px] object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
-                    {category.discountPercentage && category.discountPercentage > 0 && (
+                    {subCategory.discountPercentage && subCategory.discountPercentage > 0 && (
                       <div className="absolute top-4 left-4 bg-[#cbf26c] text-[#212121] px-3 py-1 rounded-md font-bold text-sm">
-                        {category.discountPercentage}% OFF
+                        {subCategory.discountPercentage}% OFF
                       </div>
                     )}
                   </div>
                   <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 text-[#cbf26c]">{category.name}</h3>
+                    <h3 className="text-lg font-bold mb-2 text-[#cbf26c]">{subCategory.name}</h3>
                     <p className="text-lg font-semibold">
-                      {category.description || "Premium athletic wear for men."}
+                      {subCategory.description || "Premium athletic wear for men."}
                     </p>
                   </div>
                 </div>

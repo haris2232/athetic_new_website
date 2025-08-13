@@ -5,6 +5,7 @@ import BrandStatement from "@/components/sections/brand-statement"
 import WomenCollection from "@/components/sections/women-collection"
 import MenBrandStatement from "@/components/sections/men-brand-statement"
 import MenCollection from "@/components/sections/men-collection"
+import BundleSection from "@/components/sections/bundle-section"
 import IceCoolSeries from "@/components/sections/ice-cool-series"
 import HowDoYouTrain from "@/components/sections/how-do-you-train"
 import Testimonials from "@/components/sections/testimonials"
@@ -22,6 +23,7 @@ export default function HomePage() {
         <WomenCollection />
         <MenBrandStatement />
         <MenCollection />
+        <BundleSection />
         <IceCoolSeries />
         <HowDoYouTrain />
         <Testimonials />

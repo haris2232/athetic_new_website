@@ -85,8 +85,8 @@ export interface Bundle {
   products: Product[];
   originalPrice: number;
   bundlePrice: number;
-  bundleType: '4-products' | '6-products';
-  category: 'men' | 'women';
+  bundleType: string;
+  category?: 'men' | 'women' | 'mixed';
   startDate?: string;
   endDate?: string;
   isActive: boolean;

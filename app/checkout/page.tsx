@@ -502,19 +502,37 @@ export default function CheckoutPage() {
                   <div className="flex items-center space-x-3">
                     <input type="radio" name="payment" id="paypal" className="text-blue-600" />
                     <label htmlFor="paypal" className="font-medium">PayPal</label>
-                    <button className="bg-yellow-400 text-black py-2 px-4 rounded ml-auto">PayPal</button>
+                    <div className="ml-auto">
+                      <img 
+                        src="/payment-logos/paypal.svg" 
+                        alt="PayPal" 
+                        className="h-8 w-auto"
+                      />
+                    </div>
                   </div>
                   
                   <div className="flex items-center space-x-3">
                     <input type="radio" name="payment" id="afterpay" className="text-blue-600" />
                     <label htmlFor="afterpay" className="font-medium">Afterpay</label>
-                    <button className="bg-green-600 text-white py-2 px-4 rounded ml-auto">Afterpay</button>
+                    <div className="ml-auto">
+                      <img 
+                        src="/payment-logos/afterpay.svg" 
+                        alt="Afterpay" 
+                        className="h-8 w-auto"
+                      />
+                    </div>
                   </div>
 
                   <div className="flex items-center space-x-3">
                     <input type="radio" name="payment" id="klarna" className="text-blue-600" />
                     <label htmlFor="klarna" className="font-medium">Klarna - Flexible payments</label>
-                    <button className="bg-pink-600 text-white py-2 px-4 rounded ml-auto">Klarna</button>
+                    <div className="ml-auto">
+                      <img 
+                        src="/payment-logos/klarna.svg" 
+                        alt="Klarna" 
+                        className="h-8 w-auto"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
