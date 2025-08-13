@@ -13,6 +13,7 @@ interface User {
   id: string;
   email: string;
   name: string;
+  dateOfBirth?: string;
   createdAt: string;
 }
 
@@ -214,6 +215,12 @@ export default function ProfilePage() {
                   <Calendar className="h-4 w-4" />
                   <span>Member since {formatDate(profileData.user.createdAt)}</span>
                 </div>
+                {profileData.user.dateOfBirth && (
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Calendar className="h-4 w-4" />
+                    <span>Date of Birth: {formatDate(profileData.user.dateOfBirth)}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Package className="h-4 w-4" />
                   <span>{profileData.stats.totalOrders} orders</span>
