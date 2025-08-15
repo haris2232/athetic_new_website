@@ -90,7 +90,7 @@ export function BundleSection({ category }: BundleSectionProps) {
         src="/bundle.png"
         alt="Bundle Promotion"
         className="w-full rounded-md shadow-md mb-8"
-        style={{ maxHeight: '300px', objectFit: 'cover' }}
+        style={{ maxHeight: '500px', objectFit: 'cover' }}
       />
       <div className="flex flex-col lg:flex-row gap-8">
         {bundles.map((bundle, index) => {
