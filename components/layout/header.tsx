@@ -19,7 +19,8 @@ interface SubCategory {
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
-  const [isSaleOpen, setIsSaleOpen] = useState(false)
+  const [isTopSellerOpen, setIsTopSellerOpen] = useState(false) // ADDED: State for new Top Sellers dropdown
+  // REMOVED: const [isSaleOpen, setIsSaleOpen] = useState(false)
   const [selectedGender, setSelectedGender] = useState("men") // Track selected gender
   const [user, setUser] = useState(null)
   const [subCategories, setSubCategories] = useState<SubCategory[]>([])
@@ -120,7 +121,7 @@ export default function Header() {
     // Filter sub-categories based on gender
     const genderSubCategories = subCategories.filter(subCat => {
       const categoryName = subCat.category.toLowerCase()
-    if (gender === "women") {
+      if (gender === "women") {
         return categoryName === "women"
       } else {
         return categoryName === "men"
@@ -242,7 +243,6 @@ export default function Header() {
                   <div className="grid grid-cols-2 min-w-[400px]">
                     {/* Left Column - Gender Categories */}
                     <div className="bg-white">
-                      <Link href="/sale/men">
                       <button
                         onClick={() => setSelectedGender("men")}
                         className={`block w-full text-left px-6 py-3 transition-colors font-medium ${
@@ -251,11 +251,6 @@ export default function Header() {
                       >
                         Men
                       </button>
-                      </Link>
-
-<Link href="/sale/women">
-
-
                       <button
                         onClick={() => setSelectedGender("women")}
                         className={`block w-full text-left px-6 py-3 transition-colors font-medium ${
@@ -264,8 +259,6 @@ export default function Header() {
                       >
                         Women
                       </button>
-</Link>
-
                     </div>
 
                     {/* Right Column - Product Types */}
@@ -302,24 +295,31 @@ export default function Header() {
               </div>
             </div>
 
-            {/* Sale with Dropdown */}
+            {/* Sale Link */}
+            <Link href="/sale">
+              <button
+                className="transition-colors font-medium tracking-wide uppercase text-sm text-white hover:text-[#cbf26c]"
+              >
+                SALE
+              </button>
+            </Link>
+            
+            {/* ADDED: Top Sellers with Dropdown */}
             <div
               className="relative group"
-              onMouseEnter={() => setIsSaleOpen(true)}
-              onMouseLeave={() => setIsSaleOpen(false)}
+              onMouseEnter={() => setIsTopSellerOpen(true)}
+              onMouseLeave={() => setIsTopSellerOpen(false)}
             >
-              <Link href="/sale">
-                <button
-                  className="transition-colors font-medium tracking-wide uppercase text-sm text-white hover:text-[#cbf26c]"
-                >
-                  SALE
-                </button>
-              </Link>
+              <button
+                className="transition-colors font-medium tracking-wide uppercase text-sm text-white hover:text-[#cbf26c]"
+              >
+                TOP SELLERS
+              </button>
 
               {/* Dropdown Menu */}
-              {/* <div
+              <div
                 className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ${
-                  isSaleOpen ? "opacity-100 visible" : "opacity-0 invisible"
+                  isTopSellerOpen ? "opacity-100 visible" : "opacity-0 invisible"
                 }`}
               >
                 <div className="bg-white shadow-lg rounded-md overflow-hidden z-50">
@@ -327,23 +327,24 @@ export default function Header() {
                     <div className="bg-white">
                       <Link
                         href="/sale/men"
-                        className="block w-full text-left px-6 py-3 transition-colors font-medium text-[#212121] hover:bg-[#cbf26c] hover:text-[#212121] border-b border-gray-100"
-                        onClick={() => setIsSaleOpen(false)}
+                        className="block w-full text-left px-6 py-3 transition-colors font-medium text-[#212121] hover:bg-gray-50 border-b border-gray-100"
+                        onClick={() => setIsTopSellerOpen(false)}
                       >
                         Men Top Seller
                       </Link>
                       <Link
                         href="/sale/women"
-                        className="block w-full text-left px-6 py-3 transition-colors font-medium text-[#212121] hover:bg-[#cbf26c] hover:text-[#212121]"
-                        onClick={() => setIsSaleOpen(false)}
+                        className="block w-full text-left px-6 py-3 transition-colors font-medium text-[#212121] hover:bg-gray-50"
+                        onClick={() => setIsTopSellerOpen(false)}
                       >
                         Women Top Seller
                       </Link>
                     </div>
                   </div>
                 </div>
-              </div> */}
+              </div>
             </div>
+
           </nav>
 
           {/* Search and Icons */}
@@ -447,7 +448,7 @@ export default function Header() {
                 <div className="pl-4 space-y-2">
                   <Link
                     href="/categories?gender=men"
-                    className="block text-[#cbf26c] hover:text-white transition-colors text-sm"
+                    className="block text-white hover:text-[#cbf26c] transition-colors text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Men
@@ -459,34 +460,31 @@ export default function Header() {
                   >
                     Women
                   </Link>
-                  <div className="pl-4 space-y-2 border-l border-[#141619]">
-                                          {getSubCategories("men").map((category, index) => (
-                    <Link
-                          key={`${category.label}-men-${index}`}
-                        href={`${category.href}?gender=men`}
-                      className="block text-[#d9d9d9] hover:text-[#cbf26c] transition-colors text-sm"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                        {category.label}
-                    </Link>
-                    ))}
-                  </div>
                 </div>
               </div>
 
               {/* Mobile Sale */}
+              <Link
+                href="/sale"
+                className={`transition-colors font-medium tracking-wide uppercase text-sm ${
+                  isActivePath("/sale") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                SALE
+              </Link>
+
+              {/* ADDED: Mobile Top Sellers */}
               <div className="space-y-3">
                 <span
-                  className={`font-medium tracking-wide uppercase text-sm ${
-                    isActivePath("/sale") ? "text-[#cbf26c]" : "text-white"
-                  }`}
+                  className={`font-medium tracking-wide uppercase text-sm text-white`}
                 >
-                  SALE
+                  TOP SELLERS
                 </span>
                 <div className="pl-4 space-y-2">
                   <Link
                     href="/sale/men"
-                    className="block text-[#cbf26c] hover:text-white transition-colors text-sm"
+                    className="block text-white hover:text-[#cbf26c] transition-colors text-sm"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Men Top Seller
@@ -500,7 +498,7 @@ export default function Header() {
                   </Link>
                 </div>
               </div>
-
+              
               {/* Mobile Search */}
               <div className="pt-4">
                 <div className="relative">
