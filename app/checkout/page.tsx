@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image"; // Import the Image component
+import Image from "next/image"; // For product images
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { useCart } from "@/lib/cart-context";
 import { useCurrency } from "@/lib/currency-context";
 
-// Data array for credit card logos using online URLs
+// Data array for credit card logos
 const cardLogos = [
   { name: 'Visa', src: 'https://img.icons8.com/color/48/visa.png', alt: 'Visa' },
   { name: 'Mastercard', src: 'https://img.icons8.com/color/48/mastercard-logo.png', alt: 'Mastercard' },
@@ -16,9 +16,17 @@ const cardLogos = [
   { name: 'Discover', src: 'https://img.icons8.com/color/48/discover.png', alt: 'Discover' },
 ];
 
+// Venmo replaced with Klarna using local public path
+const expressCheckoutOptions = [
+    { name: 'Shop Pay', bgColor: 'bg-purple-600', logoSrc: 'https://img.icons8.com/ios-filled/50/ffffff/shopify.png', alt: 'Shop Pay' },
+    { name: 'PayPal', bgColor: 'bg-yellow-400', logoSrc: 'https://img.icons8.com/color/96/paypal.png', alt: 'PayPal' },
+    { name: 'G Pay', bgColor: 'bg-black', logoSrc: 'https://img.icons8.com/color/96/google-pay.png', alt: 'G Pay' },
+    { name: 'Klarna', bgColor: 'bg-pink-500', logoSrc: '/Klarna_Payment_Badge.svg.png', alt: 'Klarna' },
+];
+
 export default function CheckoutPage() {
   const router = useRouter();
-  const { cartItems, cartTotal } = useCart();
+  const { cartItems } = useCart();
   const { formatPrice, currency } = useCurrency();
   
   const [customer, setCustomer] = useState({
@@ -82,7 +90,6 @@ export default function CheckoutPage() {
 
   const shipping = shippingInfo?.isFreeShipping ? 0 : (shippingInfo?.shippingCost || 0);
   const total = subtotal + shipping - discountAmount;
-  const freeShippingThreshold = shippingInfo?.rule?.freeShippingAt || 0;
 
   const applyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -178,7 +185,6 @@ export default function CheckoutPage() {
         <div className="max-w-md w-full bg-white rounded-lg shadow-md p-6 text-center">
           <h2 className="text-2xl font-bold text-gray-600 mb-4">Your cart is empty</h2>
           <p className="text-gray-600 mb-6">Add some products to your cart before checkout.</p>
-          {/* --- MODIFIED: Link points to the homepage --- */}
           <a href="https://athlekt.com/" className="bg-black text-white py-3 px-6 rounded-md font-medium hover:bg-gray-800">
             Continue Shopping
           </a>
@@ -202,7 +208,6 @@ export default function CheckoutPage() {
               Order placed successfully, but we couldn't send a confirmation email.
             </p>
           )}
-          {/* --- NEW: Button to redirect to the homepage --- */}
           <a
             href="https://athlekt.com/"
             className="bg-black text-white py-3 px-6 rounded-md font-medium hover:bg-gray-800"
@@ -232,15 +237,20 @@ export default function CheckoutPage() {
         <div className="max-w-6xl mx-auto px-4">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Left Column - Checkout Form */}
             <div className="space-y-8">
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h2 className="text-xl font-semibold mb-4">Express checkout</h2>
                   <div className="grid grid-cols-2 gap-3 mb-4">
-                    <button className="bg-purple-600 text-white py-3 px-4 rounded-md font-medium">Shop Pay</button>
-                    <button className="bg-yellow-400 text-black py-3 px-4 rounded-md font-medium">PayPal</button>
-                    <button className="bg-black text-white py-3 px-4 rounded-md font-medium">G Pay</button>
-                    <button className="bg-blue-600 text-white py-3 px-4 rounded-md font-medium">Venmo</button>
+                    {expressCheckoutOptions.map((option) => (
+                        <button key={option.name} className={`${option.bgColor} py-3 px-4 rounded-md font-medium flex justify-center items-center h-14`}>
+                          <img
+                            src={option.logoSrc}
+                            alt={option.alt}
+                            className="h-10 object-contain"
+                            loading="lazy"
+                          />
+                        </button>
+                    ))}
                   </div>
                   <div className="text-center text-gray-600">Or</div>
                 </div>
@@ -279,12 +289,10 @@ export default function CheckoutPage() {
                     <div className="flex items-center space-x-2">
                       {cardLogos.map((card) => (
                         <div key={card.name} className="relative w-10 h-6">
-                          <Image
+                          <img
                             src={card.src}
                             alt={card.alt}
-                            fill
-                            sizes="40px"
-                            style={{ objectFit: 'contain' }}
+                            className="w-full h-full object-contain"
                           />
                         </div>
                       ))}
@@ -309,21 +317,21 @@ export default function CheckoutPage() {
                       <input type="radio" name="payment" id="paypal" className="h-4 w-4 text-blue-600 border-gray-300" />
                       <label htmlFor="paypal" className="font-medium flex-1">PayPal</label>
                       <div className="relative h-6 w-14">
-                        <Image src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" fill style={{ objectFit: 'contain' }} />
+                        <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="w-full h-full object-contain" />
                       </div>
                     </div>
                     <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-md">
                       <input type="radio" name="payment" id="afterpay" className="h-4 w-4 text-blue-600 border-gray-300" />
                       <label htmlFor="afterpay" className="font-medium flex-1">Afterpay</label>
                       <div className="relative h-6 w-14">
-                        <Image src="https://img.icons8.com/color/48/afterpay.png" alt="Afterpay" fill style={{ objectFit: 'contain' }} />
+                        <img src="https://img.icons8.com/color/48/afterpay.png" alt="Afterpay" className="w-full h-full object-contain" />
                       </div>
                     </div>
                     <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-md">
                       <input type="radio" name="payment" id="klarna" className="h-4 w-4 text-blue-600 border-gray-300" />
                       <label htmlFor="klarna" className="font-medium flex-1">Klarna</label>
                       <div className="relative h-6 w-14">
-                        <Image src="https://img.icons8.com/color/48/klarna.png" alt="Klarna" fill style={{ objectFit: 'contain' }} />
+                        <img src="/Klarna_Payment_Badge.svg.png" alt="Klarna" className="w-full h-full object-contain" />
                       </div>
                     </div>
                   </div>
@@ -343,7 +351,6 @@ export default function CheckoutPage() {
                 </button>
             </div>
 
-            {/* Right Column - Order Summary */}
             <div className="space-y-6">
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h2 className="text-xl font-semibold mb-6">Order summary</h2>
