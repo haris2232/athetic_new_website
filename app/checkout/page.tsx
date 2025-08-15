@@ -38,7 +38,7 @@ export default function CheckoutPage() {
       city: "",
       state: "",
       zipCode: "",
-      country: "United States",
+      country: "United Arab Emirates",
     },
   });
 
