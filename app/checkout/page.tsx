@@ -266,7 +266,7 @@ export default function CheckoutPage() {
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h2 className="text-xl font-semibold mb-4">Delivery</h2>
                   <div className="space-y-4">
-                    <select className="w-full p-3 border border-gray-300 rounded-md"><option>United States</option></select>
+                    <select className="w-full p-3 border border-gray-300 rounded-md"><option>United Arab Emirates</option></select>
                     <div className="grid grid-cols-2 gap-4">
                       <input type="text" placeholder="First name" required value={customer.name.split(' ')[0] || ''} onChange={(e) => { const lastName = customer.name.split(' ').slice(1).join(' ') || ''; setCustomer({...customer, name: e.target.value + ' ' + lastName}); }} className="w-full p-3 border border-gray-300 rounded-md"/>
                       <input type="text" placeholder="Last name" required value={customer.name.split(' ').slice(1).join(' ') || ''} onChange={(e) => { const firstName = customer.name.split(' ')[0] || ''; setCustomer({...customer, name: firstName + ' ' + e.target.value}); }} className="w-full p-3 border border-gray-300 rounded-md"/>
