@@ -196,7 +196,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Image src="/logo.svg" alt="ATHLEKT" width={140} height={37} className="h-9 w-auto" priority />
+            <Image src="/logo.png" alt="ATHLEKT" width={140} height={37} className="h-9 w-auto" priority />
           </Link>
 
           {/* Desktop Navigation */}
