@@ -100,35 +100,37 @@ export default function CombinedSalePage() {
       <Header />
       
       {/* --- MEN'S SECTION --- */}
-      <section id="men-collection" className="py-12">
-        <Banner
-          altText="Promotional banner for the Men's Sale Collection"
-          imageUrl="https://images.unsplash.com/photo-1576678927484-cc907957088c?q=80&w=2574&auto-format&fit=crop"
-        />
-        <div className="mt-12">
-          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-white text-center mb-10">
-            Men's Sale
-          </h2>
-          <ProductGrid products={menProducts} categoryName="men's" loading={loading} />
-        </div>
-      </section>
+<section id="men-collection" className="py-12">
+  <Banner
+    altText="Promotional banner for the Men's Sale Collection"
+    imageUrl="/images/men.png"
+  />
+  <div className="mt-12">
+    <h2 className="text-4xl font-extrabold uppercase tracking-wider text-white text-center mb-10">
+      Men's Sale
+    </h2>
+    <ProductGrid products={menProducts} categoryName="men's" loading={loading} />
+  </div>
+</section>
+
 
       {/* Divider */}
       <hr className="border-t border-gray-700 mx-8 my-16" />
 
       {/* --- WOMEN'S SECTION --- */}
-      <section id="women-collection" className="py-12">
-        <Banner
-          altText="Promotional banner for the Women's Sale Collection"
-          imageUrl="https://images.unsplash.com/photo-1549060279-7e168fcee0c2?q=80&w=2670&auto-format&fit=crop"
-        />
-        <div className="mt-12">
-           <h2 className="text-4xl font-extrabold uppercase tracking-wider text-white text-center mb-10">
-            Women's Sale
-          </h2>
-          <ProductGrid products={womenProducts} categoryName="women's" loading={loading} />
-        </div>
-      </section>
+<section id="women-collection" className="py-12">
+  <Banner
+    altText="Promotional banner for the Women's Sale Collection"
+    imageUrl="/images/woman.png"
+  />
+  <div className="mt-12">
+    <h2 className="text-4xl font-extrabold uppercase tracking-wider text-white text-center mb-10">
+      Women's Sale
+    </h2>
+    <ProductGrid products={womenProducts} categoryName="women's" loading={loading} />
+  </div>
+</section>
+
 
       <Footer />
     </div>
