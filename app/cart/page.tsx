@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Trash2, Heart, Package, Percent } from "lucide-react"
+import { Trash2, Heart, Package, Percent, Plus, Minus } from "lucide-react"
 import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
@@ -27,7 +25,7 @@ const paymentMethods = [
 ];
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity, showNotification, addToCart } = useCart()
+  const { cartItems, removeFromCart, updateQuantity, showNotification } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { getCurrencySymbol, formatPrice, currency } = useCurrency()
   const [promoCode, setPromoCode] = useState("")
@@ -35,13 +33,12 @@ export default function CartPage() {
   const [bundleDiscount, setBundleDiscount] = useState<any>(null)
   const [shippingInfo, setShippingInfo] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  
+
   const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([])
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-  // ... (all your existing useEffects and functions remain the same)
   useEffect(() => {
     const calculateBundleDiscount = async () => {
       if (cartItems.length === 0) {
@@ -341,27 +338,35 @@ export default function CartPage() {
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
-                      <Select
-                        value={item.quantity.toString()}
-                        onValueChange={(value) => {
-                          const newQuantity = Number.parseInt(value);
-                          updateQuantity(item.id, newQuantity);
-                          showNotification(`${item.name} quantity updated to ${newQuantity}`);
-                        }}
-                      >
-                        <SelectTrigger className="w-20 h-8 text-sm">
-                          <SelectValue>
-                            Qty: {item.quantity}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                            <SelectItem key={num} value={num.toString()}>
-                              Qty: {num}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center border border-gray-200 rounded-md">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-r-none"
+                          onClick={() => {
+                            updateQuantity(item.id, item.quantity - 1);
+                            showNotification(`${item.name} quantity updated.`);
+                          }}
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="w-8 text-center text-sm font-medium text-[#212121] select-none">
+                          {item.quantity}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-l-none"
+                          onClick={() => {
+                            updateQuantity(item.id, item.quantity + 1);
+                            showNotification(`${item.name} quantity updated.`);
+                          }}
+                          disabled={item.quantity >= 10}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -427,8 +432,6 @@ export default function CartPage() {
               >
                 <Link href="/checkout">CHECKOUT</Link>
               </Button>
-              
-              {/* --- MODIFIED SECTION --- */}
               <div className="flex justify-center items-center space-x-4">
                 {paymentMethods.map((method) => (
                   <div key={method.name} className="relative w-12 h-8">
@@ -442,8 +445,6 @@ export default function CartPage() {
                   </div>
                 ))}
               </div>
-              {/* --- END MODIFIED SECTION --- */}
-
             </div>
           </div>
         </div>
