@@ -258,7 +258,7 @@ export default function CheckoutPage() {
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Contact</h2>
-                    <a href="#" className="text-blue-600 hover:underline">Log in</a>
+                    <a href="https://athlekt.com/login" className="text-blue-600 hover:underline">Log in</a>
                   </div>
                   <input type="email" placeholder="Email" required value={customer.email} onChange={(e) => setCustomer({...customer, email: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
                 </div>
