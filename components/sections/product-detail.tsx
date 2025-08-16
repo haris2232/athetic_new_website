@@ -306,55 +306,55 @@ export default function ProductDetail({ product }: { product: Product }) {
       <section className="py-12 bg-[#212121] text-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                          {/* Product Images */}
-              <div className="space-y-4">
-                <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-800 cursor-pointer">
-                  <Image
-                    src={product.images && product.images.length > 0 ? product.images[activeImageIndex] : "/placeholder.svg"}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    priority
-                  />
+                      {/* Product Images */}
+            <div className="space-y-4">
+              <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-800 cursor-pointer">
+                <Image
+                  src={product.images && product.images.length > 0 ? product.images[activeImageIndex] : "/placeholder.svg"}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  priority
+                />
 
-                  {/* Navigation arrows */}
-                  {product.images && product.images.length > 1 && (
-                    <>
-                      <button 
-                        className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors"
-                        onClick={prevImage}
-                      >
-                        <ChevronLeft className="h-4 w-4 text-black" />
-                      </button>
-                      <button 
-                        className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors"
-                        onClick={nextImage}
-                      >
-                        <ChevronRight className="h-4 w-4 text-black" />
-                      </button>
-                    </>
-                  )}
+                {/* Navigation arrows */}
+                {product.images && product.images.length > 1 && (
+                  <>
+                    <button 
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                      onClick={prevImage}
+                    >
+                      <ChevronLeft className="h-4 w-4 text-black" />
+                    </button>
+                    <button 
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                      onClick={nextImage}
+                    >
+                      <ChevronRight className="h-4 w-4 text-black" />
+                    </button>
+                  </>
+                )}
 
-                  {/* Navigation dots */}
-                  <div className="absolute bottom-4 left-4 flex space-x-2">
-                    {product.images && product.images.length > 0 ? 
-                      product.images.map((_, index) => (
-                        <div
-                          key={index}
-                          className={`w-2 h-2 rounded-full cursor-pointer ${index === activeImageIndex ? "bg-[#cbf26c]" : "bg-white/50"}`}
-                          onClick={() => setActiveImageIndex(index)}
-                        />
-                      )) : 
-                      [...Array(1)].map((_, index) => (
-                        <div
-                          key={index}
-                          className="w-2 h-2 rounded-full bg-[#cbf26c]"
-                        />
-                      ))
-                    }
-                  </div>
+                {/* Navigation dots */}
+                <div className="absolute bottom-4 left-4 flex space-x-2">
+                  {product.images && product.images.length > 0 ? 
+                    product.images.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full cursor-pointer ${index === activeImageIndex ? "bg-[#cbf26c]" : "bg-white/50"}`}
+                        onClick={() => setActiveImageIndex(index)}
+                      />
+                    )) : 
+                    [...Array(1)].map((_, index) => (
+                      <div
+                        key={index}
+                        className="w-2 h-2 rounded-full bg-[#cbf26c]"
+                      />
+                    ))
+                  }
                 </div>
               </div>
+            </div>
 
             {/* Product Info */}
             <div className="space-y-6">
@@ -455,7 +455,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                   {sizeOptions.map((size) => (
                     <button
                       key={size}
-                      className={`w-12 h-10 rounded-md border-2 font-medium transition-colors ${
+                      className={`px-3 py-2 rounded-md border-2 font-medium transition-colors ${
                         selectedSize === size
                           ? "bg-white text-[#212121] border-white"
                           : "bg-transparent text-white border-gray-600 hover:border-white"
@@ -532,7 +532,8 @@ export default function ProductDetail({ product }: { product: Product }) {
       {/* Dark Product Details Section */}
       <section className="bg-[#1a1a1a] text-white py-12">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Grid layout updated to single column */}
+          <div className="grid grid-cols-1 gap-12">
             {/* Left Side - Collapsible Sections */}
             <div className="space-y-4">
               {/* Product Highlight */}
@@ -673,17 +674,8 @@ export default function ProductDetail({ product }: { product: Product }) {
               </Collapsible>
             </div>
 
-            {/* Right Side - Large Product Image */}
-            <div className="relative">
-              <div className="relative h-[600px] overflow-hidden rounded-lg">
-                <Image
-                  src="https://theirongear.com/cdn/shop/files/best.jpg?v=1745213468&width=1200"
-                  alt="Person wearing coral shorts with white socks and sneakers"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
+            {/* Right Side - Large Product Image has been REMOVED */}
+            
           </div>
         </div>
       </section>
@@ -767,8 +759,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <div key={index} className="group">
                     <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
                       <div className="aspect-square relative overflow-hidden bg-gray-200 animate-pulse"></div>
-                </div>
-                <div className="mt-4 text-center">
+                  </div>
+                  <div className="mt-4 text-center">
                       <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
                     </div>
                   </div>

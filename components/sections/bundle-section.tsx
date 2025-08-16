@@ -21,16 +21,14 @@ export function BundleSection({ category }: BundleSectionProps) {
       try {
         setLoading(true)
         console.log('🔍 Fetching bundles...', category ? `for category: ${category}` : 'all bundles')
-        
-        // If category is specified, use it; otherwise fetch all bundles
+
         let bundlesData
         if (category && category !== 'mixed') {
           bundlesData = await getBundles(category)
         } else {
-          // For 'mixed' or no category, fetch all bundles
           bundlesData = await getBundles()
         }
-        
+
         console.log('📦 Bundles received:', bundlesData)
         setBundles(bundlesData)
       } catch (error) {
@@ -44,7 +42,6 @@ export function BundleSection({ category }: BundleSectionProps) {
   }, [category])
 
   const handleAddBundleToCart = (bundle: Bundle) => {
-    // Add bundle as single unit to cart
     addBundleToCart({
       id: bundle._id || bundle.id,
       name: bundle.name,
@@ -77,7 +74,6 @@ export function BundleSection({ category }: BundleSectionProps) {
   }
 
   if (bundles.length === 0) {
-    console.log('⚠️ No bundles found, returning null')
     return (
       <div className="w-full px-6 py-10">
         <div className="text-center">
@@ -90,28 +86,29 @@ export function BundleSection({ category }: BundleSectionProps) {
 
   return (
     <div className="w-full px-6 py-10">
+      <img
+        src="/bundle.png"
+        alt="Bundle Promotion"
+        className="w-full rounded-md shadow-md mb-8"
+        style={{ maxHeight: '500px', objectFit: 'cover' }}
+      />
       <div className="flex flex-col lg:flex-row gap-8">
         {bundles.map((bundle, index) => {
           const savings = bundle.originalPrice - bundle.bundlePrice
           const savingsPercentage = Math.round((savings / bundle.originalPrice) * 100)
-          
+
           return (
             <div key={bundle._id} className="flex-1 bg-[#1a1a1a] rounded-lg p-6">
               <h2 className="text-white text-2xl font-bold mb-6 text-center">{bundle.name}</h2>
-              
-              <div className={`grid gap-4 mb-6 ${
-                bundle.products.length === 2 ? 'grid-cols-2' : 
-                bundle.products.length === 3 ? 'grid-cols-3' : 
-                bundle.products.length === 4 ? 'grid-cols-2' : 
-                bundle.products.length === 5 ? 'grid-cols-3' : 
-                'grid-cols-3'
-              }`}>
+
+              {/* THIS IS THE MODIFIED LINE */}
+              <div className="grid grid-cols-2 gap-4 mb-6">
                 {bundle.products.map((product, productIndex) => (
                   <div key={productIndex} className="bg-[#2a2a2a] rounded-lg p-4">
-                    <img 
-                      src={product.images[0] || "/placeholder.svg"} 
-                      alt={product.title || product.name} 
-                      className="w-full h-32 object-cover rounded-lg mb-2" 
+                    <img
+                      src={product.images?.[0] || "/placeholder.svg"}
+                      alt={product.title || product.name}
+                      className="w-full h-32 object-cover rounded-lg mb-2"
                     />
                     <h3 className="text-white text-sm font-medium">{product.title || product.name}</h3>
                     <p className="text-gray-400 text-xs">{product.description || 'Premium quality'}</p>
@@ -125,7 +122,7 @@ export function BundleSection({ category }: BundleSectionProps) {
                   </div>
                 ))}
               </div>
-              
+
               <div className="text-center">
                 <div className="mb-4">
                   <div className="text-gray-400 text-sm line-through">
@@ -138,7 +135,7 @@ export function BundleSection({ category }: BundleSectionProps) {
                     Save {formatCurrency(savings)} ({savingsPercentage}% off)
                   </div>
                 </div>
-                
+
                 <Button
                   onClick={() => handleAddBundleToCart(bundle)}
                   disabled={isBundleInCart(bundle._id || bundle.id)}
@@ -157,4 +154,4 @@ export function BundleSection({ category }: BundleSectionProps) {
       </div>
     </div>
   )
-} 
+}

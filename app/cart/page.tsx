@@ -2,13 +2,11 @@
 
 import { useState, useEffect } from "react"
 import Image from "next/image"
-import { Trash2, Heart, Package, Percent } from "lucide-react"
+import { Trash2, Heart, Package, Percent, Plus, Minus } from "lucide-react"
 import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
@@ -16,8 +14,18 @@ import { useCurrency } from "@/lib/currency-context"
 import { getAllProducts } from "@/lib/api"
 import type { Product } from "@/lib/types"
 
+// Array of payment methods with online logo URLs
+const paymentMethods = [
+  { name: 'Visa', src: 'https://img.icons8.com/color/48/visa.png', alt: 'Visa' },
+  { name: 'Mastercard', src: 'https://img.icons8.com/color/48/mastercard-logo.png', alt: 'Mastercard' },
+  { name: 'PayPal', src: 'https://img.icons8.com/color/48/paypal.png', alt: 'PayPal' },
+  { name: 'Apple Pay', src: 'https://img.icons8.com/ios-filled/50/mac-os.png', alt: 'Apple Pay' },
+  { name: 'Klarna', src: 'https://img.icons8.com/color/48/klarna.png', alt: 'Klarna' },
+  { name: 'American Express', src: 'https://img.icons8.com/color/48/amex.png', alt: 'American Express' },
+];
+
 export default function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity, showNotification, addToCart } = useCart()
+  const { cartItems, removeFromCart, updateQuantity, showNotification } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { getCurrencySymbol, formatPrice, currency } = useCurrency()
   const [promoCode, setPromoCode] = useState("")
@@ -25,29 +33,23 @@ export default function CartPage() {
   const [bundleDiscount, setBundleDiscount] = useState<any>(null)
   const [shippingInfo, setShippingInfo] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  
-  // Dynamic product suggestions states
+
   const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([])
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
 
-  // Calculate totals
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-  // Calculate bundle discount when cart items change
   useEffect(() => {
     const calculateBundleDiscount = async () => {
       if (cartItems.length === 0) {
         setBundleDiscount(null)
         return
       }
-
       setLoading(true)
       try {
         const response = await fetch('/api/bundles/calculate-discount', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             cartItems: cartItems.map(item => ({
               productId: item.productId,
@@ -56,7 +58,6 @@ export default function CartPage() {
             }))
           })
         })
-
         if (response.ok) {
           const data = await response.json()
           setBundleDiscount(data)
@@ -67,87 +68,62 @@ export default function CartPage() {
         setLoading(false)
       }
     }
-
     calculateBundleDiscount()
   }, [cartItems])
 
-  // Calculate shipping when cart items change
   useEffect(() => {
     const calculateShipping = async () => {
       if (cartItems.length === 0) {
         setShippingInfo(null)
         return
       }
-
       setLoading(true)
       try {
         const response = await fetch('/api/shipping/calculate', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            subtotal: subtotal,
-            region: 'US',
-            weight: 0
-          })
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subtotal: subtotal, region: 'US', weight: 0 })
         })
-
         if (response.ok) {
           const data = await response.json()
-          console.log('Shipping calculation response:', data)
           setShippingInfo(data)
         } else {
-          console.error('Shipping calculation failed:', response.status)
-          // Don't set fallback - let the backend handle it
           setShippingInfo(null)
         }
       } catch (error) {
         console.error('Error calculating shipping:', error)
-        // Don't set fallback - let the backend handle it
         setShippingInfo(null)
       } finally {
         setLoading(false)
       }
     }
-
     calculateShipping()
   }, [cartItems, subtotal])
 
-  // Fetch dynamic product suggestions for free shipping
   useEffect(() => {
     const fetchSuggestedProducts = async () => {
       if (shippingInfo && !shippingInfo.isFreeShipping && shippingInfo.remainingForFreeShipping > 0) {
         setLoadingSuggestions(true);
         try {
           const allProducts = await getAllProducts();
-          
-          // Filter products that are not already in cart
           const cartProductIds = cartItems.map(item => item.id);
-          const availableProducts = allProducts.filter(product => 
-            product.id && !cartProductIds.includes(product.id as string)
-          );
-
-          // Find products that can help reach free shipping
+          const availableProducts = allProducts.filter(product => product.id && !cartProductIds.includes(product.id as string));
           const suggestions = availableProducts
             .filter(product => {
               if (!product.price) return false;
               const productPrice = parseFloat(product.price.replace('$', ''));
-              // Allow flexibility based on the remaining amount
-              const flexibility = Math.min(shippingInfo.remainingForFreeShipping * 0.3, 30); // 30% flexibility
+              const flexibility = Math.min(shippingInfo.remainingForFreeShipping * 0.3, 30);
               return productPrice <= shippingInfo.remainingForFreeShipping + flexibility;
             })
             .sort((a, b) => {
               if (!a.price || !b.price) return 0;
               const priceA = parseFloat(a.price.replace('$', ''));
               const priceB = parseFloat(b.price.replace('$', ''));
-              // Prioritize products that get closest to free shipping threshold
               const diffA = Math.abs(shippingInfo.remainingForFreeShipping - priceA);
               const diffB = Math.abs(shippingInfo.remainingForFreeShipping - priceB);
               return diffA - diffB;
             })
-            .slice(0, 3); // Show max 3 suggestions
-
+            .slice(0, 3);
           setSuggestedProducts(suggestions as any);
         } catch (error) {
           console.error('Error fetching suggested products:', error);
@@ -158,17 +134,8 @@ export default function CartPage() {
         setSuggestedProducts([]);
       }
     };
-
     fetchSuggestedProducts();
   }, [cartItems, shippingInfo]);
-
-  const applyPromoCode = () => {
-    if (promoCode.toLowerCase() === "akhlekt10") {
-      setPromoApplied(true)
-    } else {
-      alert("Invalid promo code")
-    }
-  }
 
   const handleWishlistToggle = (product: Product | any) => {
     const wishlistItem = {
@@ -180,7 +147,6 @@ export default function CartPage() {
       size: product.size || "M",
       fit: product.fit || "Regular Fit"
     }
-
     if (isInWishlist(wishlistItem.id)) {
       removeFromWishlist(wishlistItem.id)
     } else {
@@ -188,11 +154,10 @@ export default function CartPage() {
     }
   }
 
-  // Calculate totals
   const promoDiscount = promoApplied ? subtotal * 0.1 : 0
   const bundleDiscountAmount = bundleDiscount?.discountAmount || 0
   const totalDiscount = promoDiscount + bundleDiscountAmount
-  const shipping = shippingInfo?.isFreeShipping ? 0 : (shippingInfo?.shippingCost || 0) // Use backend shipping cost
+  const shipping = shippingInfo?.isFreeShipping ? 0 : (shippingInfo?.shippingCost || 0)
   const total = subtotal - totalDiscount + shipping
   const freeShippingThreshold = shippingInfo?.rule?.freeShippingAt || 0
   const amountForFreeShipping = shippingInfo?.remainingForFreeShipping || 0
@@ -202,22 +167,16 @@ export default function CartPage() {
       <Header />
       <main className="flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
-          {/* Left Side - Dark Background with Recommendations */}
           <div className="bg-[#212121] text-white p-8 lg:p-12">
             <div className="max-w-2xl mx-auto">
-              {/* Free Shipping Banner */}
               <div className="mb-12">
                 <div className="flex items-center justify-between mb-8">
                   <h2 className="text-2xl lg:text-3xl font-bold text-[#cbf26c] uppercase tracking-wide">
                     {getCurrencySymbol()} {Math.floor(amountForFreeShipping)} MORE TO GET FREE SHIPPING
                   </h2>
-                
                 </div>
-
-                {/* Dynamic Product Suggestions Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                   {loadingSuggestions ? (
-                    // Loading state
                     Array.from({ length: 3 }).map((_, index) => (
                       <div key={index} className="group">
                         <div className="relative bg-white rounded-lg overflow-hidden mb-4">
@@ -234,7 +193,6 @@ export default function CartPage() {
                       </div>
                     ))
                   ) : suggestedProducts.length > 0 ? (
-                    // Dynamic suggestions
                     suggestedProducts.map((product) => (
                       <Link key={product.id} href={`/product/${product.id}`} className="group block">
                         <div className="relative bg-white rounded-lg overflow-hidden mb-4 cursor-pointer">
@@ -245,8 +203,7 @@ export default function CartPage() {
                               fill
                               className="object-cover group-hover:scale-105 transition-transform duration-300"
                             />
-                            {/* Heart Icon */}
-                            <button 
+                            <button
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -267,15 +224,10 @@ export default function CartPage() {
                       </Link>
                     ))
                   ) : (
-                    // No suggestions available
                     <div className="col-span-3 text-center py-8">
-                      <p className="text-white text-lg">Free shipping achieved! 🎉</p>
-                      <p className="text-gray-400 text-sm mt-2">No additional products needed</p>
                     </div>
                   )}
                 </div>
-
-                {/* Shop Now Button */}
                 <div className="text-center">
                   <Button
                     size="lg"
@@ -287,18 +239,15 @@ export default function CartPage() {
               </div>
             </div>
           </div>
-
-          {/* Right Side - Light Background with Cart Summary */}
           <div className="bg-white p-8 lg:p-12">
             <div className="max-w-md mx-auto">
-              {/* Free Shipping Progress */}
               {shippingInfo && (
                 <div className="mb-8">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-[#212121]">
-                      {shippingInfo.isFreeShipping 
-                        ? "Free Shipping Applied!" 
-                        : `You're  ${Math.floor(amountForFreeShipping)} AED away from Free Standard Shipping`
+                      {shippingInfo.isFreeShipping
+                        ? "Free Shipping Applied!"
+                        : `You're ${Math.floor(amountForFreeShipping)} AED away from Free Standard Shipping`
                       }
                     </span>
                   </div>
@@ -318,8 +267,6 @@ export default function CartPage() {
                   )}
                 </div>
               )}
-
-              {/* Cart Items Summary */}
               <div className="mb-4 p-4 bg-gray-50 rounded-lg">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-600">Items in cart</span>
@@ -332,12 +279,9 @@ export default function CartPage() {
                   </span>
                 </div>
               </div>
-
-              {/* Cart Items */}
               <div className="space-y-6 mb-8">
                 {cartItems.map((item) => (
                   <div key={item.id} className="flex space-x-4">
-                    {/* Product Image */}
                     <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
                       <Image
                         src={item.image || "/placeholder.svg"}
@@ -347,8 +291,6 @@ export default function CartPage() {
                         className="w-full h-full object-cover"
                       />
                     </div>
-
-                    {/* Product Details */}
                     <div className="flex-1 space-y-1">
                       <h3 className="font-semibold text-[#212121]">
                         {item.isBundle ? (
@@ -360,13 +302,11 @@ export default function CartPage() {
                           item.name
                         )}
                       </h3>
-                      
                       {item.isBundle && item.bundleProducts && (
                         <div className="text-xs text-gray-500 mb-2">
                           <p>Includes: {item.bundleProducts.map(p => p.name).join(', ')}</p>
                         </div>
                       )}
-                      
                       {!item.isBundle && (
                         <>
                           <p className="text-sm text-gray-600">{item.fit}</p>
@@ -375,7 +315,6 @@ export default function CartPage() {
                           </p>
                         </>
                       )}
-                      
                       <div className="space-y-1">
                         <p className="text-sm text-gray-500">
                           {item.isBundle ? 'Bundle Price:' : 'Price:'} {formatPrice(item.price)} each
@@ -383,12 +322,10 @@ export default function CartPage() {
                         <p className="font-bold text-[#212121]">{formatPrice(item.price * item.quantity)} total</p>
                       </div>
                     </div>
-
-                    {/* Actions */}
                     <div className="flex flex-col items-end space-y-2">
                       <div className="flex items-center space-x-2">
                         {!item.isBundle && (
-                          <button 
+                          <button
                             onClick={() => handleWishlistToggle(item)}
                             className={`hover:text-red-500 ${
                               isInWishlist(item.id) ? 'text-red-500' : 'text-gray-400'
@@ -401,35 +338,39 @@ export default function CartPage() {
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
-
-                      {/* Quantity Selector */}
-                      <Select
-                        value={item.quantity.toString()}
-                        onValueChange={(value) => {
-                          const newQuantity = Number.parseInt(value);
-                          updateQuantity(item.id, newQuantity);
-                          showNotification(`${item.name} quantity updated to ${newQuantity}`);
-                        }}
-                      >
-                        <SelectTrigger className="w-20 h-8 text-sm">
-                          <SelectValue>
-                            Qty: {item.quantity}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                            <SelectItem key={num} value={num.toString()}>
-                              Qty: {num}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center border border-gray-200 rounded-md">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-r-none"
+                          onClick={() => {
+                            updateQuantity(item.id, item.quantity - 1);
+                            showNotification(`${item.name} quantity updated.`);
+                          }}
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="w-8 text-center text-sm font-medium text-[#212121] select-none">
+                          {item.quantity}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-l-none"
+                          onClick={() => {
+                            updateQuantity(item.id, item.quantity + 1);
+                            showNotification(`${item.name} quantity updated.`);
+                          }}
+                          disabled={item.quantity >= 10}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-
-              {/* Bundle Discount Alert */}
               {bundleDiscount?.hasBundleDiscount && (
                 <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                   <div className="flex items-center space-x-2 mb-2">
@@ -447,57 +388,11 @@ export default function CartPage() {
                   </div>
                 </div>
               )}
-
-              {/* Discount Code */}
-              {/* <div className="mb-8">
-                <p className="text-sm font-medium text-[#212121] mb-3">Discount code?</p>
-                <div className="flex space-x-2">
-                  <Input
-                    type="text"
-                    placeholder="Enter code"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    className="flex-1 h-12 border-gray-300 rounded-md"
-                  />
-                  <Button
-                    onClick={applyPromoCode}
-                    className="bg-[#212121] text-white hover:bg-black px-6 h-12 rounded-md font-semibold"
-                  >
-                    APPLY
-                  </Button>
-                </div>
-                {promoApplied && <p className="text-sm text-green-600 mt-2">Promo code applied!</p>}
-              </div> */}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-              {/* Order Summary */}
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-medium">{formatPrice(subtotal)}</span>
                 </div>
-                
                 {bundleDiscount?.hasBundleDiscount && (
                   <div className="flex justify-between text-green-600">
                     <span className="flex items-center space-x-1">
@@ -507,14 +402,12 @@ export default function CartPage() {
                     <span>-{formatPrice(bundleDiscount.discountAmount)}</span>
                   </div>
                 )}
-                
                 {promoApplied && (
                   <div className="flex justify-between text-green-600">
                     <span>Discount (10%)</span>
                     <span>-{formatPrice(promoDiscount)}</span>
                   </div>
                 )}
-                
                 <div className="flex justify-between">
                   <span className="text-gray-600">
                     {shippingInfo?.isFreeShipping ? "Shipping" : "Estimated Shipping"}
@@ -523,8 +416,6 @@ export default function CartPage() {
                     {shippingInfo?.isFreeShipping ? "FREE" : formatPrice(shipping)}
                   </span>
                 </div>
-
-                
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-semibold text-[#212121]">Total</span>
@@ -535,38 +426,24 @@ export default function CartPage() {
                   </div>
                 </div>
               </div>
-
-              {/* Checkout Button */}
               <Button
                 asChild
                 className="w-full bg-[#212121] text-white hover:bg-black font-semibold py-4 text-lg rounded-md mb-6"
               >
                 <Link href="/checkout">CHECKOUT</Link>
               </Button>
-
-              {/* Payment Methods */}
-              <div className="flex justify-center space-x-2">
-                <div className="w-10 h-6 bg-blue-600 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">VISA</span>
-                </div>
-                <div className="w-10 h-6 bg-red-500 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">MC</span>
-                </div>
-                <div className="w-10 h-6 bg-blue-500 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">PP</span>
-                </div>
-                <div className="w-10 h-6 bg-black rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">AP</span>
-                </div>
-                <div className="w-10 h-6 bg-pink-500 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">K</span>
-                </div>
-                <div className="w-10 h-6 bg-blue-400 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">AE</span>
-                </div>
-                <div className="w-10 h-6 bg-teal-500 rounded flex items-center justify-center">
-                  <span className="text-white text-xs font-bold">AP</span>
-                </div>
+              <div className="flex justify-center items-center space-x-4">
+                {paymentMethods.map((method) => (
+                  <div key={method.name} className="relative w-12 h-8">
+                    <Image
+                      src={method.src}
+                      alt={method.alt}
+                      fill
+                      sizes="48px"
+                      style={{ objectFit: 'contain' }}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
