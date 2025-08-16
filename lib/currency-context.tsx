@@ -14,9 +14,17 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 
 export function CurrencyProvider({ children }: { children: ReactNode }) {
   const [currency, setCurrencyState] = useState<string>('USD')
+  const [isClient, setIsClient] = useState(false)
+
+  // Set client flag on mount
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   // Load currency from localStorage and sync with admin settings
   useEffect(() => {
+    if (!isClient) return
+
     const loadCurrency = async () => {
       // First try to get from localStorage
       const savedCurrency = localStorage.getItem('currency')
@@ -45,14 +53,18 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
     const interval = setInterval(loadCurrency, 30000)
     
     return () => clearInterval(interval)
-  }, [])
+  }, [isClient])
 
   const setCurrency = (newCurrency: string) => {
     setCurrencyState(newCurrency)
-    localStorage.setItem('currency', newCurrency)
+    if (isClient) {
+      localStorage.setItem('currency', newCurrency)
+    }
   }
 
   const refreshCurrency = async () => {
+    if (!isClient) return
+    
     try {
       const response = await fetch('/api/settings')
       if (response.ok) {
@@ -68,7 +80,10 @@ export function CurrencyProvider({ children }: { children: ReactNode }) {
   }
 
   const formatPrice = (amount: number): string => {
-    if (currency === 'AED') {
+    // During SSR, always use USD to prevent hydration mismatch
+    const currentCurrency = isClient ? currency : 'USD'
+    
+    if (currentCurrency === 'AED') {
       return new Intl.NumberFormat('en-AE', {
         style: 'currency',
         currency: 'AED',

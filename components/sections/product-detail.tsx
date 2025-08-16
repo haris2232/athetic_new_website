@@ -532,37 +532,20 @@ export default function ProductDetail({ product }: { product: Product }) {
       {/* Dark Product Details Section */}
       <section className="bg-[#1a1a1a] text-white py-12">
         <div className="container mx-auto px-4">
-          {/* Grid layout updated to single column */}
-          <div className="grid grid-cols-1 gap-12">
+          {/* Grid layout updated to two columns */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Left Side - Collapsible Sections */}
             <div className="space-y-4">
-              {/* Product Highlight */}
-              <Collapsible open={openSections.highlight} onOpenChange={() => toggleSection("highlight")}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-600 hover:border-gray-500 transition-colors">
-                  <span className="text-sm font-medium uppercase tracking-wide">PRODUCT HIGHLIGHT</span>
-                  {openSections.highlight ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </CollapsibleTrigger>
-                <CollapsibleContent className="py-6">
+              {/* Product Description */}
+              {/* <div className="py-4 border-b border-gray-600">
                   <div className="space-y-4">
-                    {product.images && product.images.length > 0 && (
-                      <div className="w-full h-64 bg-[#e8d5d5] rounded-lg overflow-hidden">
-                        <Image
-                          src={product.images[0]}
-                          alt={product.name}
-                          width={400}
-                          height={256}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
                     {product.description && (
                       <p className="text-gray-300 text-sm leading-relaxed">
                         {product.description}
                       </p>
                     )}
                   </div>
-                </CollapsibleContent>
-              </Collapsible>
+              </div> */}
 
               {/* Purpose */}
               <Collapsible open={openSections.purpose} onOpenChange={() => toggleSection("purpose")}>
@@ -674,7 +657,64 @@ export default function ProductDetail({ product }: { product: Product }) {
               </Collapsible>
             </div>
 
-            {/* Right Side - Large Product Image has been REMOVED */}
+            {/* Right Side - Large Product Image */}
+            <div className="flex items-start justify-center lg:justify-end">
+              {product.images && product.images.length > 0 && (
+                <div className="w-full max-w-md lg:max-w-lg">
+                  {/* Product Highlight Heading */}
+                  <div className="mb-6">
+                    <h3 className="text-sm font-medium uppercase tracking-wide text-white">PRODUCT HIGHLIGHT</h3>
+                  </div>
+                  <div className="relative aspect-[4/5] bg-[#e8d5d5] rounded-lg overflow-hidden shadow-lg">
+                    <Image
+                      src={product.images[activeImageIndex]}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                    />
+                    {/* Image Navigation Arrows */}
+                    {product.images.length > 1 && (
+                      <>
+                        <button
+                          onClick={prevImage}
+                          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                        >
+                          <ChevronLeft className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={nextImage}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
+                        >
+                          <ChevronRight className="h-5 w-5" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  {/* Image Thumbnails */}
+                  {product.images.length > 1 && (
+                    <div className="flex space-x-2 mt-4 justify-center">
+                      {product.images.map((image, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setActiveImageIndex(index)}
+                          className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
+                            index === activeImageIndex ? 'border-[#cbf26c]' : 'border-gray-300'
+                          }`}
+                        >
+                          <Image
+                            src={image}
+                            alt={`${product.name} - Image ${index + 1}`}
+                            width={64}
+                            height={64}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
             
           </div>
         </div>

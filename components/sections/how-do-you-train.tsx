@@ -5,16 +5,31 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 
+interface Category {
+  _id: string
+  name: string
+  description?: string
+  image?: string
+  carouselImage?: string
+  displaySection?: string
+  sectionOrder?: number
+  discountPercentage?: number
+  isActive: boolean
+  createdAt: string
+}
+
 interface SubCategory {
   _id: string
   name: string
   category: string
   description?: string
   image?: string
-  carouselImage?: string
-  discountPercentage?: number
   isActive: boolean
   createdAt: string
+}
+
+interface CategoryWithSubCategories extends Category {
+  subCategories: SubCategory[]
 }
 
 const trainingCategories = [
@@ -45,40 +60,52 @@ const trainingCategories = [
 ]
 
 export default function HowDoYouTrain() {
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
+  const [categoriesWithSubs, setCategoriesWithSubs] = useState<CategoryWithSubCategories[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    fetchSubCategories()
+    fetchCategoriesWithSubCategories()
   }, [])
 
-  const fetchSubCategories = async () => {
+  const fetchCategoriesWithSubCategories = async () => {
     try {
-      const response = await fetch('https://athlekt.com/backendnew/api/subcategories/public')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.data && data.data.length > 0) {
-          // Filter active sub-categories for training section
-          const trainingSubCategories = data.data.filter((subCat: SubCategory) => 
-            subCat.isActive
-          )
-          setSubCategories(trainingSubCategories)
-        }
+      // Fetch categories
+      const categoriesResponse = await fetch('https://athlekt.com/backendnew/api/categories/public/training')
+      const categoriesData = await categoriesResponse.json()
+      
+      // Fetch all sub-categories
+      const subCategoriesResponse = await fetch('https://athlekt.com/backendnew/api/subcategories/public')
+      const subCategoriesData = await subCategoriesResponse.json()
+      
+      if (categoriesData.data && categoriesData.data.length > 0) {
+        // Combine categories with their sub-categories
+        const categoriesWithSubs = categoriesData.data.map((category: Category) => {
+          const subCategories = subCategoriesData.data?.filter((subCat: SubCategory) => 
+            subCat.category.toLowerCase() === category.name.toLowerCase() && subCat.isActive
+          ) || []
+          
+          return {
+            ...category,
+            subCategories
+          }
+        })
+        
+        setCategoriesWithSubs(categoriesWithSubs)
       }
     } catch (error) {
-      console.error("Failed to fetch training sub-categories:", error)
+      console.error("Failed to fetch training categories with sub-categories:", error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSubCategoryClick = (subCategory: SubCategory) => {
-    // Navigate to the specific sub-category page
-    const gender = subCategory.category.toLowerCase() === 'men' ? 'men' : 
-                   subCategory.category.toLowerCase() === 'women' ? 'women' : 'all'
-    const url = `/categories/${subCategory.name.toLowerCase().replace(/\s+/g, '-')}?gender=${gender}`
-    console.log(`🔄 Navigating to sub-category: ${url} for training: ${subCategory.name}`)
+  const handleCategoryClick = (categoryWithSubs: CategoryWithSubCategories) => {
+    // Navigate to the specific category page
+    const gender = categoryWithSubs.displaySection?.toLowerCase() === 'men' ? 'men' : 
+                   categoryWithSubs.displaySection?.toLowerCase() === 'women' ? 'women' : 'all'
+    const url = `/categories/${categoryWithSubs.name.toLowerCase().replace(/\s+/g, '-')}?gender=${gender}`
+    console.log(`🔄 Navigating to category: ${url} for training: ${categoryWithSubs.name}`)
     router.push(url)
   }
 
@@ -107,29 +134,34 @@ export default function HowDoYouTrain() {
                 </div>
               </div>
             ))
-          ) : subCategories.length > 0 ? (
-            // Display actual sub-categories
-            subCategories.slice(0, 4).map((subCategory, index) => (
-              <div key={subCategory._id} className="group cursor-pointer" onClick={() => handleSubCategoryClick(subCategory)}>
+          ) : categoriesWithSubs.length > 0 ? (
+            // Display actual categories with sub-category names
+            categoriesWithSubs.slice(0, 4).map((categoryWithSubs, index) => (
+              <div key={categoryWithSubs._id} className="group cursor-pointer" onClick={() => handleCategoryClick(categoryWithSubs)}>
                 <div className="relative overflow-hidden rounded-lg mb-6">
                   <Image
-                    src={subCategory.carouselImage || subCategory.image || "/placeholder.svg?height=600&width=400"}
-                    alt={subCategory.name}
+                    src={categoryWithSubs.carouselImage || categoryWithSubs.image || "/placeholder.svg?height=600&width=400"}
+                    alt={categoryWithSubs.name}
                     width={400}
                     height={600}
                     className="w-full h-[500px] object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
-                  {subCategory.discountPercentage && subCategory.discountPercentage > 0 && (
+                  {categoryWithSubs.discountPercentage && categoryWithSubs.discountPercentage > 0 && (
                     <div className="absolute top-4 left-4 bg-[#cbf26c] text-[#212121] px-3 py-1 rounded-md font-bold text-sm">
-                      {subCategory.discountPercentage}% OFF
+                      {categoryWithSubs.discountPercentage}% OFF
                     </div>
                   )}
                 </div>
                 <div className="mb-4">
-                  <h3 className="text-2xl font-bold text-white uppercase tracking-wide text-center">{subCategory.name}</h3>
+                  <h3 className="text-2xl font-bold text-white uppercase tracking-wide text-center">
+                    {categoryWithSubs.subCategories.length > 0 
+                      ? categoryWithSubs.subCategories[0].name 
+                      : categoryWithSubs.name
+                    }
+                  </h3>
                   <p className="text-sm text-gray-300 text-center mt-2">
-                    {subCategory.description || "Premium training gear for your workout."}
+                    {categoryWithSubs.description || "Premium training gear for your workout."}
                   </p>
                 </div>
                 <div className="flex justify-center">

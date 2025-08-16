@@ -304,7 +304,17 @@ export default function CartPage() {
                       </h3>
                       {item.isBundle && item.bundleProducts && (
                         <div className="text-xs text-gray-500 mb-2">
-                          <p>Includes: {item.bundleProducts.map(p => p.name).join(', ')}</p>
+                          <p className="font-medium mb-1">Includes:</p>
+                          {item.bundleProducts.map((p, index) => (
+                            <div key={index} className="ml-2 mb-1">
+                              <span className="font-medium">{p.name}</span>
+                              {p.size && p.color && (
+                                <span className="text-gray-400 ml-1">
+                                  ({p.size}, {p.color})
+                                </span>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       )}
                       {!item.isBundle && (

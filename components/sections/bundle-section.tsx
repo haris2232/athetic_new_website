@@ -6,6 +6,7 @@ import { useCart } from "@/lib/cart-context"
 import { getBundles, type Bundle } from "@/lib/api"
 import { formatCurrency } from "@/lib/utils"
 import { Package } from "lucide-react"
+import { BundleVariationModal } from "@/components/ui/bundle-variation-modal"
 
 interface BundleSectionProps {
   category?: 'men' | 'women' | 'mixed'
@@ -14,6 +15,8 @@ interface BundleSectionProps {
 export function BundleSection({ category }: BundleSectionProps) {
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null)
+  const [isVariationModalOpen, setIsVariationModalOpen] = useState(false)
   const { addBundleToCart, isBundleInCart } = useCart()
 
   useEffect(() => {
@@ -42,21 +45,33 @@ export function BundleSection({ category }: BundleSectionProps) {
   }, [category])
 
   const handleAddBundleToCart = (bundle: Bundle) => {
+    setSelectedBundle(bundle)
+    setIsVariationModalOpen(true)
+  }
+
+  const handleVariationConfirm = (selectedVariations: Record<string, { size: string; color: string }>) => {
+    if (!selectedBundle) return
+
     addBundleToCart({
-      id: bundle._id || bundle.id,
-      name: bundle.name,
-      bundlePrice: bundle.bundlePrice,
-      originalPrice: bundle.originalPrice,
-      products: bundle.products.map(product => ({
-        id: product._id || product.id,
-        name: product.title || product.name,
-        price: product.basePrice || parseFloat(product.price || '0'),
-        image: product.images?.[0] || product.image,
-        quantity: 1,
-        size: product.sizeOptions?.[0] || product.sizes?.[0] || 'M',
-        color: product.colors?.[0]?.name || 'Default'
-      })),
-      category: bundle.category
+      id: selectedBundle._id || selectedBundle.id,
+      name: selectedBundle.name,
+      bundlePrice: selectedBundle.bundlePrice,
+      originalPrice: selectedBundle.originalPrice,
+      products: selectedBundle.products.map(product => {
+        const productId = product._id || product.id
+        const variation = selectedVariations[productId]
+        
+        return {
+          id: product._id || product.id,
+          name: product.title || product.name,
+          price: product.basePrice || parseFloat(product.price || '0'),
+          image: product.images?.[0] || product.image,
+          quantity: 1,
+          size: variation?.size || product.sizeOptions?.[0] || product.sizes?.[0] || 'M',
+          color: variation?.color || product.colors?.[0]?.name || 'Default'
+        }
+      }),
+      category: selectedBundle.category
     })
   }
 
@@ -145,13 +160,27 @@ export function BundleSection({ category }: BundleSectionProps) {
                       : "bg-green-500 hover:bg-green-600 text-white"
                   }`}
                 >
-                  {isBundleInCart(bundle._id || bundle.id) ? "✓ BUNDLE IN CART" : `SAVE ${formatCurrency(savings)}`}
+                  {isBundleInCart(bundle._id || bundle.id) 
+                    ? "✓ BUNDLE IN CART" 
+                    : `SELECT VARIATIONS & SAVE ${formatCurrency(savings)}`
+                  }
                 </Button>
               </div>
             </div>
           )
         })}
       </div>
+
+      {/* Bundle Variation Modal */}
+      <BundleVariationModal
+        bundle={selectedBundle}
+        isOpen={isVariationModalOpen}
+        onClose={() => {
+          setIsVariationModalOpen(false)
+          setSelectedBundle(null)
+        }}
+        onConfirm={handleVariationConfirm}
+      />
     </div>
   )
 }

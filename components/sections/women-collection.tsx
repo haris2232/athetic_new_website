@@ -4,56 +4,83 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 
+interface Category {
+  _id: string
+  name: string
+  description?: string
+  image?: string
+  carouselImage?: string
+  displaySection?: string
+  sectionOrder?: number
+  discountPercentage?: number
+  isActive: boolean
+  createdAt: string
+}
+
 interface SubCategory {
   _id: string
   name: string
   category: string
   description?: string
   image?: string
-  carouselImage?: string
-  discountPercentage?: number
   isActive: boolean
   createdAt: string
 }
 
+interface CategoryWithSubCategories extends Category {
+  subCategories: SubCategory[]
+}
+
 export default function WomenCollection() {
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
+  const [categoriesWithSubs, setCategoriesWithSubs] = useState<CategoryWithSubCategories[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    fetchSubCategories()
+    fetchCategoriesWithSubCategories()
   }, [])
 
-  const fetchSubCategories = async () => {
+  const fetchCategoriesWithSubCategories = async () => {
     try {
-      const response = await fetch('https://athlekt.com/backendnew/api/subcategories/public')
-      if (response.ok) {
-        const data = await response.json()
-        if (data.data && data.data.length > 0) {
-          // Filter only women's sub-categories
-          const womenSubCategories = data.data.filter((subCat: SubCategory) => 
-            subCat.category.toLowerCase() === 'women' && subCat.isActive
-          )
-          setSubCategories(womenSubCategories)
-        }
+      // Fetch categories
+      const categoriesResponse = await fetch('https://athlekt.com/backendnew/api/categories/public/women')
+      const categoriesData = await categoriesResponse.json()
+      
+      // Fetch all sub-categories
+      const subCategoriesResponse = await fetch('https://athlekt.com/backendnew/api/subcategories/public')
+      const subCategoriesData = await subCategoriesResponse.json()
+      
+      if (categoriesData.data && categoriesData.data.length > 0) {
+        // Combine categories with their sub-categories
+        const categoriesWithSubs = categoriesData.data.map((category: Category) => {
+          const subCategories = subCategoriesData.data?.filter((subCat: SubCategory) => 
+            subCat.category.toLowerCase() === category.name.toLowerCase() && subCat.isActive
+          ) || []
+          
+          return {
+            ...category,
+            subCategories
+          }
+        })
+        
+        setCategoriesWithSubs(categoriesWithSubs)
       }
     } catch (error) {
-      console.error("Failed to fetch women collection sub-categories:", error)
+      console.error("Failed to fetch women collection categories with sub-categories:", error)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleSubCategoryClick = async (subCategory: SubCategory) => {
+  const handleCategoryClick = async (categoryWithSubs: CategoryWithSubCategories) => {
     try {
-      // Navigate to the specific sub-category page
-      const url = `/categories/${subCategory.name.toLowerCase().replace(/\s+/g, '-')}?gender=women`
-      console.log(`🔄 Navigating to sub-category: ${url} for women's sub-category: ${subCategory.name}`)
+      // Navigate to the specific category page
+      const url = `/categories/${categoryWithSubs.name.toLowerCase().replace(/\s+/g, '-')}?gender=women`
+      console.log(`🔄 Navigating to category: ${url} for women's category: ${categoryWithSubs.name}`)
       router.push(url)
       
     } catch (error) {
-      console.error('Error handling sub-category click:', error)
+      console.error('Error handling category click:', error)
       // Fallback to main category page
       const url = `/categories?gender=women`
       console.log(`🔄 Fallback navigation to: ${url}`)
@@ -110,33 +137,38 @@ export default function WomenCollection() {
                   </div>
                 </div>
               ))
-            ) : subCategories.length > 0 ? (
-              // Display actual sub-categories
-              subCategories.slice(0, 4).map((subCategory) => (
+            ) : categoriesWithSubs.length > 0 ? (
+              // Display actual categories with sub-category names
+              categoriesWithSubs.slice(0, 4).map((categoryWithSubs) => (
                 <div 
-                  key={subCategory._id} 
+                  key={categoryWithSubs._id} 
                   className="group cursor-pointer"
-                  onClick={() => handleSubCategoryClick(subCategory)}
+                  onClick={() => handleCategoryClick(categoryWithSubs)}
                 >
                   <div className="relative overflow-hidden rounded-lg mb-4">
                     <Image
-                      src={subCategory.carouselImage || subCategory.image || "/placeholder.svg?height=380&width=300"}
-                      alt={subCategory.name}
+                      src={categoryWithSubs.carouselImage || categoryWithSubs.image || "/placeholder.svg?height=380&width=300"}
+                      alt={categoryWithSubs.name}
                       width={300}
                       height={380}
                       className="w-full h-[380px] object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
-                    {subCategory.discountPercentage && subCategory.discountPercentage > 0 && (
+                    {categoryWithSubs.discountPercentage && categoryWithSubs.discountPercentage > 0 && (
                       <div className="absolute top-4 left-4 bg-[#cbf26c] text-[#212121] px-3 py-1 rounded-md font-bold text-sm">
-                        {subCategory.discountPercentage}% OFF
+                        {categoryWithSubs.discountPercentage}% OFF
                       </div>
                     )}
                   </div>
                   <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 uppercase text-[#cbf26c]">{subCategory.name}</h3>
+                    <h3 className="text-lg font-bold mb-2 uppercase text-[#cbf26c]">
+                      {categoryWithSubs.subCategories.length > 0 
+                        ? categoryWithSubs.subCategories[0].name 
+                        : categoryWithSubs.name
+                      }
+                    </h3>
                     <p className="text-sm text-gray-300 leading-relaxed">
-                      {subCategory.description || "Get ready for the ultimate style and performance combo."}
+                      {categoryWithSubs.description || "Get ready for the ultimate style and performance combo."}
                     </p>
                   </div>
                 </div>
