@@ -92,10 +92,10 @@ export default function ProductDetail({ product }: { product: Product }) {
         const filteredProducts = allProducts.filter(p => p.id !== product.id)
         
         // Set highlighted product (only one product can be highlighted)
-        if (highlightedProductData && highlightedProductData.id !== product.id) {
+        if (highlightedProductData) {
           setHighlightedProduct({
             id: highlightedProductData.id,
-            name: highlightedProductData.name,
+            name: highlightedProductData.name || highlightedProductData.title,
             price: highlightedProductData.price,
             originalPrice: highlightedProductData.originalPrice,
             image: highlightedProductData.image || "/placeholder.svg?height=300&width=250",
@@ -683,38 +683,48 @@ export default function ProductDetail({ product }: { product: Product }) {
                     <h3 className="text-sm font-medium uppercase tracking-wide text-white">PRODUCT HIGHLIGHT</h3>
                   </div>
                   
-                                     {/* Highlighted Product */}
-                   {highlightedProduct && (
-                     <div className="mb-6">
-                       <Link href={`/product/${highlightedProduct.id}`} className="block">
-                         <div className="bg-[#2a2a2a] rounded-lg overflow-hidden hover:bg-[#3a3a3a] transition-colors">
-                           <div className="relative aspect-square">
-                             <Image
-                               src={highlightedProduct.image}
-                               alt={highlightedProduct.name}
-                               fill
-                               className="object-cover"
-                             />
-                           </div>
-                           <div className="p-3">
-                             <h4 className="text-white text-xs font-medium line-clamp-2 mb-1">
-                               {highlightedProduct.name}
-                             </h4>
-                             <div className="flex items-center space-x-2">
-                               {highlightedProduct.originalPrice && (
-                                 <span className="text-gray-400 text-xs line-through">
-                                   {formatCurrency(parseFloat(highlightedProduct.originalPrice.replace(/[^0-9.]/g, '')))}
+                                                         {/* Highlighted Product */}
+                    {highlightedProduct ? (
+                      <div className="mb-6">
+                        <Link href={`/product/${highlightedProduct.id}`} className="block">
+                          <div className="bg-[#2a2a2a] rounded-lg overflow-hidden hover:bg-[#3a3a3a] transition-colors">
+                            <div className="relative aspect-square">
+                              <Image
+                                src={highlightedProduct.image}
+                                alt={highlightedProduct.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                            <div className="p-3">
+                              <h4 className="text-white text-xs font-medium line-clamp-2 mb-1">
+                                {highlightedProduct.name}
+                              </h4>
+                                                             <div className="flex items-center space-x-2">
+                                 {highlightedProduct.originalPrice && (
+                                   <span className="text-gray-400 text-xs line-through">
+                                     {formatCurrency(typeof highlightedProduct.originalPrice === 'string' 
+                                       ? parseFloat(highlightedProduct.originalPrice.replace(/[^0-9.]/g, ''))
+                                       : highlightedProduct.originalPrice
+                                     )}
+                                   </span>
+                                 )}
+                                 <span className="text-white text-xs font-bold">
+                                   {formatCurrency(typeof highlightedProduct.price === 'string'
+                                     ? parseFloat(highlightedProduct.price.replace(/[^0-9.]/g, ''))
+                                     : parseFloat(highlightedProduct.price.toString())
+                                   )}
                                  </span>
-                               )}
-                               <span className="text-white text-xs font-bold">
-                                 {formatCurrency(parseFloat(highlightedProduct.price.replace(/[^0-9.]/g, '')))}
-                               </span>
-                             </div>
-                           </div>
-                         </div>
-                       </Link>
-                     </div>
-                   )}
+                               </div>
+                            </div>
+                          </div>
+                        </Link>
+                      </div>
+                    ) : (
+                      <div className="mb-6 p-4 bg-[#2a2a2a] rounded-lg">
+                        <p className="text-gray-400 text-xs">No highlighted product available</p>
+                      </div>
+                    )}
                 </div>
               )}
             </div>
