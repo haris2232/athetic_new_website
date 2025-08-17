@@ -16,6 +16,8 @@ export interface Product {
   description?: string;
   fullDescription?: string;
   isOnSale?: boolean;
+  isProductHighlight?: boolean;
+  highlightImageIndex?: number;
   colors?: Array<{
     name: string;
     hex?: string;
@@ -248,6 +250,17 @@ class ApiService {
     }
   }
 
+  // Get highlighted product (only one product can be highlighted)
+  async getHighlightedProducts(): Promise<Product | null> {
+    try {
+      const response = await this.request<{ data: Product | null }>('/products/public/highlighted');
+      return response.data || null;
+    } catch (error) {
+      console.error('Error fetching highlighted product:', error);
+      return null;
+    }
+  }
+
   // Get bundles
   async getBundles(category?: string): Promise<Bundle[]> {
     try {
@@ -335,6 +348,11 @@ export async function getCarouselCategories(): Promise<Category[]> {
 
 export async function getCategories(): Promise<Category[]> {
   return apiService.getCategories();
+}
+
+// Product highlight functions
+export async function getHighlightedProducts(): Promise<Product | null> {
+  return apiService.getHighlightedProducts();
 }
 
 // Bundle functions

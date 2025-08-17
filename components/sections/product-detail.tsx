@@ -10,7 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import ProductReviews from "./product-reviews"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
-import { getAllProducts, submitForm, FormSubmission } from "@/lib/api"
+import { getAllProducts, getHighlightedProducts, submitForm, FormSubmission } from "@/lib/api"
 import { formatCurrency } from "@/lib/utils"
 import type { Product } from "@/lib/types"
 
@@ -22,6 +22,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [shopTheLookItems, setShopTheLookItems] = useState<any[]>([])
   const [carouselItems, setCarouselItems] = useState<any[]>([])
+  const [highlightedProduct, setHighlightedProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
   
@@ -77,15 +78,31 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   const sizeOptions = product.sizes || ["S", "M", "L", "XL", "XXL"]
 
-  // Fetch dynamic products for Shop the Look and Carousel
+  // Fetch dynamic products for Shop the Look, Carousel, and Highlighted Products
   useEffect(() => {
     const fetchDynamicProducts = async () => {
       try {
         setLoading(true)
-        const allProducts = await getAllProducts()
+        const [allProducts, highlightedProductData] = await Promise.all([
+          getAllProducts(),
+          getHighlightedProducts()
+        ])
         
         // Filter out current product and get a mix of men's and women's products
         const filteredProducts = allProducts.filter(p => p.id !== product.id)
+        
+        // Set highlighted product (only one product can be highlighted)
+        if (highlightedProductData && highlightedProductData.id !== product.id) {
+          setHighlightedProduct({
+            id: highlightedProductData.id,
+            name: highlightedProductData.name,
+            price: highlightedProductData.price,
+            originalPrice: highlightedProductData.originalPrice,
+            image: highlightedProductData.image || "/placeholder.svg?height=300&width=250",
+          })
+        } else {
+          setHighlightedProduct(null)
+        }
         
         // Create Shop the Look items (5 items)
         const shopItems = filteredProducts.slice(0, 5).map((p, index) => ({
@@ -665,53 +682,39 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <div className="mb-6">
                     <h3 className="text-sm font-medium uppercase tracking-wide text-white">PRODUCT HIGHLIGHT</h3>
                   </div>
-                  <div className="relative aspect-[4/5] bg-[#e8d5d5] rounded-lg overflow-hidden shadow-lg">
-                    <Image
-                      src={product.images[activeImageIndex]}
-                      alt={product.name}
-                      fill
-                      className="object-cover"
-                    />
-                    {/* Image Navigation Arrows */}
-                    {product.images.length > 1 && (
-                      <>
-                        <button
-                          onClick={prevImage}
-                          className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
-                        >
-                          <ChevronLeft className="h-5 w-5" />
-                        </button>
-                        <button
-                          onClick={nextImage}
-                          className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 text-white rounded-full flex items-center justify-center hover:bg-black/70 transition-colors"
-                        >
-                          <ChevronRight className="h-5 w-5" />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                  {/* Image Thumbnails */}
-                  {product.images.length > 1 && (
-                    <div className="flex space-x-2 mt-4 justify-center">
-                      {product.images.map((image, index) => (
-                        <button
-                          key={index}
-                          onClick={() => setActiveImageIndex(index)}
-                          className={`w-16 h-16 rounded-lg overflow-hidden border-2 transition-colors ${
-                            index === activeImageIndex ? 'border-[#cbf26c]' : 'border-gray-300'
-                          }`}
-                        >
-                          <Image
-                            src={image}
-                            alt={`${product.name} - Image ${index + 1}`}
-                            width={64}
-                            height={64}
-                            className="w-full h-full object-cover"
-                          />
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  
+                                     {/* Highlighted Product */}
+                   {highlightedProduct && (
+                     <div className="mb-6">
+                       <Link href={`/product/${highlightedProduct.id}`} className="block">
+                         <div className="bg-[#2a2a2a] rounded-lg overflow-hidden hover:bg-[#3a3a3a] transition-colors">
+                           <div className="relative aspect-square">
+                             <Image
+                               src={highlightedProduct.image}
+                               alt={highlightedProduct.name}
+                               fill
+                               className="object-cover"
+                             />
+                           </div>
+                           <div className="p-3">
+                             <h4 className="text-white text-xs font-medium line-clamp-2 mb-1">
+                               {highlightedProduct.name}
+                             </h4>
+                             <div className="flex items-center space-x-2">
+                               {highlightedProduct.originalPrice && (
+                                 <span className="text-gray-400 text-xs line-through">
+                                   {formatCurrency(parseFloat(highlightedProduct.originalPrice.replace(/[^0-9.]/g, '')))}
+                                 </span>
+                               )}
+                               <span className="text-white text-xs font-bold">
+                                 {formatCurrency(parseFloat(highlightedProduct.price.replace(/[^0-9.]/g, '')))}
+                               </span>
+                             </div>
+                           </div>
+                         </div>
+                       </Link>
+                     </div>
+                   )}
                 </div>
               )}
             </div>
