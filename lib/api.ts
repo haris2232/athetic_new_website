@@ -260,6 +260,17 @@ class ApiService {
     }
   }
 
+  // Get current product's highlight image (for per-product highlight)
+  async getProductHighlightImage(productId: string): Promise<Product | null> {
+    try {
+      const response = await this.request<{ data: Product | null }>(`/products/public/highlight/${productId}`);
+      return response.data || null;
+    } catch (error) {
+      console.error('Error fetching product highlight image:', error);
+      return null;
+    }
+  }
+
   // Get bundles
   async getBundles(category?: string): Promise<Bundle[]> {
     try {
@@ -352,6 +363,10 @@ export async function getCategories(): Promise<Category[]> {
 // Product highlight functions
 export async function getHighlightedProducts(): Promise<Product | null> {
   return apiService.getHighlightedProducts();
+}
+
+export async function getProductHighlightImage(productId: string): Promise<Product | null> {
+  return apiService.getProductHighlightImage(productId);
 }
 
 // Bundle functions

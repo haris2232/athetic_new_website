@@ -10,7 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import ProductReviews from "./product-reviews"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
-import { getAllProducts, getHighlightedProducts, submitForm, FormSubmission } from "@/lib/api"
+import { getAllProducts, getHighlightedProducts, getProductHighlightImage, submitForm, FormSubmission } from "@/lib/api"
 import { formatCurrency } from "@/lib/utils"
 import type { Product } from "@/lib/types"
 
@@ -83,22 +83,20 @@ export default function ProductDetail({ product }: { product: Product }) {
     const fetchDynamicProducts = async () => {
       try {
         setLoading(true)
-        const [allProducts, highlightedProductData] = await Promise.all([
+        const [allProducts, currentProductHighlightData] = await Promise.all([
           getAllProducts(),
-          getHighlightedProducts()
+          getProductHighlightImage(product.id)
         ])
         
         // Filter out current product and get a mix of men's and women's products
         const filteredProducts = allProducts.filter(p => p.id !== product.id)
         
-        // Set highlighted product (only one product can be highlighted)
-        if (highlightedProductData) {
+        // Set current product's highlight image (if it has one)
+        if (currentProductHighlightData && currentProductHighlightData.isProductHighlight) {
           setHighlightedProduct({
-            id: highlightedProductData.id,
-            name: highlightedProductData.name || highlightedProductData.title,
-            price: highlightedProductData.price,
-            originalPrice: highlightedProductData.originalPrice,
-            image: highlightedProductData.image || "/placeholder.svg?height=300&width=250",
+            id: currentProductHighlightData.id,
+            name: currentProductHighlightData.name || currentProductHighlightData.title,
+            image: currentProductHighlightData.image || "/placeholder.svg?height=300&width=250",
           })
         } else {
           setHighlightedProduct(null)
@@ -674,19 +672,20 @@ export default function ProductDetail({ product }: { product: Product }) {
               </Collapsible>
             </div>
 
-            {/* Right Side - Large Product Image */}
-            <div className="flex items-start justify-center lg:justify-end">
-              {product.images && product.images.length > 0 && (
-                <div className="w-full max-w-md lg:max-w-lg">
-                  {/* Product Highlight Heading */}
-                  <div className="mb-6">
-                    <h3 className="text-sm font-medium uppercase tracking-wide text-white">PRODUCT HIGHLIGHT</h3>
-                  </div>
-                  
-                                                         {/* Highlighted Product */}
-                    {highlightedProduct ? (
-                      <div className="mb-6">
-                        <Link href={`/product/${highlightedProduct.id}`} className="block">
+                         {/* Right Side - Large Product Image */}
+             <div className="flex items-start justify-center lg:justify-end">
+               {product.images && product.images.length > 0 && (
+                 <div className="w-full max-w-md lg:max-w-lg">
+                                       {/* Product Highlight Section - Show if current product has highlight image */}
+                    {highlightedProduct && (
+                      <>
+                        {/* Product Highlight Heading */}
+                        <div className="mb-6">
+                          <h3 className="text-sm font-medium uppercase tracking-wide text-white">PRODUCT HIGHLIGHT</h3>
+                        </div>
+                        
+                        {/* Highlighted Product - Only Image */}
+                        <div className="mb-6">
                           <div className="bg-[#2a2a2a] rounded-lg overflow-hidden hover:bg-[#3a3a3a] transition-colors">
                             <div className="relative aspect-square">
                               <Image
@@ -696,38 +695,13 @@ export default function ProductDetail({ product }: { product: Product }) {
                                 className="object-cover"
                               />
                             </div>
-                            <div className="p-3">
-                              <h4 className="text-white text-xs font-medium line-clamp-2 mb-1">
-                                {highlightedProduct.name}
-                              </h4>
-                                                             <div className="flex items-center space-x-2">
-                                 {highlightedProduct.originalPrice && (
-                                   <span className="text-gray-400 text-xs line-through">
-                                     {formatCurrency(typeof highlightedProduct.originalPrice === 'string' 
-                                       ? parseFloat(highlightedProduct.originalPrice.replace(/[^0-9.]/g, ''))
-                                       : highlightedProduct.originalPrice
-                                     )}
-                                   </span>
-                                 )}
-                                 <span className="text-white text-xs font-bold">
-                                   {formatCurrency(typeof highlightedProduct.price === 'string'
-                                     ? parseFloat(highlightedProduct.price.replace(/[^0-9.]/g, ''))
-                                     : parseFloat(highlightedProduct.price.toString())
-                                   )}
-                                 </span>
-                               </div>
-                            </div>
                           </div>
-                        </Link>
-                      </div>
-                    ) : (
-                      <div className="mb-6 p-4 bg-[#2a2a2a] rounded-lg">
-                        <p className="text-gray-400 text-xs">No highlighted product available</p>
-                      </div>
+                        </div>
+                      </>
                     )}
-                </div>
-              )}
-            </div>
+                 </div>
+               )}
+             </div>
             
           </div>
         </div>
