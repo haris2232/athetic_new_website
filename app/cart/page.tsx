@@ -20,7 +20,7 @@ const paymentMethods = [
   { name: 'Mastercard', src: 'https://img.icons8.com/color/48/mastercard-logo.png', alt: 'Mastercard' },
   { name: 'PayPal', src: 'https://img.icons8.com/color/48/paypal.png', alt: 'PayPal' },
   { name: 'Apple Pay', src: 'https://img.icons8.com/ios-filled/50/mac-os.png', alt: 'Apple Pay' },
-  { name: 'Klarna', src: 'https://img.icons8.com/color/48/klarna.png', alt: 'Klarna' },
+  { name: 'Klarna', src: 'https://cdn.shopify.com/s/files/1/1331/8591/files/Klarna_PaymentBadge_OutsideCheckout_Black.png?v=1584014942', alt: 'Klarna' },
   { name: 'American Express', src: 'https://img.icons8.com/color/48/amex.png', alt: 'American Express' },
 ];
 

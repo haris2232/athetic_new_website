@@ -120,6 +120,14 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
+<div className="mt-2 text-center">
+  <Link
+    href="https://athlekt.com/forgot-password"
+    className="text-sm text-blue-600 hover:text-blue-500 font-medium"
+  >
+    Forgot Password?
+  </Link>
+</div>
         </CardContent>
       </Card>
     </div>
