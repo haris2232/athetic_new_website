@@ -20,7 +20,6 @@ export default function FeaturedProducts() {
       name: "Premium Cotton T-Shirt",
       price: 45.00,
       image: "/images/products/featured-1.jpg",
-      fit: "Regular Fit",
       color: "White"
     },
     {
@@ -28,7 +27,6 @@ export default function FeaturedProducts() {
       name: "Athletic Performance Shorts",
       price: 35.00,
       image: "/images/products/featured-2.jpg",
-      fit: "Regular Fit",
       color: "Black"
     },
     {
@@ -44,7 +42,6 @@ export default function FeaturedProducts() {
       name: "Casual Hoodie",
       price: 75.00,
       image: "/images/products/featured-4.jpg",
-      fit: "Regular Fit",
       color: "Gray"
     }
   ]

@@ -21,7 +21,6 @@ const products = [
       price: 29.00,
       originalPrice: 39.00,
       image: "/images/products/tshirt-1.jpg",
-      fit: "Regular Fit",
       color: "White"
     },
     {
@@ -29,7 +28,6 @@ const products = [
       name: "Premium Cotton Polo",
       price: 65.00,
       image: "/images/products/polo-1.jpg",
-      fit: "Regular Fit",
       color: "Navy"
     },
     {
@@ -37,7 +35,6 @@ const products = [
       name: "Casual Denim Shirt",
       price: 55.00,
       image: "/images/products/shirt-1.jpg",
-      fit: "Regular Fit",
       color: "Blue"
     },
     {
@@ -54,7 +51,6 @@ const products = [
       name: "Athletic Performance Shorts",
       price: 70.00,
       image: "/images/products/shorts-1.jpg",
-      fit: "Regular Fit",
       color: "Black"
     },
     {
@@ -63,7 +59,6 @@ const products = [
       price: 95.00,
       originalPrice: 120.00,
       image: "/images/products/hoodie-1.jpg",
-      fit: "Regular Fit",
       color: "Gray"
     }
   ]

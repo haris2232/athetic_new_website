@@ -36,7 +36,7 @@ const ProductGrid = ({ products, loading }: { products: Product[]; loading: bool
           originalPrice={product.originalPrice}
           discount={product.isOnSale ? product.discountPercentage : undefined}
           image={product.image}
-          fit="REGULAR FIT"
+          
         />
       ))}
     </div>

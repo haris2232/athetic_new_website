@@ -151,7 +151,7 @@ export default function JoinFamily() {
           <div className="relative">
             <div className="relative overflow-hidden rounded-lg">
               <Image
-                src="\public\images\menbanner.png"
+                src="\images\menbanner.png"
                 alt="Young man in black tank top wearing SQUATWOLF cap in gym"
                 width={600}
                 height={700}

@@ -212,7 +212,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       originalPrice={filteredProducts[0].originalPrice}
                       discount={filteredProducts[0].discountPercentage}
                       image={filteredProducts[0].image}
-                      fit="REGULAR FIT"
+                      
                       className="h-full"
                     />
                   </div>
@@ -229,7 +229,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       originalPrice={filteredProducts[1].originalPrice}
                       discount={filteredProducts[1].discountPercentage}
                       image={filteredProducts[1].image}
-                      fit="ATHLETIC FIT"
+                      
                       className="h-full"
                     />
                   </div>
@@ -246,7 +246,6 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       originalPrice={filteredProducts[2].originalPrice}
                       discount={filteredProducts[2].discountPercentage}
                       image={filteredProducts[2].image}
-                      fit="ATHLETIC FIT"
                       className="h-full"
                       tall={true}
                     />
@@ -272,7 +271,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           originalPrice={product.originalPrice}
                           discount={product.discountPercentage}
                           image={product.image}
-                          fit="REGULAR FIT"
+                          
                           className="h-full"
                         />
                       ))}

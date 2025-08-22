@@ -184,7 +184,7 @@ export default function ProductCollection({ products, loading = false }: { produ
                 originalPrice={product.originalPrice}
                 discount={product.isOnSale ? 30 : undefined}
                 image={product.image}
-                fit="REGULAR FIT"
+                
               />
             ))
           )}
