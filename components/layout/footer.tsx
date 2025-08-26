@@ -86,7 +86,7 @@ export default function Footer() {
         <div className="border-t border-[#141619] mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-[#6e6e6e] text-sm">© {new Date().getFullYear()} Akhlekt. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
-            <Link href="/privacy" className="text-[#6e6e6e] hover:text-[#cbf26c] text-sm transition-colors">
+            <Link href="/privacy-policy" className="text-[#6e6e6e] hover:text-[#cbf26c] text-sm transition-colors">
               Privacy Policy
             </Link>
             <Link href="/terms" className="text-[#6e6e6e] hover:text-[#cbf26c] text-sm transition-colors">
