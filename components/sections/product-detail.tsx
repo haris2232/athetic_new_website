@@ -78,6 +78,24 @@ export default function ProductDetail({ product }: { product: Product }) {
 
   const sizeOptions = product.sizes || ["S", "M", "L", "XL", "XXL"]
 
+  // Add this state to track the selected variation
+  const [selectedVariation, setSelectedVariation] = useState(() => {
+    // Find the default variation based on initial selectedSize and selectedColor
+    return product.variations?.find(
+      v => v.size === selectedSize && v.color === selectedColor
+    ) || null;
+  });
+
+  // Update selectedVariation when size or color changes
+  useEffect(() => {
+    if (product.variations) {
+      const variation = product.variations.find(
+        v => v.size === selectedSize && v.color === selectedColor
+      );
+      setSelectedVariation(variation || null);
+    }
+  }, [selectedSize, selectedColor, product.variations]);
+
   // Fetch dynamic products for Shop the Look, Carousel, and Highlighted Products
   useEffect(() => {
     const fetchDynamicProducts = async () => {
@@ -395,10 +413,14 @@ export default function ProductDetail({ product }: { product: Product }) {
               {/* Pricing */}
               <div className="space-y-2">
                 <div className="flex items-center space-x-3">
-                  {product.originalPrice && (
-                    <span className="text-gray-400 line-through text-lg">{formatCurrency(parseFloat(product.originalPrice.replace(/[^0-9.]/g, '')))}</span>
+                  {selectedVariation?.originalPrice && (
+                    <span className="text-gray-400 line-through text-lg">
+                      {formatCurrency(parseFloat(selectedVariation.originalPrice.replace(/[^0-9.]/g, '')))}
+                    </span>
                   )}
-                  <span className="text-2xl font-bold text-white">{formatCurrency(parseFloat(product.price.replace(/[^0-9.]/g, '')))}</span>
+                  <span className="text-2xl font-bold text-white">
+                    {formatCurrency(parseFloat(selectedVariation?.price?.replace(/[^0-9.]/g, '') || product.price.replace(/[^0-9.]/g, '')))}
+                  </span>
                 </div>
                 <p className="text-sm text-gray-300">EARN 507 PACK VIP POINTS</p>
               </div>
@@ -916,7 +938,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="relative">
               <div className="relative overflow-hidden rounded-lg">
                 <Image
-                  src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/Untitled-rVpXn9966PC2lrC2cQk9P8PCAgV8J5.png"
+                  src="\images\menbanner.png"
                   alt="Young man in black tank top wearing SQUATWOLF cap in gym"
                   width={600}
                   height={700}
