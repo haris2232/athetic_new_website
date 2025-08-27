@@ -10,7 +10,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import ProductReviews from "./product-reviews"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
-import { getAllProducts, getProductHighlightImage, submitForm, FormSubmission } from "@/lib/api"
+import { getAllProducts, submitForm, FormSubmission } from "@/lib/api"
 import { formatCurrency } from "@/lib/utils"
 import type { Product } from "@/lib/types"
 
@@ -117,26 +117,30 @@ export default function ProductDetail({ product }: { product: Product }) {
     const fetchDynamicProducts = async () => {
       try {
         setLoading(true)
-        // REMOVED: Unused getHighlightedProducts import
-        const [allProducts, currentProductHighlightData] = await Promise.all([
-          getAllProducts(),
-          getProductHighlightImage(product.id)
-        ])
+        const allProducts = await getAllProducts()
         
-        // Filter out current product and get a mix of men's and women's products
-        const filteredProducts = allProducts.filter(p => p.id !== product.id)
+        // --- FIXED: More robust logic to find the highlighted product ---
+        let highlight = allProducts.find(p => p.isProductHighlight === true);
         
-        // Set current product's highlight image (if it has one)
-        if (currentProductHighlightData && currentProductHighlightData.isProductHighlight) {
+        // Fallback check: if no product is explicitly marked, check if any product has a highlight image
+        if (!highlight) {
+            highlight = allProducts.find(p => p.highlightImage);
+        }
+        
+        if (highlight) {
           setHighlightedProduct({
-            id: currentProductHighlightData.id,
-            name: currentProductHighlightData.name || currentProductHighlightData.title,
-            // FIXED: Use the API base URL for the image
-            image: getFullImageUrl(currentProductHighlightData.image), 
+            id: highlight.id,
+            name: highlight.name || highlight.title,
+            // Use the highlightImage if available, otherwise fall back to the main image
+            image: getFullImageUrl(highlight.highlightImage || highlight.image),
           })
         } else {
           setHighlightedProduct(null)
         }
+        // --- END FIXED ---
+        
+        // Filter out current product and get a mix of men's and women's products
+        const filteredProducts = allProducts.filter(p => p.id !== product.id)
         
         // Create Shop the Look items (5 items)
         const shopItems = filteredProducts.slice(0, 5).map((p, index) => ({
@@ -144,7 +148,6 @@ export default function ProductDetail({ product }: { product: Product }) {
           name: p.name,
           price: p.price,
           originalPrice: p.originalPrice,
-          // FIXED: Use the API base URL for the image
           image: getFullImageUrl(p.image),
           isNew: index % 3 === 0, // Every 3rd item is "NEW"
         }))
@@ -155,7 +158,6 @@ export default function ProductDetail({ product }: { product: Product }) {
           name: p.name,
           price: p.price,
           originalPrice: p.originalPrice,
-          // FIXED: Use the API base URL for the image
           image: getFullImageUrl(p.image),
           discount: [30, 50, 30, 25, 40, 35, 45, 20][index] || 30, // Different discount percentages
         }))
@@ -967,7 +969,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="relative">
               <div className="relative overflow-hidden rounded-lg">
                 <Image
-                  src={getFullImageUrl("\images\menbanner.png")}
+                  src="\images\menbanner.png"
                   alt="Young man in black tank top wearing SQUATWOLF cap in gym"
                   width={600}
                   height={700}
