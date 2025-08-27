@@ -10,9 +10,25 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import ProductReviews from "./product-reviews"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
-import { getAllProducts, getHighlightedProducts, getProductHighlightImage, submitForm, FormSubmission } from "@/lib/api"
+import { getAllProducts, getProductHighlightImage, submitForm, FormSubmission } from "@/lib/api"
 import { formatCurrency } from "@/lib/utils"
 import type { Product } from "@/lib/types"
+
+// Assume this is your API base URL, similar to the other file
+const API_BASE_URL = "https://athlekt.com/backendnew";
+
+// FIXED: Added getFullImageUrl function to handle image paths robustly
+const getFullImageUrl = (url: string | undefined): string => {
+  if (!url) {
+      return "/placeholder.svg";
+  }
+  if (url.startsWith('http')) {
+      return url;
+  }
+  const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+  const imageUrl = url.startsWith('/') ? url : `/${url}`;
+  return `${baseUrl}${imageUrl}`;
+};
 
 export default function ProductDetail({ product }: { product: Product }) {
   const { addToCart, showNotification, cartItems } = useCart()
@@ -101,6 +117,7 @@ export default function ProductDetail({ product }: { product: Product }) {
     const fetchDynamicProducts = async () => {
       try {
         setLoading(true)
+        // REMOVED: Unused getHighlightedProducts import
         const [allProducts, currentProductHighlightData] = await Promise.all([
           getAllProducts(),
           getProductHighlightImage(product.id)
@@ -114,7 +131,8 @@ export default function ProductDetail({ product }: { product: Product }) {
           setHighlightedProduct({
             id: currentProductHighlightData.id,
             name: currentProductHighlightData.name || currentProductHighlightData.title,
-            image: currentProductHighlightData.image || "/placeholder.svg?height=300&width=250",
+            // FIXED: Use the API base URL for the image
+            image: getFullImageUrl(currentProductHighlightData.image), 
           })
         } else {
           setHighlightedProduct(null)
@@ -126,7 +144,8 @@ export default function ProductDetail({ product }: { product: Product }) {
           name: p.name,
           price: p.price,
           originalPrice: p.originalPrice,
-          image: p.image || "/placeholder.svg?height=300&width=250",
+          // FIXED: Use the API base URL for the image
+          image: getFullImageUrl(p.image),
           isNew: index % 3 === 0, // Every 3rd item is "NEW"
         }))
         
@@ -136,7 +155,8 @@ export default function ProductDetail({ product }: { product: Product }) {
           name: p.name,
           price: p.price,
           originalPrice: p.originalPrice,
-          image: p.image || "/placeholder.svg?height=300&width=300",
+          // FIXED: Use the API base URL for the image
+          image: getFullImageUrl(p.image),
           discount: [30, 50, 30, 25, 40, 35, 45, 20][index] || 30, // Different discount percentages
         }))
         
@@ -151,14 +171,14 @@ export default function ProductDetail({ product }: { product: Product }) {
       name: "Essential Oversized Tee - Pearl White",
       price: "$28.00",
       originalPrice: "$44.00",
-      image: "/placeholder.svg?height=300&width=250",
+      image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
       isNew: false,
     },
     {
       id: 2,
       name: "Crew Socks 3 Pack - Pearl White",
       price: "$26.00",
-      image: "/placeholder.svg?height=300&width=250",
+      image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
       isNew: true,
     },
     {
@@ -166,14 +186,14 @@ export default function ProductDetail({ product }: { product: Product }) {
       name: "Essential Oversized Tee - Pearl White",
       price: "$28.00",
       originalPrice: "$44.00",
-      image: "/placeholder.svg?height=300&width=250",
+      image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
       isNew: false,
     },
     {
       id: 4,
       name: "Crew Socks 3 Pack - Pearl White",
       price: "$26.00",
-      image: "/placeholder.svg?height=300&width=250",
+      image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
       isNew: true,
     },
     {
@@ -181,7 +201,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       name: "Essential Oversized Tee - Pearl White",
       price: "$28.00",
       originalPrice: "$44.00",
-      image: "/placeholder.svg?height=300&width=250",
+      image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
       isNew: false,
     },
         ])
@@ -190,28 +210,28 @@ export default function ProductDetail({ product }: { product: Product }) {
             id: 1,
             name: "SQUATWOLF Baseball Cap - Pink",
             price: "$36.00",
-            image: "/placeholder.svg?height=300&width=300",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=300"),
             discount: 30,
           },
           {
             id: 2,
             name: "Athletic Training Shirt - Coral",
             price: "$48.00",
-            image: "/placeholder.svg?height=300&width=300",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=300"),
             discount: 30,
           },
           {
             id: 3,
             name: "Zip-Up Hoodie - Coral Pink",
             price: "$72.00",
-            image: "/placeholder.svg?height=300&width=300",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=300"),
             discount: 50,
           },
           {
             id: 4,
             name: "SQUATWOLF Athletic Socks - White",
             price: "$26.00",
-            image: "/placeholder.svg?height=300&width=300",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=300"),
             discount: 30,
           },
         ])
@@ -262,7 +282,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       id: product.id,
       name: product.name,
       price: priceNumber,
-      image: product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg",
+      image: product.images && product.images.length > 0 ? getFullImageUrl(product.images[0]) : "/placeholder.svg",
       color: selectedColor,
       size: selectedSize,
       quantity: 1,
@@ -275,7 +295,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       id: product.id,
       name: product.name,
       price: parseFloat(product.price.replace(/[^0-9.]/g, '')),
-      image: product.images && product.images.length > 0 ? product.images[0] : "/placeholder.svg",
+      image: product.images && product.images.length > 0 ? getFullImageUrl(product.images[0]) : "/placeholder.svg",
       color: selectedColor,
       size: selectedSize,
       fit: "REGULAR FIT"
@@ -293,6 +313,13 @@ export default function ProductDetail({ product }: { product: Product }) {
     e.preventDefault()
     setIsSubmitting(true)
     setSubmitMessage('')
+
+    // ADDED: Simple client-side validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
+      setSubmitMessage('Please fill out all fields.')
+      setIsSubmitting(false)
+      return
+    }
 
     try {
       const response = await submitForm(formData)
@@ -343,7 +370,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="space-y-4">
               <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-800 cursor-pointer">
                 <Image
-                  src={product.images && product.images.length > 0 ? product.images[activeImageIndex] : "/placeholder.svg"}
+                  src={product.images && product.images.length > 0 ? getFullImageUrl(product.images[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
                   alt={product.name}
                   fill
                   className="object-cover"
@@ -471,7 +498,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                         />
                       ) : (
                         <Image 
-                          src={color.image || "/placeholder.svg"} 
+                          src={getFullImageUrl(color.image)} 
                           alt={color.name} 
                           fill 
                           className="object-cover" 
@@ -537,7 +564,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <div className="flex space-x-2">
                     <div className="w-12 h-12 bg-red rounded-md overflow-hidden">
                       <Image
-                        src="/placeholder.svg?height=48&width=48"
+                        src={getFullImageUrl("/placeholder.svg?height=48&width=48")}
                         alt="Shop the look item 1"
                         width={48}
                         height={48}
@@ -546,7 +573,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     </div>
                     <div className="w-12 h-12 bg-white rounded-md overflow-hidden">
                       <Image
-                        src="/placeholder.svg?height=48&width=48"
+                        src={getFullImageUrl("/placeholder.svg?height=48&width=48")}
                         alt="Shop the look item 2"
                         width={48}
                         height={48}
@@ -612,6 +639,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                 </CollapsibleTrigger>
                 <CollapsibleContent className="py-6">
                   <div className="text-gray-300 text-sm leading-relaxed space-y-2">
+                    {/* NOTE: Using dangerouslySetInnerHTML. Ensure the input is sanitized to prevent XSS attacks. */}
                     {product.features ? (
                       <div dangerouslySetInnerHTML={{ __html: product.features.replace(/\n/g, '<br/>') }} />
                     ) : (
@@ -635,6 +663,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                 </CollapsibleTrigger>
                 <CollapsibleContent className="py-6">
                   <div className="text-gray-300 text-sm leading-relaxed space-y-4">
+                    {/* NOTE: Using dangerouslySetInnerHTML. Ensure the input is sanitized to prevent XSS attacks. */}
                     {product.materials && (
                       <div>
                         <h4 className="font-medium text-white mb-2">Materials:</h4>
@@ -711,7 +740,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                           <div className="bg-[#2a2a2a] rounded-lg overflow-hidden hover:bg-[#3a3a3a] transition-colors">
                             <div className="relative aspect-square">
                               <Image
-                                src={highlightedProduct.image}
+                                src={getFullImageUrl(highlightedProduct.image)}
                                 alt={highlightedProduct.name}
                                 fill
                                 className="object-cover"
@@ -752,7 +781,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                 <div className="relative aspect-[4/5] overflow-hidden">
                   <Image
-                    src={item.image || "/placeholder.svg"}
+                    src={getFullImageUrl(item.image)}
                     alt={item.name}
                     fill
                     className="object-cover hover:scale-105 transition-transform duration-300"
@@ -820,7 +849,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     <div className="relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
                   <div className="aspect-square relative overflow-hidden">
                     <Image
-                          src={item.image || "/placeholder.svg?height=300&width=300"}
+                          src={getFullImageUrl(item.image)}
                           alt={item.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -938,7 +967,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="relative">
               <div className="relative overflow-hidden rounded-lg">
                 <Image
-                  src="\images\menbanner.png"
+                  src={getFullImageUrl("\images\menbanner.png")}
                   alt="Young man in black tank top wearing SQUATWOLF cap in gym"
                   width={600}
                   height={700}
