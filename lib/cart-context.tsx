@@ -70,29 +70,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = (newItem: CartItem) => {
     setCartItems(prevItems => {
+      // Create unique ID for variant combinations
+      const variantId = `${newItem.id}-${newItem.size || 'default'}-${newItem.color || 'default'}`
+      const itemWithVariantId = { ...newItem, id: variantId }
+      
       const existingItem = prevItems.find(item => 
-        item.id === newItem.id && 
-        item.color === newItem.color && 
-        item.size === newItem.size &&
+        item.id === variantId &&
         !item.isBundle // Don't merge with bundle items
       )
 
       if (existingItem) {
         // Update quantity if item already exists
         const updatedItems = prevItems.map(item =>
-          item.id === existingItem.id && 
-          item.color === existingItem.color && 
-          item.size === existingItem.size &&
-          !item.isBundle
+          item.id === variantId && !item.isBundle
             ? { ...item, quantity: item.quantity + newItem.quantity }
             : item
         )
         showNotification(`${newItem.name} quantity updated in cart!`)
         return updatedItems
       } else {
-        // Add new item
+        // Add new item with unique variant ID
         showNotification(`${newItem.name} added to cart!`)
-        return [...prevItems, newItem]
+        return [...prevItems, itemWithVariantId]
       }
     })
   }
@@ -137,7 +136,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const updateQuantity = (id: string, quantity: number) => {
-    if (quantity < 1) return
+    if (quantity < 1) {
+      // Remove item if quantity is 0 or less
+      removeFromCart(id)
+      return
+    }
 
     setCartItems(prevItems =>
       prevItems.map(item =>

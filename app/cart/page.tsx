@@ -280,8 +280,8 @@ export default function CartPage() {
                 </div>
               </div>
               <div className="space-y-6 mb-8">
-                {cartItems.map((item) => (
-                  <div key={item.id} className="flex space-x-4">
+                {cartItems.map((item, index) => (
+                  <div key={`${item.id}-${item.size}-${item.color}-${index}`} className="flex space-x-4">
                     <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden bg-gray-100">
                       <Image
                         src={item.image || "/placeholder.svg"}

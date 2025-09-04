@@ -130,16 +130,20 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!customer.name || !customer.email || !customer.phone || !customer.address.street || !customer.address.city || !customer.address.state || !customer.address.zipCode) {
       alert("Please fill in all required fields.");
       return;
     }
+    
     setIsSubmitting(true);
+    
     try {
       if (!cartItems || cartItems.length === 0) {
         alert("Your cart is empty.");
         return;
       }
+
       const mappedItems = cartItems.map(item => ({
         productId: item.id,
         productName: item.name || "Unknown Product",
@@ -149,6 +153,7 @@ export default function CheckoutPage() {
         quantity: item.quantity || 1,
         price: item.price || 0
       }));
+
       const orderData = {
         customer,
         items: mappedItems,
@@ -159,20 +164,42 @@ export default function CheckoutPage() {
         total,
         currency
       };
-      const response = await fetch("https://athlekt.com/backendnew/api/orders/public/create", {
+
+      // Step 1: Create order in your database
+      const orderResponse = await fetch("https://athlekt.com/backendnew/api/orders/public/create", {
         method: "POST",
         headers: { "Content-Type": "application/json", "Accept": "application/json" },
         body: JSON.stringify(orderData),
       });
-      if (response.ok) {
-        const data = await response.json();
-        setOrderSuccess(true);
-        setEmailSent(data.emailSent || false);
-      } else {
-        const errorData = await response.json();
+
+      if (!orderResponse.ok) {
+        const errorData = await orderResponse.json();
         alert(`Failed to create order: ${errorData.message || "Unknown error"}`);
+        return;
       }
+
+      const orderResult = await orderResponse.json();
+      const orderId = orderResult.data._id;
+
+      // Step 2: Create N-Genius payment
+      const paymentResponse = await fetch(`https://athlekt.com/backendnew/api/payments/ngenius/create/${orderId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!paymentResponse.ok) {
+        const errorData = await paymentResponse.json();
+        alert(`Failed to create payment: ${errorData.message || "Unknown error"}`);
+        return;
+      }
+
+      const paymentData = await paymentResponse.json();
+      
+      // Step 3: Redirect to N-Genius payment page
+      window.location.href = paymentData.data.paymentUrl;
+
     } catch (error) {
+      console.error('Checkout error:', error);
       alert("Network error. Please check your connection and try again.");
     } finally {
       setIsSubmitting(false);
