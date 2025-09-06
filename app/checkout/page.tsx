@@ -42,6 +42,13 @@ export default function CheckoutPage() {
     },
   });
 
+  const [paymentDetails, setPaymentDetails] = useState({
+    cardNumber: "",
+    expiryDate: "",
+    securityCode: "",
+    nameOnCard: ""
+  });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -128,11 +135,35 @@ export default function CheckoutPage() {
     setCouponError("");
   };
 
+  // Form validation function
+  const isFormValid = () => {
+    // Check customer details
+    const customerValid = customer.name && customer.email && customer.phone && 
+                         customer.address.street && customer.address.city && 
+                         customer.address.state && customer.address.zipCode;
+    
+    // Check credit card details
+    const paymentValid = paymentDetails.cardNumber && paymentDetails.expiryDate && 
+                         paymentDetails.securityCode && paymentDetails.nameOnCard;
+    
+    return customerValid && paymentValid;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!customer.name || !customer.email || !customer.phone || !customer.address.street || !customer.address.city || !customer.address.state || !customer.address.zipCode) {
-      alert("Please fill in all required fields.");
+    // Validate customer details
+    if (!customer.name || !customer.email || !customer.phone || 
+        !customer.address.street || !customer.address.city || 
+        !customer.address.state || !customer.address.zipCode) {
+      alert("Please fill in all required customer fields.");
+      return;
+    }
+    
+    // Validate credit card details
+    if (!paymentDetails.cardNumber || !paymentDetails.expiryDate || 
+        !paymentDetails.securityCode || !paymentDetails.nameOnCard) {
+      alert("Please fill in all payment details.");
       return;
     }
     
@@ -311,8 +342,6 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-semibold mb-4">Payment</h2>
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-md">
-                    <input type="radio" name="payment" id="card" defaultChecked className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" />
-                    <label htmlFor="card" className="font-medium flex-1">Credit card</label>
                     <div className="flex items-center space-x-2">
                       {cardLogos.map((card) => (
                         <div key={card.name} className="relative w-10 h-6">
@@ -324,44 +353,46 @@ export default function CheckoutPage() {
                         </div>
                       ))}
                     </div>
+                    <span className="font-medium text-gray-700">Credit Card Payment</span>
                   </div>
                   
                   <div className="space-y-4 pl-2">
-                    <input type="text" placeholder="Card number" className="w-full p-3 border border-gray-300 rounded-md" />
+                    <input 
+                      type="text" 
+                      placeholder="Card number" 
+                      value={paymentDetails.cardNumber}
+                      onChange={(e) => setPaymentDetails({...paymentDetails, cardNumber: e.target.value})}
+                      className="w-full p-3 border border-gray-300 rounded-md" 
+                    />
                     <div className="grid grid-cols-2 gap-4">
-                      <input type="text" placeholder="Expiration date (MM/YY)" className="w-full p-3 border border-gray-300 rounded-md" />
-                      <input type="text" placeholder="Security code" className="w-full p-3 border border-gray-300 rounded-md" />
+                      <input 
+                        type="text" 
+                        placeholder="Expiration date (MM/YY)" 
+                        value={paymentDetails.expiryDate}
+                        onChange={(e) => setPaymentDetails({...paymentDetails, expiryDate: e.target.value})}
+                        className="w-full p-3 border border-gray-300 rounded-md" 
+                      />
+                      <input 
+                        type="text" 
+                        placeholder="Security code" 
+                        value={paymentDetails.securityCode}
+                        onChange={(e) => setPaymentDetails({...paymentDetails, securityCode: e.target.value})}
+                        className="w-full p-3 border border-gray-300 rounded-md" 
+                      />
                     </div>
-                    <input type="text" placeholder="Name on card" className="w-full p-3 border border-gray-300 rounded-md" />
+                    <input 
+                      type="text" 
+                      placeholder="Name on card" 
+                      value={paymentDetails.nameOnCard}
+                      onChange={(e) => setPaymentDetails({...paymentDetails, nameOnCard: e.target.value})}
+                      className="w-full p-3 border border-gray-300 rounded-md" 
+                    />
                     <div className="flex items-center space-x-3">
                       <input type="checkbox" id="billing" defaultChecked className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
                       <label htmlFor="billing" className="text-sm">Use shipping address as billing address</label>
                     </div>
                   </div>
 
-                  <div className="border-t pt-4 space-y-3">
-                    <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-md">
-                      <input type="radio" name="payment" id="paypal" className="h-4 w-4 text-blue-600 border-gray-300" />
-                      <label htmlFor="paypal" className="font-medium flex-1">PayPal</label>
-                      <div className="relative h-6 w-14">
-                        <img src="https://img.icons8.com/color/48/paypal.png" alt="PayPal" className="w-full h-full object-contain" />
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-md">
-                      <input type="radio" name="payment" id="afterpay" className="h-4 w-4 text-blue-600 border-gray-300" />
-                      <label htmlFor="afterpay" className="font-medium flex-1">Afterpay</label>
-                      <div className="relative h-6 w-14">
-                        <img src="https://img.icons8.com/color/48/afterpay.png" alt="Afterpay" className="w-full h-full object-contain" />
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-3 p-3 border border-gray-200 rounded-md">
-                      <input type="radio" name="payment" id="klarna" className="h-4 w-4 text-blue-600 border-gray-300" />
-                      <label htmlFor="klarna" className="font-medium flex-1">Klarna</label>
-                      <div className="relative h-6 w-14">
-                        <img src="/Klarna_Payment_Badge.svg.png" alt="Klarna" className="w-full h-full object-contain" />
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -373,7 +404,15 @@ export default function CheckoutPage() {
                   <input type="tel" placeholder="+1 Mobile phone number" value={customer.phone} onChange={(e) => setCustomer({...customer, phone: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
                 </div>
 
-                <button onClick={handleSubmit} disabled={isSubmitting} className="w-full bg-black text-white py-4 px-6 rounded-md font-semibold text-lg hover:bg-gray-800 disabled:opacity-50">
+                <button 
+                  onClick={handleSubmit} 
+                  disabled={isSubmitting || !isFormValid()} 
+                  className={`w-full py-4 px-6 rounded-md font-semibold text-lg ${
+                    isFormValid() && !isSubmitting 
+                      ? "bg-black text-white hover:bg-gray-800" 
+                      : "bg-gray-400 text-gray-600 cursor-not-allowed"
+                  }`}
+                >
                   {isSubmitting ? "Processing..." : "PAY NOW"}
                 </button>
             </div>

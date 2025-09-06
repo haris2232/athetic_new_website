@@ -60,15 +60,27 @@ export function BundleSection({ category }: BundleSectionProps) {
       products: selectedBundle.products.map(product => {
         const productId = product._id || product.id
         const variation = selectedVariations[productId]
+        const selectedSize = variation?.size || product.sizeOptions?.[0] || product.sizes?.[0] || 'M'
+        const selectedColor = variation?.color || product.colors?.[0]?.name || 'Default'
+        
+        // Find the specific variant to get variant-specific price
+        const productVariant = product.variants?.find(
+          v => v.size === selectedSize && v.color.name === selectedColor
+        )
+        
+        // Use variant-specific price if available, otherwise use base price
+        const variantPrice = productVariant?.priceOverride && productVariant.priceOverride > 0 
+          ? productVariant.priceOverride 
+          : (product.basePrice || parseFloat(product.price || '0'))
         
         return {
           id: product._id || product.id,
           name: product.title || product.name,
-          price: product.basePrice || parseFloat(product.price || '0'),
+          price: variantPrice,
           image: product.images?.[0] || product.image,
           quantity: 1,
-          size: variation?.size || product.sizeOptions?.[0] || product.sizes?.[0] || 'M',
-          color: variation?.color || product.colors?.[0]?.name || 'Default'
+          size: selectedSize,
+          color: selectedColor
         }
       }),
       category: selectedBundle.category

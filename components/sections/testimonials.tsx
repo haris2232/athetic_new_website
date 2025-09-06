@@ -142,7 +142,7 @@ export default function Testimonials() {
               {/* Progress Bar */}
               <div className="w-full bg-[#d9d9d9] rounded-full h-1 mt-4">
                 <div
-                  className="bg-[#cbf26c] h-1 rounded-full transition-all duration-[5000ms] ease-linear"
+                  className="bg-[#cbf26c] h-1 rounded-full transition-all ease-linear"
                   style={{
                     width: isTransitioning ? "0%" : "100%",
                     animation: isTransitioning ? "none" : "progress 5s linear infinite",
