@@ -142,7 +142,7 @@ class ApiService {
   async getProducts(): Promise<Product[]> {
     try {
       console.log('🔍 Fetching products from API...')
-      const response: ApiResponse<Product[]> = await this.request('/public/products/public/all');
+      const response: ApiResponse<Product[]> = await this.request('/products/public/all');
       console.log('📦 API Response:', response);
       
       // If API returns empty data or no success, throw error to use fallback
@@ -163,7 +163,7 @@ class ApiService {
   // Get product by ID
   async getProduct(id: string): Promise<Product | null> {
     try {
-      const response: ApiResponse<Product> = await this.request(`/public/products/public/${id}`);
+      const response: ApiResponse<Product> = await this.request(`/products/public/${id}`);
       
       if (!response.success || !response.data) {
         throw new Error('Product not found in API');
@@ -179,7 +179,7 @@ class ApiService {
   // Get products by category
   async getProductsByCategory(category: string): Promise<Product[]> {
     try {
-      const response: ApiResponse<Product[]> = await this.request(`/public/products/public/all?category=${encodeURIComponent(category)}`);
+      const response: ApiResponse<Product[]> = await this.request(`/products/public/all?category=${encodeURIComponent(category)}`);
       
       if (!response.success || !response.data || response.data.length === 0) {
         throw new Error('No products available from API');
@@ -195,7 +195,7 @@ class ApiService {
   // Search products
   async searchProducts(query: string): Promise<Product[]> {
     try {
-      const response: ApiResponse<Product[]> = await this.request(`/public/products/public/all?search=${encodeURIComponent(query)}`);
+      const response: ApiResponse<Product[]> = await this.request(`/products/public/all?search=${encodeURIComponent(query)}`);
       
       if (!response.success || !response.data || response.data.length === 0) {
         throw new Error('No products available from API');

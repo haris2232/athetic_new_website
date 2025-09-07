@@ -90,6 +90,24 @@ export default function ProductDetail({ product }: { product: Product }) {
   const discountAmount = (currentPrice * (product.discountPercentage || 0)) / 100;
   const finalPrice = currentPrice - discountAmount;
 
+  // Set highlighted product for current product (if it has highlight image)
+  useEffect(() => {
+    console.log('Product highlight check:', {
+      hasHighlightImage: !!product.highlightImage,
+      highlightImage: product.highlightImage,
+      productId: product.id,
+      productName: product.name
+    })
+    
+    if (product.highlightImage) {
+      setHighlightedProduct({
+        id: product.id,
+        name: product.name,
+        image: product.highlightImage
+      })
+    }
+  }, [product.highlightImage, product.id, product.name])
+
   // Fetch dynamic products for Shop the Look, Carousel, and Highlighted Products
   useEffect(() => {
     const fetchDynamicProducts = async () => {
@@ -119,15 +137,6 @@ export default function ProductDetail({ product }: { product: Product }) {
             image: product.image,
             discount: Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
           })))
-          
-          // Set highlighted product (if current product has highlight)
-          if ((product as any).isProductHighlight && (product as any).highlightImage) {
-          setHighlightedProduct({
-              id: product.id,
-              name: product.name,
-              image: (product as any).highlightImage
-            })
-          }
         }
       } catch (error) {
         console.error('Error fetching dynamic products:', error)
@@ -174,6 +183,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       isNew: false,
     },
         ])
+
         setCarouselItems([
           {
             id: 1,
@@ -364,7 +374,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       <section className="py-12 bg-[#212121] text-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                      {/* Product Images */}
+            {/* Product Images */}
             <div className="space-y-4">
               <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-800 cursor-pointer">
                 <Image
@@ -574,7 +584,6 @@ export default function ProductDetail({ product }: { product: Product }) {
               {/* Shop the Look */}
               <div className="space-y-4 pt-8">
                 <div className="flex items-center justify-between">
-                  {/* <span className="text-white font-medium uppercase tracking-wide">SHOP THE LOOK</span> */}
                   <div className="flex space-x-2">
                     <div className="w-12 h-12 bg-red rounded-md overflow-hidden">
                       <Image
@@ -596,11 +605,6 @@ export default function ProductDetail({ product }: { product: Product }) {
                     </div>
                   </div>
                 </div>
-
-                {/* <div className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-[#2B2B2B] rounded-full"></div>
-                  <span className="text-white text-sm uppercase tracking-wide">ONLINE EXCLUSIVE</span>
-                </div> */}
               </div>
             </div>
           </div>
@@ -735,11 +739,12 @@ export default function ProductDetail({ product }: { product: Product }) {
               </Collapsible>
             </div>
 
-                         {/* Right Side - Large Product Image */}
+            {/* Right Side - Large Product Image */}
              <div className="flex items-start justify-center lg:justify-end">
                {product.images && product.images.length > 0 && (
                  <div className="w-full max-w-md lg:max-w-lg">
-                                       {/* Product Highlight Section - Show if current product has highlight image */}
+                   {/* Product Highlight Section - Show if current product has highlight image */}
+                    {console.log('Rendering highlight section:', { highlightedProduct })}
                     {highlightedProduct && (
                       <>
                         {/* Product Highlight Heading */}

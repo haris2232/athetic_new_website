@@ -42,12 +42,7 @@ export default function CheckoutPage() {
     },
   });
 
-  const [paymentDetails, setPaymentDetails] = useState({
-    cardNumber: "",
-    expiryDate: "",
-    securityCode: "",
-    nameOnCard: ""
-  });
+  // No need for payment details state since N-Genius will collect them
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
@@ -137,33 +132,20 @@ export default function CheckoutPage() {
 
   // Form validation function
   const isFormValid = () => {
-    // Check customer details
-    const customerValid = customer.name && customer.email && customer.phone && 
-                         customer.address.street && customer.address.city && 
-                         customer.address.state && customer.address.zipCode;
-    
-    // Check credit card details
-    const paymentValid = paymentDetails.cardNumber && paymentDetails.expiryDate && 
-                         paymentDetails.securityCode && paymentDetails.nameOnCard;
-    
-    return customerValid && paymentValid;
+    // Check customer details only - N-Genius will handle payment details
+    return customer.name && customer.email && customer.phone && 
+           customer.address.street && customer.address.city && 
+           customer.address.state && customer.address.zipCode;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate customer details
+    // Validate customer details only - N-Genius will handle payment details
     if (!customer.name || !customer.email || !customer.phone || 
         !customer.address.street || !customer.address.city || 
         !customer.address.state || !customer.address.zipCode) {
       alert("Please fill in all required customer fields.");
-      return;
-    }
-    
-    // Validate credit card details
-    if (!paymentDetails.cardNumber || !paymentDetails.expiryDate || 
-        !paymentDetails.securityCode || !paymentDetails.nameOnCard) {
-      alert("Please fill in all payment details.");
       return;
     }
     
@@ -341,7 +323,7 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="text-xl font-semibold mb-4">Payment</h2>
                 <div className="space-y-4">
-                  <div className="flex items-center space-x-3 p-3 border border-gray-300 rounded-md">
+                  <div className="flex items-center space-x-3 p-4 border border-gray-300 rounded-md bg-blue-50">
                     <div className="flex items-center space-x-2">
                       {cardLogos.map((card) => (
                         <div key={card.name} className="relative w-10 h-6">
@@ -353,46 +335,11 @@ export default function CheckoutPage() {
                         </div>
                       ))}
                     </div>
-                    <span className="font-medium text-gray-700">Credit Card Payment</span>
-                  </div>
-                  
-                  <div className="space-y-4 pl-2">
-                    <input 
-                      type="text" 
-                      placeholder="Card number" 
-                      value={paymentDetails.cardNumber}
-                      onChange={(e) => setPaymentDetails({...paymentDetails, cardNumber: e.target.value})}
-                      className="w-full p-3 border border-gray-300 rounded-md" 
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                      <input 
-                        type="text" 
-                        placeholder="Expiration date (MM/YY)" 
-                        value={paymentDetails.expiryDate}
-                        onChange={(e) => setPaymentDetails({...paymentDetails, expiryDate: e.target.value})}
-                        className="w-full p-3 border border-gray-300 rounded-md" 
-                      />
-                      <input 
-                        type="text" 
-                        placeholder="Security code" 
-                        value={paymentDetails.securityCode}
-                        onChange={(e) => setPaymentDetails({...paymentDetails, securityCode: e.target.value})}
-                        className="w-full p-3 border border-gray-300 rounded-md" 
-                      />
-                    </div>
-                    <input 
-                      type="text" 
-                      placeholder="Name on card" 
-                      value={paymentDetails.nameOnCard}
-                      onChange={(e) => setPaymentDetails({...paymentDetails, nameOnCard: e.target.value})}
-                      className="w-full p-3 border border-gray-300 rounded-md" 
-                    />
-                    <div className="flex items-center space-x-3">
-                      <input type="checkbox" id="billing" defaultChecked className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-                      <label htmlFor="billing" className="text-sm">Use shipping address as billing address</label>
+                    <div className="flex-1">
+                      <span className="font-medium text-gray-700">Credit Card Payment</span>
+                      <p className="text-sm text-gray-500 mt-1">You will be redirected to our secure payment page to enter your card details</p>
                     </div>
                   </div>
-
                 </div>
               </div>
 
