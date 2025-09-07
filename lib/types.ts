@@ -15,6 +15,8 @@ export interface Product {
   materials?: string
   care?: string
   isOnSale?: boolean
+  isProductHighlight?: boolean
+  highlightImage?: string
   colors?: Array<{
     name: string;
     hex?: string;

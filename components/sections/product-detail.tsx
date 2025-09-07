@@ -405,9 +405,9 @@ export default function ProductDetail({ product }: { product: Product }) {
                         onClick={() => setActiveImageIndex(index)}
                       />
                     ))}
-                  </div>
+                </div>
                 )}
-              </div>
+            </div>
 
               {/* Thumbnail images */}
               {product.images && product.images.length > 1 && (
@@ -430,8 +430,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
+                )}
+              </div>
 
             {/* Product Info */}
             <div className="space-y-6">
@@ -616,13 +616,13 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="space-y-4">
               {/* Product Description */}
               <div className="py-4 border-b border-gray-600">
-                <div className="space-y-4">
-                  {product.description && (
-                    <p className="text-gray-300 text-sm leading-relaxed">
-                      {product.description}
-                    </p>
-                  )}
-                </div>
+                  <div className="space-y-4">
+                    {product.description && (
+                      <p className="text-gray-300 text-sm leading-relaxed">
+                        {product.description}
+                      </p>
+                    )}
+                  </div>
               </div>
 
               {/* Purpose */}
@@ -735,36 +735,36 @@ export default function ProductDetail({ product }: { product: Product }) {
               </Collapsible>
             </div>
 
-            {/* Right Side - Large Product Image */}
-            <div className="flex items-start justify-center lg:justify-end">
-              {product.images && product.images.length > 0 && (
-                <div className="w-full max-w-md lg:max-w-lg">
-                  {/* Product Highlight Section - Show if current product has highlight image */}
-                  {highlightedProduct && (
-                    <>
-                      {/* Product Highlight Heading */}
-                      <div className="mb-6">
-                        <h3 className="text-sm font-medium uppercase tracking-wide text-white">PRODUCT HIGHLIGHT</h3>
-                      </div>
-                      
-                      {/* Highlighted Product - Only Image */}
-                      <div className="mb-6">
-                        <div className="bg-[#2a2a2a] rounded-lg overflow-hidden hover:bg-[#3a3a3a] transition-colors">
-                          <div className="relative aspect-square">
-                            <Image
-                              src={getFullImageUrl(highlightedProduct.image)}
-                              alt={highlightedProduct.name}
-                              fill
-                              className="object-cover"
-                            />
+                         {/* Right Side - Large Product Image */}
+             <div className="flex items-start justify-center lg:justify-end">
+               {product.images && product.images.length > 0 && (
+                 <div className="w-full max-w-md lg:max-w-lg">
+                                       {/* Product Highlight Section - Show if current product has highlight image */}
+                    {highlightedProduct && (
+                      <>
+                        {/* Product Highlight Heading */}
+                        <div className="mb-6">
+                          <h3 className="text-sm font-medium uppercase tracking-wide text-white">PRODUCT HIGHLIGHT</h3>
+                        </div>
+                        
+                        {/* Highlighted Product - Only Image */}
+                        <div className="mb-6">
+                          <div className="bg-[#2a2a2a] rounded-lg overflow-hidden hover:bg-[#3a3a3a] transition-colors">
+                            <div className="relative aspect-square">
+                              <Image
+                                src={getFullImageUrl(highlightedProduct.image)}
+                                alt={highlightedProduct.name}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+                      </>
+                    )}
+                 </div>
+               )}
+             </div>
           </div>
         </div>
       </section>
@@ -789,25 +789,25 @@ export default function ProductDetail({ product }: { product: Product }) {
               shopTheLookItems.map((item) => (
                 <Link key={item.id} href={`/product/${item.id}`} className="block">
                   <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                    <div className="relative aspect-[4/5] overflow-hidden">
-                      <Image
-                        src={getFullImageUrl(item.image)}
-                        alt={item.name}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform duration-300"
-                      />
-                      {item.isNew && <Badge className="absolute top-2 left-2 bg-[#212121] text-white text-xs">NEW</Badge>}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="text-sm font-medium text-[#212121] mb-2 line-clamp-2">{item.name}</h3>
-                      <div className="flex items-center space-x-2">
-                        {item.originalPrice && (
-                          <span className="text-sm text-[#6e6e6e] line-through">{formatCurrency(parseFloat(item.originalPrice.replace(/[^0-9.]/g, '')))}</span>
-                        )}
-                        <span className="text-sm font-bold text-[#212121]">{formatCurrency(parseFloat(item.price.replace(/[^0-9.]/g, '')))}</span>
-                      </div>
-                    </div>
+                <div className="relative aspect-[4/5] overflow-hidden">
+                  <Image
+                    src={getFullImageUrl(item.image)}
+                    alt={item.name}
+                    fill
+                    className="object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                  {item.isNew && <Badge className="absolute top-2 left-2 bg-[#212121] text-white text-xs">NEW</Badge>}
+                </div>
+                <div className="p-4">
+                  <h3 className="text-sm font-medium text-[#212121] mb-2 line-clamp-2">{item.name}</h3>
+                  <div className="flex items-center space-x-2">
+                    {item.originalPrice && (
+                      <span className="text-sm text-[#6e6e6e] line-through">{formatCurrency(parseFloat(item.originalPrice.replace(/[^0-9.]/g, '')))}</span>
+                    )}
+                    <span className="text-sm font-bold text-[#212121]">{formatCurrency(parseFloat(item.price.replace(/[^0-9.]/g, '')))}</span>
                   </div>
+                </div>
+              </div>
                 </Link>
               ))
             )}
@@ -847,8 +847,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <div key={index} className="group">
                     <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
                       <div className="aspect-square relative overflow-hidden bg-gray-200 animate-pulse"></div>
-                    </div>
-                    <div className="mt-4 text-center">
+                  </div>
+                  <div className="mt-4 text-center">
                       <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
                     </div>
                   </div>
@@ -857,19 +857,19 @@ export default function ProductDetail({ product }: { product: Product }) {
                 carouselItems.slice(currentCarouselIndex, currentCarouselIndex + 4).map((item) => (
                   <Link key={item.id} href={`/product/${item.id}`} className="group block">
                     <div className="relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                      <div className="aspect-square relative overflow-hidden">
-                        <Image
+                  <div className="aspect-square relative overflow-hidden">
+                    <Image
                           src={getFullImageUrl(item.image)}
                           alt={item.name}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div className="absolute top-3 right-3 bg-[#212121] text-white text-xs font-bold px-2 py-1 rounded">
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-3 right-3 bg-[#212121] text-white text-xs font-bold px-2 py-1 rounded">
                           -{item.discount}%
-                        </div>
-                      </div>
                     </div>
-                    <div className="mt-4 text-center">
+                  </div>
+                </div>
+                <div className="mt-4 text-center">
                       <p className="text-lg font-bold text-[#212121]">{formatCurrency(parseFloat(item.price.replace(/[^0-9.]/g, '')))}</p>
                     </div>
                   </Link>
