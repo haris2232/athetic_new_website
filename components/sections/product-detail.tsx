@@ -78,11 +78,11 @@ export default function ProductDetail({ product }: { product: Product }) {
   }, [selectedSize, selectedColor, product.variants]);
 
   // Function to get variant-specific price
-  const getVariantPrice = (variant) => {
+  const getVariantPrice = (variant: any): number => {
     if (variant?.priceOverride && variant.priceOverride > 0) {
       return variant.priceOverride;
     }
-    return product.basePrice || parseFloat(product.price.replace(/[^0-9.]/g, ''));
+    return (product as any).basePrice || parseFloat(product.price.replace(/[^0-9.]/g, ''));
   };
 
   // Calculate current price based on selected variant
@@ -102,7 +102,7 @@ export default function ProductDetail({ product }: { product: Product }) {
           const products = data.data
           
           // Set Shop the Look items (first 5 products)
-          setShopTheLookItems(products.slice(0, 5).map(product => ({
+          setShopTheLookItems(products.slice(0, 5).map((product: any) => ({
             id: product.id,
             name: product.name,
             price: product.price,
@@ -112,7 +112,7 @@ export default function ProductDetail({ product }: { product: Product }) {
           })))
           
           // Set Carousel items (next 4 products)
-          setCarouselItems(products.slice(5, 9).map(product => ({
+          setCarouselItems(products.slice(5, 9).map((product: any) => ({
             id: product.id,
             name: product.name,
             price: product.price,
@@ -121,11 +121,11 @@ export default function ProductDetail({ product }: { product: Product }) {
           })))
           
           // Set highlighted product (if current product has highlight)
-          if (product.isProductHighlight && product.highlightImage) {
+          if ((product as any).isProductHighlight && (product as any).highlightImage) {
           setHighlightedProduct({
               id: product.id,
               name: product.name,
-              image: product.highlightImage
+              image: (product as any).highlightImage
             })
           }
         }
@@ -215,7 +215,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const toggleSection = (section: string) => {
     setOpenSections((prev) => ({
       ...prev,
-      [section]: !prev[section],
+      [section]: !prev[section as keyof typeof prev],
     }))
   }
 
@@ -446,10 +446,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <span className="text-2xl font-bold text-white">
                     {formatCurrency(finalPrice)}
                   </span>
-                  {product.discountPercentage > 0 && (
+                  {((product as any).discountPercentage || 0) > 0 && (
                     <span className="text-lg text-gray-300 line-through ml-2">
                       {formatCurrency(currentPrice)}
-                  </span>
+                    </span>
                   )}
                 </div>
                 <p className="text-sm text-gray-300">EARN 507 PACK VIP POINTS</p>
@@ -601,6 +601,389 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <div className="w-2 h-2 bg-[#2B2B2B] rounded-full"></div>
                   <span className="text-white text-sm uppercase tracking-wide">ONLINE EXCLUSIVE</span>
                 </div> */}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Dark Product Details Section */}
+      <section className="bg-[#1a1a1a] text-white py-12">
+        <div className="container mx-auto px-4">
+          {/* Grid layout updated to two columns */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            {/* Left Side - Collapsible Sections */}
+            <div className="space-y-4">
+              {/* Product Description */}
+              <div className="py-4 border-b border-gray-600">
+                <div className="space-y-4">
+                  {product.description && (
+                    <p className="text-gray-300 text-sm leading-relaxed">
+                      {product.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Purpose */}
+              <Collapsible open={openSections.purpose} onOpenChange={() => toggleSection("purpose")}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-600 hover:border-gray-500 transition-colors">
+                  <span className="text-sm font-medium uppercase tracking-wide">PURPOSE</span>
+                  {openSections.purpose ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </CollapsibleTrigger>
+                <CollapsibleContent className="py-6">
+                  <div className="text-gray-300 text-sm leading-relaxed">
+                    {product.purpose ? (
+                      <p>{product.purpose}</p>
+                    ) : (
+                      <p>
+                        Designed for high-intensity training, running, and everyday athletic activities. These shorts
+                        provide optimal comfort and performance for all your fitness needs.
+                      </p>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Features & Fit */}
+              <Collapsible open={openSections.features} onOpenChange={() => toggleSection("features")}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-600 hover:border-gray-500 transition-colors">
+                  <span className="text-sm font-medium uppercase tracking-wide">FEATURES & FIT</span>
+                  {openSections.features ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </CollapsibleTrigger>
+                <CollapsibleContent className="py-6">
+                  <div className="text-gray-300 text-sm leading-relaxed space-y-2">
+                    {product.features ? (
+                      <div dangerouslySetInnerHTML={{ __html: product.features.replace(/\n/g, '<br/>') }} />
+                    ) : (
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>7-inch inseam for optimal coverage</li>
+                        <li>Regular fit design</li>
+                        <li>Elastic waistband with drawstring</li>
+                        <li>Secure zip pocket for essentials</li>
+                        <li>Four-way stretch construction</li>
+                      </ul>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Materials & Care */}
+              <Collapsible open={openSections.materials} onOpenChange={() => toggleSection("materials")}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-600 hover:border-gray-500 transition-colors">
+                  <span className="text-sm font-medium uppercase tracking-wide">MATERIALS & CARE</span>
+                  {openSections.materials ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </CollapsibleTrigger>
+                <CollapsibleContent className="py-6">
+                  <div className="text-gray-300 text-sm leading-relaxed space-y-4">
+                    {product.materials && (
+                      <div>
+                        <h4 className="font-medium text-white mb-2">Materials:</h4>
+                        <div dangerouslySetInnerHTML={{ __html: product.materials.replace(/\n/g, '<br/>') }} />
+                      </div>
+                    )}
+                    {product.care && (
+                      <div>
+                        <h4 className="font-medium text-white mb-2">Care Instructions:</h4>
+                        <div dangerouslySetInnerHTML={{ __html: product.care.replace(/\n/g, '<br/>') }} />
+                      </div>
+                    )}
+                    {!product.materials && !product.care && (
+                      <>
+                        <div>
+                          <h4 className="font-medium text-white mb-2">Materials:</h4>
+                          <ul className="list-disc pl-5 space-y-1">
+                            <li>88% Polyester, 12% Elastane</li>
+                            <li>Moisture-wicking fabric technology</li>
+                            <li>Anti-odor treatment</li>
+                          </ul>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-white mb-2">Care Instructions:</h4>
+                          <ul className="list-disc pl-5 space-y-1">
+                            <li>Machine wash cold with like colors</li>
+                            <li>Do not bleach</li>
+                            <li>Tumble dry low</li>
+                            <li>Do not iron</li>
+                          </ul>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Reviews */}
+              <Collapsible open={openSections.reviews} onOpenChange={() => toggleSection("reviews")}>
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-600 hover:border-gray-500 transition-colors">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-sm font-medium uppercase tracking-wide">REVIEWS</span>
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`h-3 w-3 ${i < (product.rating || 0) ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}`} 
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  {openSections.reviews ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                </CollapsibleTrigger>
+                <CollapsibleContent className="py-6">
+                  <ProductReviews product={product} />
+                </CollapsibleContent>
+              </Collapsible>
+            </div>
+
+            {/* Right Side - Large Product Image */}
+            <div className="flex items-start justify-center lg:justify-end">
+              {product.images && product.images.length > 0 && (
+                <div className="w-full max-w-md lg:max-w-lg">
+                  {/* Product Highlight Section - Show if current product has highlight image */}
+                  {highlightedProduct && (
+                    <>
+                      {/* Product Highlight Heading */}
+                      <div className="mb-6">
+                        <h3 className="text-sm font-medium uppercase tracking-wide text-white">PRODUCT HIGHLIGHT</h3>
+                      </div>
+                      
+                      {/* Highlighted Product - Only Image */}
+                      <div className="mb-6">
+                        <div className="bg-[#2a2a2a] rounded-lg overflow-hidden hover:bg-[#3a3a3a] transition-colors">
+                          <div className="relative aspect-square">
+                            <Image
+                              src={getFullImageUrl(highlightedProduct.image)}
+                              alt={highlightedProduct.name}
+                              fill
+                              className="object-cover"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Shop the Look Section */}
+      <section className="bg-[#f5f5f5] py-12">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold text-[#212121] mb-8 uppercase tracking-wide">SHOP THE LOOK</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {loading ? (
+              // Loading skeleton
+              Array.from({ length: 5 }).map((_, index) => (
+                <div key={index} className="bg-white rounded-lg overflow-hidden shadow-sm">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-gray-200 animate-pulse"></div>
+                  <div className="p-4 space-y-2">
+                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              shopTheLookItems.map((item) => (
+                <Link key={item.id} href={`/product/${item.id}`} className="block">
+                  <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                    <div className="relative aspect-[4/5] overflow-hidden">
+                      <Image
+                        src={getFullImageUrl(item.image)}
+                        alt={item.name}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                      {item.isNew && <Badge className="absolute top-2 left-2 bg-[#212121] text-white text-xs">NEW</Badge>}
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-sm font-medium text-[#212121] mb-2 line-clamp-2">{item.name}</h3>
+                      <div className="flex items-center space-x-2">
+                        {item.originalPrice && (
+                          <span className="text-sm text-[#6e6e6e] line-through">{formatCurrency(parseFloat(item.originalPrice.replace(/[^0-9.]/g, '')))}</span>
+                        )}
+                        <span className="text-sm font-bold text-[#212121]">{formatCurrency(parseFloat(item.price.replace(/[^0-9.]/g, '')))}</span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* You May Also Like Carousel Section */}
+      <section className="bg-[#e8e8e8] py-16">
+        <div className="container mx-auto px-4">
+          <div className="relative">
+            {/* Navigation Arrows */}
+            <button 
+              onClick={prevCarousel}
+              disabled={currentCarouselIndex === 0}
+              className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-md flex items-center justify-center hover:shadow-lg transition-shadow ${
+                currentCarouselIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'
+              }`}
+            >
+              <ChevronLeft className="h-6 w-6 text-[#212121]" />
+            </button>
+            <button 
+              onClick={nextCarousel}
+              disabled={currentCarouselIndex >= carouselItems.length - 4}
+              className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-md flex items-center justify-center hover:shadow-lg transition-shadow ${
+                currentCarouselIndex >= carouselItems.length - 4 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'
+              }`}
+            >
+              <ChevronRight className="h-6 w-6 text-[#212121]" />
+            </button>
+
+            {/* Product Carousel */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-16">
+              {loading ? (
+                // Loading skeleton
+                Array.from({ length: 4 }).map((_, index) => (
+                  <div key={index} className="group">
+                    <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
+                      <div className="aspect-square relative overflow-hidden bg-gray-200 animate-pulse"></div>
+                    </div>
+                    <div className="mt-4 text-center">
+                      <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                carouselItems.slice(currentCarouselIndex, currentCarouselIndex + 4).map((item) => (
+                  <Link key={item.id} href={`/product/${item.id}`} className="group block">
+                    <div className="relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                      <div className="aspect-square relative overflow-hidden">
+                        <Image
+                          src={getFullImageUrl(item.image)}
+                          alt={item.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute top-3 right-3 bg-[#212121] text-white text-xs font-bold px-2 py-1 rounded">
+                          -{item.discount}%
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4 text-center">
+                      <p className="text-lg font-bold text-[#212121]">{formatCurrency(parseFloat(item.price.replace(/[^0-9.]/g, '')))}</p>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Join the Athlekt Family Section */}
+      <section className="bg-white py-20">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Side - Form */}
+            <div className="bg-[#2a2a2a] p-8 lg:p-12 rounded-lg">
+              <div className="space-y-8">
+                {/* Heading */}
+                <div className="space-y-4">
+                  <h2 className="text-3xl lg:text-4xl font-bold text-[#cbf26c] leading-tight uppercase tracking-wide">
+                    JOIN THE ATHLEKT FAMILY
+                  </h2>
+                  <p className="text-white text-base leading-relaxed">
+                    But I Must Explain To You How All This Mistaken Idea Of Denouncing Pleasure And Praising Pain Was
+                    Born...
+                  </p>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleFormSubmit} className="space-y-6">
+                  {/* First Name */}
+                  <div>
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleInputChange}
+                      placeholder="First Name"
+                      className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
+                      required
+                    />
+                  </div>
+
+                  {/* Last Name */}
+                  <div>
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleInputChange}
+                      placeholder="Last Name"
+                      className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
+                      required
+                    />
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <input
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      placeholder="Email"
+                      className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
+                      required
+                    />
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      placeholder="Phone"
+                      className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
+                      required
+                    />
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="pt-4">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="bg-[#4a4a4a] text-white hover:bg-[#5a5a5a] font-semibold px-8 py-4 h-auto rounded-none border-l-4 border-[#cbf26c] transition-all duration-300 hover:border-l-[#9fcc3b] disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting ? 'Sending...' : 'Send'}
+                    </button>
+                  </div>
+
+                  {/* Success/Error Message */}
+                  {submitMessage && (
+                    <div className={`text-sm ${submitMessage.includes('Thank you') ? 'text-[#cbf26c]' : 'text-red-400'}`}>
+                      {submitMessage}
+                    </div>
+                  )}
+                </form>
+              </div>
+            </div>
+
+            {/* Right Side - Image */}
+            <div className="relative">
+              <div className="relative overflow-hidden rounded-lg">
+                <Image
+                  src="\images\menbanner.png"
+                  alt="Young man in black tank top wearing SQUATWOLF cap in gym"
+                  width={600}
+                  height={700}
+                  className="w-full h-[700px] object-cover"
+                  priority
+                />
               </div>
             </div>
           </div>
