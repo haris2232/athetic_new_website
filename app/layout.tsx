@@ -5,6 +5,7 @@ import "./globals.css"
 import { CartProvider } from "@/lib/cart-context"
 import { CurrencyProvider } from "@/lib/currency-context"
 import { WishlistProvider } from "@/lib/wishlist-context"
+import OrderCompletionChecker from "@/components/order-completion-checker"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -31,6 +32,7 @@ export default function RootLayout({
         <CurrencyProvider>
         <CartProvider>
           <WishlistProvider>
+            <OrderCompletionChecker />
             {children}
           </WishlistProvider>
         </CartProvider>
