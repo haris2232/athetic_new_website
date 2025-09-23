@@ -498,7 +498,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                 </div>
               </div>
 
-              {/* Color Selection */}
+              {/* Color/Pattern Selection */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-white">Color</span>
@@ -521,12 +521,15 @@ export default function ProductDetail({ product }: { product: Product }) {
                           style={{ backgroundColor: color.hex }}
                         />
                       ) : (
-                        <Image 
-                          src={getFullImageUrl(color.image)} 
-                          alt={color.name} 
-                          fill 
-                          className="object-cover rounded-md" 
-                        />
+                        <div className="w-full h-full rounded-md overflow-hidden">
+                          <Image 
+                            src={getFullImageUrl(color.image)} 
+                            alt={color.name} 
+                            width={48}
+                            height={48}
+                            className="object-cover w-full h-full" 
+                          />
+                        </div>
                       )}
                     </button>
                   ))}
@@ -582,7 +585,7 @@ export default function ProductDetail({ product }: { product: Product }) {
               </div>
 
               {/* Shop the Look */}
-              <div className="space-y-4 pt-8">
+              {/* <div className="space-y-4 pt-8">
                 <div className="flex items-center justify-between">
                   <div className="flex space-x-2">
                     <div className="w-12 h-12 bg-red rounded-md overflow-hidden">
@@ -605,7 +608,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     </div>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
