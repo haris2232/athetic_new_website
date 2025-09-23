@@ -194,6 +194,9 @@ export default function CheckoutPage() {
       const orderResult = await orderResponse.json();
       const orderId = orderResult.data._id;
 
+      // Store order ID in localStorage for payment success page
+      localStorage.setItem('lastOrderId', orderId);
+
       // Step 2: Create N-Genius payment
       const paymentResponse = await fetch(`https://athlekt.com/backendnew/api/payments/ngenius/create/${orderId}`, {
         method: "POST",

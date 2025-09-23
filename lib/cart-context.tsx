@@ -150,7 +150,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   const clearCart = () => {
-    setCartItems([])
+    console.log('🛒 clearCart called - clearing cart items');
+    setCartItems([]);
+    // Also clear from localStorage immediately
+    localStorage.removeItem('cart');
+    console.log('🛒 Cart cleared from both state and localStorage');
   }
 
   const isBundleInCart = (bundleId: string) => {

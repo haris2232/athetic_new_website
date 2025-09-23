@@ -6,34 +6,62 @@ import Link from 'next/link';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { CheckCircle, Package, Mail } from 'lucide-react';
+import { useCart } from '@/lib/cart-context';
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const [orderStatus, setOrderStatus] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { clearCart } = useCart();
 
   useEffect(() => {
     const checkOrderStatus = async () => {
       try {
-        // You can get order ID from URL params or localStorage
+        // Get order ID from URL params or localStorage
         const orderId = searchParams.get('orderId') || localStorage.getItem('lastOrderId');
         
+        console.log('🔍 Payment Success Page - Order ID:', orderId);
+        console.log('🔍 URL search params:', searchParams.toString());
+        console.log('🔍 localStorage lastOrderId:', localStorage.getItem('lastOrderId'));
+        
+        // Clear cart immediately when payment success page loads
+        console.log('🛒 Clearing cart immediately on payment success page load');
+        clearCart();
+        
         if (orderId) {
-          const response = await fetch(`https://athlekt.com/backendnew/api/payments/status/${orderId}`);
+          console.log('🔍 Calling payment status API for order:', orderId);
+          const response = await fetch(`https://athlekt.com/backendnew/api/payments/status/${orderId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
           if (response.ok) {
             const data = await response.json();
+            console.log('✅ Payment status response:', data);
             setOrderStatus(data.data);
+            
+            // Clear cart again after successful API response (double safety)
+            if (data.data && (data.data.paymentStatus === 'paid' || data.data.paymentStatus === 'pending')) {
+              console.log('🛒 Clearing cart again after successful API response');
+              clearCart();
+            }
+          } else {
+            console.error('❌ Payment status API failed:', response.status);
+            console.error('❌ Response text:', await response.text());
           }
+        } else {
+          console.error('❌ No order ID found in URL params or localStorage');
         }
       } catch (error) {
-        console.error('Error checking order status:', error);
+        console.error('❌ Error checking order status:', error);
       } finally {
         setLoading(false);
       }
     };
 
     checkOrderStatus();
-  }, [searchParams]);
+  }, [searchParams, clearCart]);
 
   if (loading) {
     return (
