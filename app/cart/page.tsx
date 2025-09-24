@@ -36,6 +36,7 @@ export default function CartPage() {
 
   const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([])
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
+  const [lastCartHash, setLastCartHash] = useState<string>('')
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
@@ -103,39 +104,68 @@ export default function CartPage() {
   useEffect(() => {
     const fetchSuggestedProducts = async () => {
       if (shippingInfo && !shippingInfo.isFreeShipping && shippingInfo.remainingForFreeShipping > 0) {
+        // Create a hash of cart items to prevent unnecessary re-fetching
+        const cartHash = cartItems.map(item => `${item.id}-${item.quantity}`).join('|');
+        
+        // Only fetch if cart has actually changed
+        if (cartHash === lastCartHash && suggestedProducts.length > 0) {
+          console.log('🔄 Cart unchanged, skipping suggestion fetch');
+          return;
+        }
+        
+        setLastCartHash(cartHash);
         setLoadingSuggestions(true);
         try {
           const allProducts = await getAllProducts();
-          const cartProductIds = cartItems.map(item => item.id);
-          const availableProducts = allProducts.filter(product => product.id && !cartProductIds.includes(product.id as string));
+          console.log('🔍 Fetched products for suggestions:', allProducts.length);
+          
+          const cartProductIds = cartItems.map(item => item.productId || item.id);
+          console.log('🛒 Cart product IDs:', cartProductIds);
+          
+          const availableProducts = allProducts.filter(product => {
+            const productId = product.id || (product as any)._id;
+            return productId && !cartProductIds.includes(productId);
+          });
+          console.log('✅ Available products after filtering cart items:', availableProducts.length);
+          
           const suggestions = availableProducts
             .filter(product => {
-              if (!product.price) return false;
-              const productPrice = parseFloat(product.price.replace('$', ''));
+              if (!product.price && !(product as any).basePrice) return false;
+              const productPrice = product.price ? 
+                parseFloat(product.price.replace(/[^0-9.]/g, '')) : 
+                (product as any).basePrice;
               const flexibility = Math.min(shippingInfo.remainingForFreeShipping * 0.3, 30);
-              return productPrice <= shippingInfo.remainingForFreeShipping + flexibility;
+              const isValid = productPrice <= shippingInfo.remainingForFreeShipping + flexibility;
+              console.log(`💰 Product ${product.name}: price=${productPrice}, remaining=${shippingInfo.remainingForFreeShipping}, valid=${isValid}`);
+              return isValid;
             })
             .sort((a, b) => {
-              if (!a.price || !b.price) return 0;
-              const priceA = parseFloat(a.price.replace('$', ''));
-              const priceB = parseFloat(b.price.replace('$', ''));
+              const priceA = a.price ? parseFloat(a.price.replace(/[^0-9.]/g, '')) : (a as any).basePrice;
+              const priceB = b.price ? parseFloat(b.price.replace(/[^0-9.]/g, '')) : (b as any).basePrice;
               const diffA = Math.abs(shippingInfo.remainingForFreeShipping - priceA);
               const diffB = Math.abs(shippingInfo.remainingForFreeShipping - priceB);
               return diffA - diffB;
             })
             .slice(0, 3);
+          
+          console.log('🎯 Final suggestions:', suggestions.length);
           setSuggestedProducts(suggestions as any);
         } catch (error) {
           console.error('Error fetching suggested products:', error);
+          setSuggestedProducts([]);
         } finally {
           setLoadingSuggestions(false);
         }
       } else {
         setSuggestedProducts([]);
+        setLastCartHash('');
       }
     };
-    fetchSuggestedProducts();
-  }, [cartItems, shippingInfo]);
+    
+    // Add a small delay to prevent rapid re-fetching
+    const timeoutId = setTimeout(fetchSuggestedProducts, 100);
+    return () => clearTimeout(timeoutId);
+  }, [cartItems, shippingInfo, lastCartHash, suggestedProducts.length]);
 
   const handleWishlistToggle = (product: Product | any) => {
     const wishlistItem = {
@@ -193,36 +223,54 @@ export default function CartPage() {
                       </div>
                     ))
                   ) : suggestedProducts.length > 0 ? (
-                    suggestedProducts.map((product) => (
-                      <Link key={product.id} href={`/product/${product.id}`} className="group block">
-                        <div className="relative bg-white rounded-lg overflow-hidden mb-4 cursor-pointer">
-                          <div className="aspect-[3/4] relative">
-                            <Image
-                              src={product.image || "/placeholder.svg"}
-                              alt={product.name}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleWishlistToggle(product);
-                              }}
-                              className={`absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors z-10 ${
-                                isInWishlist(product.id) ? 'text-red-500' : 'text-gray-600'
-                              }`}
-                            >
-                              <Heart className={`h-4 w-4 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
-                            </button>
+                    suggestedProducts.map((product) => {
+                      const productId = product.id || (product as any)._id;
+                      const productName = product.name || (product as any).title;
+                      const productPrice = product.price ? 
+                        parseFloat(product.price.replace(/[^0-9.]/g, '')) : 
+                        (product as any).basePrice || 0;
+                      const productImage = product.image || product.images?.[0] || "/placeholder.svg";
+                      
+                      return (
+                        <Link key={productId} href={`/product/${productId}`} className="group block">
+                          <div className="relative bg-white rounded-lg overflow-hidden mb-4 cursor-pointer">
+                            <div className="aspect-[3/4] relative">
+                              <Image
+                                src={productImage}
+                                alt={productName}
+                                fill
+                                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                onError={(e) => {
+                                  console.log('🖼️ Image failed to load for product:', productName, productImage);
+                                  e.currentTarget.src = "/placeholder.svg";
+                                }}
+                                onLoad={() => {
+                                  console.log('✅ Image loaded successfully for product:', productName);
+                                }}
+                                priority={false}
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              />
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleWishlistToggle(product);
+                                }}
+                                className={`absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors z-10 ${
+                                  isInWishlist(productId) ? 'text-red-500' : 'text-gray-600'
+                                }`}
+                              >
+                                <Heart className={`h-4 w-4 ${isInWishlist(productId) ? 'fill-current' : ''}`} />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="text-sm font-medium text-white">{product.name}</h3>
-                          <p className="text-lg font-bold text-white">{formatPrice(parseFloat(product.price.replace(/[^0-9.]/g, '')))}</p>
-                        </div>
-                      </Link>
-                    ))
+                          <div className="space-y-1">
+                            <h3 className="text-sm font-medium text-white">{productName}</h3>
+                            <p className="text-lg font-bold text-white">{formatPrice(productPrice)}</p>
+                          </div>
+                        </Link>
+                      );
+                    })
                   ) : (
                     <div className="col-span-3 text-center py-8">
                     </div>
@@ -230,10 +278,13 @@ export default function CartPage() {
                 </div>
                 <div className="text-center">
                   <Button
+                    asChild
                     size="lg"
                     className="bg-[#cbf26c] text-[#212121] hover:bg-[#9fcc3b] font-semibold px-12 py-4 text-lg rounded-md"
                   >
-                    Shop Now
+                    <Link href="/collection">
+                      Shop Now
+                    </Link>
                   </Button>
                 </div>
               </div>
@@ -289,6 +340,14 @@ export default function CartPage() {
                         width={80}
                         height={80}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.log('🖼️ Cart item image failed to load:', item.name, item.image);
+                          e.currentTarget.src = "/placeholder.svg";
+                        }}
+                        onLoad={() => {
+                          console.log('✅ Cart item image loaded:', item.name);
+                        }}
+                        priority={false}
                       />
                     </div>
                     <div className="flex-1 space-y-1">

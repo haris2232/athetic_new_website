@@ -6,7 +6,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star, Heart, Share2, Package } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star, Heart, Share2, Package, ZoomIn, X } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
 import { formatCurrency } from "@/lib/utils"
@@ -45,6 +45,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
+  const [zoomImage, setZoomImage] = useState<string | null>(null)
 
   // Use dynamic color options from product
   const colorOptions = product.colors || [
@@ -506,9 +507,9 @@ export default function ProductDetail({ product }: { product: Product }) {
                 </div>
                 <div className="flex space-x-2">
                   {colorOptions.map((color) => (
-                    <button
+                    <div
                       key={color.name}
-                      className={`w-12 h-12 rounded-lg border-2 transition-colors ${
+                      className={`w-12 h-12 rounded-lg border-2 transition-colors cursor-pointer ${
                         selectedColor === color.name
                           ? "border-white"
                           : "border-gray-600 hover:border-gray-400"
@@ -521,7 +522,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                           style={{ backgroundColor: color.hex }}
                         />
                       ) : (
-                        <div className="w-full h-full rounded-md overflow-hidden">
+                        <div className="w-full h-full rounded-md overflow-hidden relative group">
                           <Image 
                             src={getFullImageUrl(color.image)} 
                             alt={color.name} 
@@ -529,9 +530,21 @@ export default function ProductDetail({ product }: { product: Product }) {
                             height={48}
                             className="object-cover w-full h-full" 
                           />
+                          {/* Zoom Icon Overlay */}
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
+                            <div
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                setZoomImage(getFullImageUrl(color.image))
+                              }}
+                              className="bg-white/90 hover:bg-white text-gray-800 rounded-full p-1.5 shadow-lg transition-all duration-200 hover:scale-110 cursor-pointer"
+                            >
+                              <ZoomIn className="h-3 w-3" />
+                            </div>
+                          </div>
                         </div>
                       )}
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -997,6 +1010,29 @@ export default function ProductDetail({ product }: { product: Product }) {
           </div>
         </div>
       </section>
+
+      {/* Zoom Modal */}
+      {zoomImage && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="relative max-w-4xl max-h-[90vh] w-full">
+            <button
+              onClick={() => setZoomImage(null)}
+              className="absolute -top-12 right-0 bg-white/20 hover:bg-white/30 text-white rounded-full p-2 transition-colors duration-200"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <div className="relative rounded-lg overflow-hidden shadow-2xl">
+              <Image
+                src={zoomImage}
+                alt="Zoomed pattern"
+                width={800}
+                height={800}
+                className="w-full h-auto max-h-[80vh] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
