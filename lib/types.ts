@@ -21,6 +21,7 @@ export interface Product {
     name: string;
     hex?: string;
     image?: string;
+    images?: string[];
   }>
   sizes?: string[]
   variants?: any[]

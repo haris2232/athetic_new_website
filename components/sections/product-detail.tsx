@@ -32,6 +32,9 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [selectedSize, setSelectedSize] = useState<string>(product.sizes && product.sizes.length > 0 ? product.sizes[0] : "M")
   const [selectedColor, setSelectedColor] = useState<string>(product.colors && product.colors.length > 0 ? product.colors[0].name : "Coral")
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  
+  // Color to image mapping - this will be populated from product data
+  const [colorImageMapping, setColorImageMapping] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(true)
   const [shopTheLookItems, setShopTheLookItems] = useState<any[]>([])
   const [carouselItems, setCarouselItems] = useState<any[]>([])
@@ -58,7 +61,46 @@ export default function ProductDetail({ product }: { product: Product }) {
     { name: "Black", image: "/placeholder.svg?height=80&width=60" },
   ]
 
+  // Function to get images for selected color
+  const getImagesForColor = (colorName: string): string[] => {
+    // First, try to get color-specific images from the product data
+    const selectedColorOption = product.colors?.find(color => color.name === colorName)
+    if (selectedColorOption?.images && selectedColorOption.images.length > 0) {
+      return selectedColorOption.images
+    }
+    
+    // If color-specific images exist in mapping, return them
+    if (colorImageMapping[colorName] && colorImageMapping[colorName].length > 0) {
+      return colorImageMapping[colorName]
+    }
+    
+    // Otherwise, return all product images
+    return product.images || []
+  }
+
+  // Current images based on selected color
+  const currentImages = getImagesForColor(selectedColor)
+
   const sizeOptions = product.sizes || ["S", "M", "L", "XL", "XXL"]
+
+  // Initialize color-image mapping when component loads
+  useEffect(() => {
+    if (product && product.colors && product.images) {
+      const mapping: Record<string, string[]> = {}
+      
+      // Check if colors have specific images assigned
+      product.colors.forEach(color => {
+        if (color.images && color.images.length > 0) {
+          mapping[color.name] = color.images
+        } else {
+          // Fallback: assign all images to colors that don't have specific images
+          mapping[color.name] = product.images || []
+        }
+      })
+      
+      setColorImageMapping(mapping)
+    }
+  }, [product])
 
   // Add this state to track the selected variation
   const [selectedVariation, setSelectedVariation] = useState(() => {
@@ -346,14 +388,14 @@ export default function ProductDetail({ product }: { product: Product }) {
   })
 
   const nextImage = () => {
-    if (product.images && product.images.length > 1) {
-      setActiveImageIndex((prev) => (prev + 1) % product.images.length)
+    if (currentImages && currentImages.length > 1) {
+      setActiveImageIndex((prev) => (prev + 1) % currentImages.length)
     }
   }
 
   const prevImage = () => {
-    if (product.images && product.images.length > 1) {
-      setActiveImageIndex((prev) => (prev - 1 + product.images.length) % product.images.length)
+    if (currentImages && currentImages.length > 1) {
+      setActiveImageIndex((prev) => (prev - 1 + currentImages.length) % currentImages.length)
     }
   }
 
@@ -379,7 +421,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="space-y-4">
               <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-800 cursor-pointer">
                 <Image
-                  src={product.images && product.images.length > 0 ? getFullImageUrl(product.images[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
+                  src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
                   alt={product.name}
                   fill
                   className="object-cover"
@@ -387,7 +429,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                 />
 
                 {/* Navigation arrows */}
-                {product.images && product.images.length > 1 && (
+                {currentImages && currentImages.length > 1 && (
                   <>
                     <button 
                       className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors"
@@ -405,9 +447,9 @@ export default function ProductDetail({ product }: { product: Product }) {
                 )}
 
                 {/* Image indicators */}
-                {product.images && product.images.length > 1 && (
+                {currentImages && currentImages.length > 1 && (
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-                    {product.images.map((_, index) => (
+                    {currentImages.map((_, index) => (
                       <button
                         key={index}
                         className={`w-2 h-2 rounded-full transition-colors ${
@@ -420,10 +462,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                 )}
             </div>
 
-              {/* Thumbnail images */}
-              {product.images && product.images.length > 1 && (
-                <div className="grid grid-cols-4 gap-2">
-                  {product.images.slice(0, 4).map((image, index) => (
+              {/* Thumbnail images - Show all images in carousel format */}
+              {currentImages && currentImages.length > 0 && (
+                <div className={`grid gap-2 ${currentImages.length <= 4 ? 'grid-cols-4' : 'grid-cols-5'}`}>
+                  {currentImages.map((image, index) => (
                     <button
                         key={index}
                       className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${
@@ -514,7 +556,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                           ? "border-white"
                           : "border-gray-600 hover:border-gray-400"
                       }`}
-                      onClick={() => setSelectedColor(color.name)}
+                      onClick={() => {
+                        setSelectedColor(color.name)
+                        setActiveImageIndex(0) // Reset to first image when color changes
+                      }}
                     >
                       {color.hex ? (
                         <div 
