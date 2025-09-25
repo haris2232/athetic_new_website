@@ -272,22 +272,10 @@ export default function ProductDetail({ product }: { product: Product }) {
     }))
   }
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: product.name,
-          text: product.description || `Check out this amazing product: ${product.name}`,
-          url: window.location.href,
-        })
-      } catch (error) {
-        console.log('Error sharing:', error)
-      }
-    } else {
-      // Fallback for browsers that don't support Web Share API
-      navigator.clipboard.writeText(window.location.href)
-      alert('Link copied to clipboard!')
-    }
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    // Using the existing notification system from the cart context
+    showNotification("Link copied to clipboard!");
   }
 
   const handleAddToCart = () => {
