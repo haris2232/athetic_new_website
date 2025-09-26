@@ -961,7 +961,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                       name="firstName"
                       value={formData.firstName}
                       onChange={handleInputChange}
-                      placeholder="First Name"
+                      placeholder="First Name*"
                       className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
                       required
                     />

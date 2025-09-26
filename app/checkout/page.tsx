@@ -311,15 +311,15 @@ export default function CheckoutPage() {
                   <div className="space-y-4">
                     <select className="w-full p-3 border border-gray-300 rounded-md"><option>United Arab Emirates</option></select>
                     <div className="grid grid-cols-2 gap-4">
-                      <input type="text" placeholder="First name" required value={customer.name.split(' ')[0] || ''} onChange={(e) => { const lastName = customer.name.split(' ').slice(1).join(' ') || ''; setCustomer({...customer, name: e.target.value + ' ' + lastName}); }} className="w-full p-3 border border-gray-300 rounded-md"/>
-                      <input type="text" placeholder="Last name" required value={customer.name.split(' ').slice(1).join(' ') || ''} onChange={(e) => { const firstName = customer.name.split(' ')[0] || ''; setCustomer({...customer, name: firstName + ' ' + e.target.value}); }} className="w-full p-3 border border-gray-300 rounded-md"/>
+                      <input type="text" placeholder="First name*" required value={customer.name.split(' ')[0] || ''} onChange={(e) => { const lastName = customer.name.split(' ').slice(1).join(' ') || ''; setCustomer({...customer, name: e.target.value + ' ' + lastName}); }} className="w-full p-3 border border-gray-300 rounded-md"/>
+                      <input type="text" placeholder="Last name*" required value={customer.name.split(' ').slice(1).join(' ') || ''} onChange={(e) => { const firstName = customer.name.split(' ')[0] || ''; setCustomer({...customer, name: firstName + ' ' + e.target.value}); }} className="w-full p-3 border border-gray-300 rounded-md"/>
                     </div>
-                    <input type="text" placeholder="Address" required value={customer.address.street} onChange={(e) => setCustomer({...customer, address: {...customer.address, street: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
+                    <input type="text" placeholder="Address*" required value={customer.address.street} onChange={(e) => setCustomer({...customer, address: {...customer.address, street: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
                     <div className="grid grid-cols-2 gap-4">
-                      <input type="text" placeholder="City" required value={customer.address.city} onChange={(e) => setCustomer({...customer, address: {...customer.address, city: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
-                      <input type="text" placeholder="State" required value={customer.address.state} onChange={(e) => setCustomer({...customer, address: {...customer.address, state: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
+                      <input type="text" placeholder="City*" required value={customer.address.city} onChange={(e) => setCustomer({...customer, address: {...customer.address, city: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
+                      <input type="text" placeholder="State*" required value={customer.address.state} onChange={(e) => setCustomer({...customer, address: {...customer.address, state: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
                     </div>
-                    <input type="text" placeholder="ZIP code" required value={customer.address.zipCode} onChange={(e) => setCustomer({...customer, address: {...customer.address, zipCode: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
+                    <input type="text" placeholder="ZIP code*" required value={customer.address.zipCode} onChange={(e) => setCustomer({...customer, address: {...customer.address, zipCode: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
                   </div>
                 </div>
 
