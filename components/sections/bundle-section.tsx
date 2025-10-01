@@ -49,7 +49,7 @@ export function BundleSection({ category }: BundleSectionProps) {
     setIsVariationModalOpen(true)
   }
 
-  const handleVariationConfirm = (selectedVariations: Record<string, { size: string; color: string }>) => {
+  const handleVariationConfirm = (selectedVariations: Record<string, { size: string; color: string; quantity: number }>) => {
     if (!selectedBundle) return
 
     addBundleToCart({
@@ -61,7 +61,7 @@ export function BundleSection({ category }: BundleSectionProps) {
         const productId = product._id || product.id
         const variation = selectedVariations[productId]
         const selectedSize = variation?.size || product.sizeOptions?.[0] || product.sizes?.[0] || 'M'
-        const selectedColor = variation?.color || product.colors?.[0]?.name || 'Default'
+        const selectedColor = variation?.color || product.colorOptions?.[0]?.name || product.colors?.[0]?.name || 'Default'
         
         // Find the specific variant to get variant-specific price
         const productVariant = product.variants?.find(
@@ -77,8 +77,8 @@ export function BundleSection({ category }: BundleSectionProps) {
           id: product._id || product.id,
           name: product.title || product.name,
           price: variantPrice,
-          image: product.images?.[0] || product.image,
-          quantity: 1,
+          image: product.images?.[0] || product.image || "/placeholder.svg",
+          quantity: variation?.quantity || 1,
           size: selectedSize,
           color: selectedColor
         }

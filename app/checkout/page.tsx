@@ -28,6 +28,9 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems } = useCart();
   const { formatPrice, currency } = useCurrency();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [saveInfo, setSaveInfo] = useState(false);
+  const [previousAddresses, setPreviousAddresses] = useState<any[]>([]);
   
   const [customer, setCustomer] = useState({
     name: "",
@@ -60,6 +63,49 @@ export default function CheckoutPage() {
   const [shippingLoading, setShippingLoading] = useState(false);
   
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userData = localStorage.getItem("user");
+    if (token && userData) {
+      setIsLoggedIn(true);
+
+      try {
+        const user = JSON.parse(userData);
+        setCustomer(prevCustomer => ({
+          ...prevCustomer, // Keep existing, like country
+          name: user.name || "",
+          email: user.email || ""
+        }));
+
+        if (user._id) {
+          fetchPreviousAddresses(user._id);
+        }
+
+        // Now, check for saved shipping info
+        const savedShippingInfo = localStorage.getItem("savedShippingInfo");
+        if (savedShippingInfo) {
+          const shippingDetails = JSON.parse(savedShippingInfo);
+          setCustomer(prevCustomer => ({
+            ...prevCustomer,
+            ...shippingDetails
+          }));
+        }
+      } catch (error) {
+        console.error("Failed to parse user data from localStorage", error);
+        localStorage.removeItem("savedShippingInfo"); // Clear corrupted data
+      }
+    }
+  }, []);
+
+  const handleSelectPreviousAddress = (addressDetails: any) => {
+    setCustomer(prev => ({
+      ...prev,
+      name: addressDetails.name || prev.name,
+      phone: addressDetails.phone || prev.phone,
+      address: addressDetails.address || prev.address,
+    }));
+  };
   
   useEffect(() => {
     const calculateShipping = async () => {
@@ -201,6 +247,7 @@ export default function CheckoutPage() {
       const paymentResponse = await fetch(`https://athlekt.com/backendnew/api/payments/ngenius/create/${orderId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ returnUrl: `${window.location.origin}/payment-success?orderId=${orderId}` })
       });
 
       if (!paymentResponse.ok) {
@@ -213,6 +260,34 @@ export default function CheckoutPage() {
       
       // Step 3: Redirect to N-Genius payment page
       window.location.href = paymentData.data.paymentUrl;
+
+      // Step 4: If user opted-in, save their shipping info for next time
+      if (isLoggedIn && saveInfo) {
+        const newAddress = {
+          name: customer.name,
+          phone: customer.phone,
+          address: customer.address,
+        };
+        // We don't save name/email as it comes from the user profile
+        // localStorage.setItem("savedShippingInfo", JSON.stringify(shippingDetails));
+
+        const savedAddressesRaw = localStorage.getItem("previousShippingAddresses");
+        let savedAddresses = savedAddressesRaw ? JSON.parse(savedAddressesRaw) : [];
+        if (!Array.isArray(savedAddresses)) {
+          savedAddresses = [];
+        }
+
+        // Check if address already exists to avoid duplicates
+        const addressExists = savedAddresses.some((addr: any) => 
+          JSON.stringify(addr.address) === JSON.stringify(newAddress.address) && addr.phone === newAddress.phone
+        );
+
+        if (!addressExists) {
+          // Add new address to the beginning of the array and limit to 5
+          const updatedAddresses = [newAddress, ...savedAddresses].slice(0, 5);
+          localStorage.setItem("previousShippingAddresses", JSON.stringify(updatedAddresses));
+        }
+      }
 
     } catch (error) {
       console.error('Checkout error:', error);
@@ -301,10 +376,32 @@ export default function CheckoutPage() {
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Contact</h2>
-                    <a href="https://athlekt.com/login" className="text-blue-600 hover:underline">Log in</a>
+                    {!isLoggedIn && (
+                      <a href="https://athlekt.com/login" className="text-blue-600 hover:underline">Log in</a>
+                    )}
                   </div>
                   <input type="email" placeholder="Email" required value={customer.email} onChange={(e) => setCustomer({...customer, email: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
                 </div>
+
+                {isLoggedIn && previousAddresses.length > 0 && (
+                  <div className="bg-white rounded-lg shadow-md p-6">
+                    <h2 className="text-xl font-semibold mb-4">Previous Addresses</h2>
+                    <div className="space-y-3 max-h-48 overflow-y-auto">
+                      {previousAddresses.map((addr, index) => (
+                        <div 
+                          key={index} 
+                          className="border border-gray-200 rounded-md p-3 hover:bg-gray-100 cursor-pointer transition-colors"
+                          onClick={() => handleSelectPreviousAddress(addr)}
+                        >
+                          <p className="font-medium text-gray-800">{addr.name}</p>
+                          <p className="text-sm text-gray-600">{addr.address.street}, {addr.address.city}</p>
+                          <p className="text-sm text-gray-600">{addr.phone}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">Click an address to fill the form below.</p>
+                  </div>
+                )}
 
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <h2 className="text-xl font-semibold mb-4">Delivery</h2>
@@ -348,8 +445,15 @@ export default function CheckoutPage() {
 
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex items-center space-x-3 mb-4">
-                    <input type="checkbox" id="remember" className="text-blue-600" />
-                    <label htmlFor="remember" className="text-sm">Save my information for a faster checkout</label>
+                    <input 
+                      type="checkbox" 
+                      id="remember" 
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500" 
+                      checked={saveInfo}
+                      onChange={(e) => setSaveInfo(e.target.checked)}
+                      disabled={!isLoggedIn}
+                    />
+                    <label htmlFor="remember" className={`text-sm ${!isLoggedIn ? 'text-gray-400' : ''}`}>Save my information for a faster checkout</label>
                   </div>
                   <input type="tel" placeholder="+1 Mobile phone number" value={customer.phone} onChange={(e) => setCustomer({...customer, phone: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
                 </div>

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
-import { X } from "lucide-react"
+import { X, Plus, Minus } from "lucide-react"
 
 interface ProductVariant {
   id: string
@@ -62,7 +62,7 @@ interface BundleVariationModalProps {
   bundle: Bundle | null
   isOpen: boolean
   onClose: () => void
-  onConfirm: (selectedVariations: Record<string, { size: string; color: string }>) => void
+  onConfirm: (selectedVariations: Record<string, { size: string; color: string; quantity: number }>) => void
 }
 
 export function BundleVariationModal({ 
@@ -71,14 +71,28 @@ export function BundleVariationModal({
   onClose, 
   onConfirm 
 }: BundleVariationModalProps) {
-  const [selectedVariations, setSelectedVariations] = useState<Record<string, { size: string; color: string }>>({})
+  const [selectedVariations, setSelectedVariations] = useState<Record<string, { size: string; color: string; quantity: number }>>({})
 
   const handleVariationSelect = (productId: string, type: 'size' | 'color', value: string) => {
     setSelectedVariations(prev => ({
       ...prev,
       [productId]: {
-        ...prev[productId],
+        // Ensure other properties like size and color are preserved
+        size: prev[productId]?.size || '',
+        color: prev[productId]?.color || '',
+        quantity: (prev[productId]?.quantity || 1),
         [type]: value
+      }
+    }))
+  }
+
+  const handleQuantityChange = (productId: string, change: number) => {
+    setSelectedVariations(prev => ({
+      ...prev,
+      [productId]: {
+        // Ensure other properties like size and color are preserved
+        ...prev[productId],
+        quantity: Math.max(1, (prev[productId]?.quantity || 1) + change),
       }
     }))
   }
@@ -88,7 +102,7 @@ export function BundleVariationModal({
     const allSelected = bundle?.products.every(product => {
       const productId = product._id || product.id
       const variation = selectedVariations[productId]
-      return variation?.size && variation?.color
+      return variation?.size && variation?.color && variation?.quantity > 0
     })
 
     if (allSelected) {
@@ -100,7 +114,7 @@ export function BundleVariationModal({
 
   const isVariationComplete = (productId: string) => {
     const variation = selectedVariations[productId]
-    return variation?.size && variation?.color
+    return !!(variation?.size && variation?.color)
   }
 
   const allVariationsSelected = bundle?.products.every(product => {
@@ -125,7 +139,7 @@ export function BundleVariationModal({
         <div className="space-y-4 max-h-[40vh] overflow-y-auto pr-2">
           {bundle.products.map((product, index) => {
             const productId = product._id || product.id
-            const currentVariation = selectedVariations[productId] || {}
+            const currentVariation = selectedVariations[productId] || { quantity: 1 }
             
             // Get available sizes and colors
             const availableSizes = product.sizeOptions || product.sizes || ['S', 'M', 'L', 'XL']
@@ -195,20 +209,38 @@ export function BundleVariationModal({
                       </div>
                     </div>
 
+                    {/* Quantity Selection */}
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium mb-2">Quantity:</label>
+                      <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleQuantityChange(productId, -1)}>
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="text-lg font-semibold w-10 text-center">{currentVariation.quantity}</span>
+                        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => handleQuantityChange(productId, 1)}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+
                     {/* Selection Status */}
                     <div className="flex items-center space-x-2">
                       {isVariationComplete(productId) ? (
                         <Badge variant="default" className="bg-green-500">
                           ✓ Complete
                         </Badge>
-                      ) : (
+                      ) : currentVariation.size || currentVariation.color ? (
                         <Badge variant="secondary">
+                          ⚠ Incomplete
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline">
                           ⚠ Incomplete
                         </Badge>
                       )}
                       <span className="text-sm text-gray-600">
                         {currentVariation.size && currentVariation.color 
-                          ? `${currentVariation.size}, ${currentVariation.color}`
+                          ? `${currentVariation.size}, ${currentVariation.color}, Qty: ${currentVariation.quantity}`
                           : 'Please select size and color'
                         }
                       </span>

@@ -4,9 +4,9 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge" 
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star, Heart, Share2, Package, ZoomIn, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star, Heart, Share2, Package, ZoomIn, X, Plus, Minus } from "lucide-react"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
 import { formatCurrency } from "@/lib/utils"
@@ -30,6 +30,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const { addToCart, showNotification, cartItems } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const [selectedSize, setSelectedSize] = useState<string>(product.sizes && product.sizes.length > 0 ? product.sizes[0] : "M")
+  const [quantity, setQuantity] = useState(1)
   const [selectedColor, setSelectedColor] = useState<string>(product.colors && product.colors.length > 0 ? product.colors[0].name : "Coral")
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   
@@ -279,12 +280,6 @@ export default function ProductDetail({ product }: { product: Product }) {
   }
 
   const handleAddToCart = () => {
-    // Check if product is already in cart
-    if (isProductInCart) {
-      showNotification("Product is already in cart!")
-      return
-    }
-    
     // Use variant-specific price
     const variantPrice = getVariantPrice(selectedVariation);
     
@@ -295,7 +290,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       image: product.images && product.images.length > 0 ? getFullImageUrl(product.images[0]) : "/placeholder.svg",
       color: selectedColor,
       size: selectedSize,
-      quantity: 1,
+      quantity: quantity,
       fit: "REGULAR FIT"
     })
   }
@@ -363,10 +358,6 @@ export default function ProductDetail({ product }: { product: Product }) {
       [name]: value
     }))
   }
-
-  // Check if product is already in cart
-  const variantId = `${product.id}-${selectedSize || 'default'}-${selectedColor || 'default'}`
-  const isProductInCart = cartItems.some(item => item.id === variantId)
 
   const [openSections, setOpenSections] = useState({
     purpose: false,
@@ -606,19 +597,38 @@ export default function ProductDetail({ product }: { product: Product }) {
                 <p className="text-sm text-gray-400">Keelan is 6'2" and wears Medium</p>
               </div>
 
+              {/* Quantity Selection */}
+              <div className="space-y-3">
+                <span className="text-sm font-medium text-white">Quantity</span>
+                <div className="flex items-center space-x-2">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 text-white border-gray-600 hover:bg-gray-700"
+                    onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <span className="text-lg font-semibold w-12 text-center">{quantity}</span>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 text-white border-gray-600 hover:bg-gray-700"
+                    onClick={() => setQuantity(prev => prev + 1)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
               {/* Add to Cart */}
               <div className="space-y-3">
                 <Button
                   size="lg"
-                  className={`w-full font-semibold py-4 rounded-md transition-all duration-300 ${
-                    isProductInCart 
-                      ? "bg-green-600 text-white cursor-not-allowed" 
-                      : "bg-white text-[#212121] hover:bg-gray-100"
-                  }`}
+                  className="w-full font-semibold py-4 rounded-md transition-all duration-300 bg-white text-[#212121] hover:bg-gray-100"
                   onClick={handleAddToCart}
-                  disabled={isProductInCart}
                 >
-                  {isProductInCart ? "✓ ALREADY IN CART" : "ADD TO CART"}
+                  ADD TO CART
                 </Button>
               <Button
                 asChild
