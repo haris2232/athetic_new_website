@@ -287,7 +287,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       id: product.id,
       name: product.name,
       price: variantPrice,
-      image: product.images && product.images.length > 0 ? getFullImageUrl(product.images[0]) : "/placeholder.svg",
+      image: currentImages.length > 0 ? getFullImageUrl(currentImages[0]) : (product.images && product.images.length > 0 ? getFullImageUrl(product.images[0]) : "/placeholder.svg"),
       color: selectedColor,
       size: selectedSize,
       quantity: quantity,
