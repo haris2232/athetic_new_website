@@ -116,6 +116,34 @@ export default function CheckoutPage() {
     }));
   };
   
+  // This function will save the address to the user's profile.
+  const autoSaveAddress = async () => {
+    // Only save if the user is logged in, has checked the box, and the form is valid.
+    if (isLoggedIn && saveInfo && isFormValid()) {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        await fetch("https://athlekt.com/backendnew/api/user/addresses", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            name: `${customer.firstName} ${customer.lastName}`.trim(),
+            phone: customer.phone,
+            address: customer.address,
+          }),
+        });
+        console.log("Address auto-saved.");
+      } catch (error) {
+        console.error("Failed to auto-save address:", error);
+      }
+    }
+  };
+
+  // This effect will run only when the 'saveInfo' checkbox is ticked.
   useEffect(() => {
     const calculateShipping = async () => {
       if (cartItems.length === 0) {
@@ -273,30 +301,6 @@ export default function CheckoutPage() {
       // Step 3: Redirect to N-Genius payment page
       window.location.href = paymentData.data.paymentUrl;
 
-      // Step 4: If user opted-in, save their shipping info for next time
-      if (isLoggedIn && saveInfo) {
-        const token = localStorage.getItem("token");
-        if (token) {
-          try {
-            await fetch("https://athlekt.com/backendnew/api/user/addresses", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                name: `${customer.firstName} ${customer.lastName}`.trim(),
-                phone: customer.phone,
-                address: customer.address,
-              }),
-            });
-          } catch (addressError) {
-            console.error("Failed to save address:", addressError);
-            // Don't block the user flow, just log the error
-          }
-        }
-      }
-
     } catch (error) {
       console.error('Checkout error:', error);
       alert("Network error. Please check your connection and try again.");
@@ -415,17 +419,17 @@ export default function CheckoutPage() {
                   <h2 className="text-xl font-semibold mb-4">Delivery</h2>
                   <div className="space-y-4">
                     <select className="w-full p-3 border border-gray-300 rounded-md"><option>United Arab Emirates</option></select>
-                    <div className="grid grid-cols-2 gap-4"> 
-                      <input type="text" placeholder="First name*" required value={customer.firstName} onChange={(e) => setCustomer({...customer, firstName: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
-                      <input type="text" placeholder="Last name*" required value={customer.lastName} onChange={(e) => setCustomer({...customer, lastName: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
-                    </div>
-                    <input type="text" placeholder="Address*" required value={customer.address.street} onChange={(e) => setCustomer({...customer, address: {...customer.address, street: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
                     <div className="grid grid-cols-2 gap-4">
-                      <input type="text" placeholder="City*" required value={customer.address.city} onChange={(e) => setCustomer({...customer, address: {...customer.address, city: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
-                      <input type="text" placeholder="State*" required value={customer.address.state} onChange={(e) => setCustomer({...customer, address: {...customer.address, state: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
+                      <input type="text" placeholder="First name*" required value={customer.firstName} onChange={(e) => setCustomer({...customer, firstName: e.target.value})} onBlur={autoSaveAddress} className="w-full p-3 border border-gray-300 rounded-md"/>
+                      <input type="text" placeholder="Last name*" required value={customer.lastName} onChange={(e) => setCustomer({...customer, lastName: e.target.value})} onBlur={autoSaveAddress} className="w-full p-3 border border-gray-300 rounded-md"/>
                     </div>
-                    <input type="text" placeholder="ZIP code*" required value={customer.address.zipCode} onChange={(e) => setCustomer({...customer, address: {...customer.address, zipCode: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
-                    <input type="tel" placeholder="Phone*" required value={customer.phone} onChange={(e) => setCustomer({...customer, phone: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
+                    <input type="text" placeholder="Address*" required value={customer.address.street} onChange={(e) => setCustomer({...customer, address: {...customer.address, street: e.target.value}})} onBlur={autoSaveAddress} className="w-full p-3 border border-gray-300 rounded-md"/>
+                    <div className="grid grid-cols-2 gap-4">
+                      <input type="text" placeholder="City*" required value={customer.address.city} onChange={(e) => setCustomer({...customer, address: {...customer.address, city: e.target.value}})} onBlur={autoSaveAddress} className="w-full p-3 border border-gray-300 rounded-md"/>
+                      <input type="text" placeholder="State*" required value={customer.address.state} onChange={(e) => setCustomer({...customer, address: {...customer.address, state: e.target.value}})} onBlur={autoSaveAddress} className="w-full p-3 border border-gray-300 rounded-md"/>
+                    </div>
+                    <input type="text" placeholder="ZIP code*" required value={customer.address.zipCode} onChange={(e) => setCustomer({...customer, address: {...customer.address, zipCode: e.target.value}})} onBlur={autoSaveAddress} className="w-full p-3 border border-gray-300 rounded-md"/>
+                    <input type="tel" placeholder="Phone*" required value={customer.phone} onChange={(e) => setCustomer({...customer, phone: e.target.value})} onBlur={autoSaveAddress} className="w-full p-3 border border-gray-300 rounded-md"/>
                   </div>
                 </div>
 
@@ -460,7 +464,11 @@ export default function CheckoutPage() {
                       id="remember"
                       className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       checked={saveInfo}
-                      onChange={(e) => setSaveInfo(e.target.checked)}
+                      onChange={(e) => {
+                        const isChecked = e.target.checked;
+                        setSaveInfo(isChecked);
+                        if (isChecked) { autoSaveAddress(); }
+                      }}
                     />
                     <label htmlFor="remember" className="text-sm">Save my information for a faster checkout</label>
                   </div>
