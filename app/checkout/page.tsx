@@ -100,19 +100,8 @@ export default function CheckoutPage() {
         if (user._id) {
           fetchPreviousAddresses(user._id);
         }
-
-        // Now, check for saved shipping info
-        const savedShippingInfo = localStorage.getItem("savedShippingInfo");
-        if (savedShippingInfo) {
-          const shippingDetails = JSON.parse(savedShippingInfo);
-          setCustomer(prevCustomer => ({
-            ...prevCustomer,
-            ...shippingDetails
-          }));
-        }
       } catch (error) {
         console.error("Failed to parse user data from localStorage", error);
-        localStorage.removeItem("savedShippingInfo"); // Clear corrupted data
       }
     }
   }, []);
