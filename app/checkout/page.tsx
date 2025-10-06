@@ -16,14 +16,6 @@ const cardLogos = [
   { name: 'Discover', src: 'https://img.icons8.com/color/48/discover.png', alt: 'Discover' },
 ];
 
-// Venmo replaced with Klarna using local public path
-const expressCheckoutOptions = [
-    { name: 'Shop Pay', bgColor: 'bg-purple-600', logoSrc: 'https://img.icons8.com/ios-filled/50/ffffff/shopify.png', alt: 'Shop Pay' },
-    { name: 'PayPal', bgColor: 'bg-yellow-400', logoSrc: 'https://img.icons8.com/color/96/paypal.png', alt: 'PayPal' },
-    { name: 'G Pay', bgColor: 'bg-black', logoSrc: 'https://img.icons8.com/color/96/google-pay.png', alt: 'G Pay' },
-    { name: 'Klarna', bgColor: 'bg-pink-500', logoSrc: '/Klarna_Payment_Badge.svg.png', alt: 'Klarna' },
-];
-
 export default function CheckoutPage() {
   const router = useRouter();
   const { cartItems } = useCart();
@@ -367,24 +359,7 @@ export default function CheckoutPage() {
         <div className="max-w-6xl mx-auto px-4">
           <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="space-y-8">
-                <div className="bg-white rounded-lg shadow-md p-6">
-                  <h2 className="text-xl font-semibold mb-4">Express checkout</h2>
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    {expressCheckoutOptions.map((option) => (
-                        <button key={option.name} className={`${option.bgColor} py-3 px-4 rounded-md font-medium flex justify-center items-center h-14`}>
-                          <img
-                            src={option.logoSrc}
-                            alt={option.alt}
-                            className="h-10 object-contain"
-                            loading="lazy"
-                          />
-                        </button>
-                    ))}
-                  </div>
-                  <div className="text-center text-gray-600">Or</div>
-                </div>
-
+            <div className="space-y-8"> 
                 <div className="bg-white rounded-lg shadow-md p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Contact</h2>
