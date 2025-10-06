@@ -33,7 +33,8 @@ export default function CheckoutPage() {
   const [previousAddresses, setPreviousAddresses] = useState<any[]>([]);
   
   const [customer, setCustomer] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
     phone: "",
     address: {
@@ -73,10 +74,28 @@ export default function CheckoutPage() {
       try {
         const user = JSON.parse(userData);
         setCustomer(prevCustomer => ({
-          ...prevCustomer, // Keep existing, like country
-          name: user.name || "",
+          ...prevCustomer,
+          firstName: user.name?.split(' ')[0] || "",
+          lastName: user.name?.split(' ').slice(1).join(' ') || "",
           email: user.email || ""
         }));
+
+        // This function was missing. I've added it below.
+        const fetchPreviousAddresses = async (userId: string) => {
+          const token = localStorage.getItem("token");
+          if (!token) return;
+          try {
+            const response = await fetch(`https://athlekt.com/backendnew/api/user/addresses`, {
+              headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (response.ok) {
+              const data = await response.json();
+              setPreviousAddresses(data.data || []);
+            }
+          } catch (error) {
+            console.error("Failed to fetch previous addresses:", error);
+          }
+        };
 
         if (user._id) {
           fetchPreviousAddresses(user._id);
@@ -101,7 +120,8 @@ export default function CheckoutPage() {
   const handleSelectPreviousAddress = (addressDetails: any) => {
     setCustomer(prev => ({
       ...prev,
-      name: addressDetails.name || prev.name,
+      firstName: addressDetails.name?.split(' ')[0] || prev.firstName,
+      lastName: addressDetails.name?.split(' ').slice(1).join(' ') || prev.lastName,
       phone: addressDetails.phone || prev.phone,
       address: addressDetails.address || prev.address,
     }));
@@ -179,7 +199,7 @@ export default function CheckoutPage() {
   // Form validation function
   const isFormValid = () => {
     // Check customer details only - N-Genius will handle payment details
-    return customer.name && customer.email && customer.phone && 
+    return customer.firstName && customer.lastName && customer.email && customer.phone && 
            customer.address.street && customer.address.city && 
            customer.address.state && customer.address.zipCode;
   };
@@ -188,8 +208,8 @@ export default function CheckoutPage() {
     e.preventDefault();
     
     // Validate customer details only - N-Genius will handle payment details
-    if (!customer.name || !customer.email || !customer.phone || 
-        !customer.address.street || !customer.address.city || 
+    if (!customer.firstName || !customer.lastName || !customer.email || !customer.phone ||
+        !customer.address.street || !customer.address.city ||
         !customer.address.state || !customer.address.zipCode) {
       alert("Please fill in all required customer fields.");
       return;
@@ -214,7 +234,10 @@ export default function CheckoutPage() {
       }));
 
       const orderData = {
-        customer,
+        customer: {
+          ...customer,
+          name: `${customer.firstName} ${customer.lastName}`.trim(),
+        },
         items: mappedItems,
         couponCode: appliedCoupon ? appliedCoupon.coupon.code : null,
         discountAmount,
@@ -273,7 +296,7 @@ export default function CheckoutPage() {
                 "Authorization": `Bearer ${token}`,
               },
               body: JSON.stringify({
-                name: customer.name,
+                name: `${customer.firstName} ${customer.lastName}`.trim(),
                 phone: customer.phone,
                 address: customer.address,
               }),
@@ -403,9 +426,9 @@ export default function CheckoutPage() {
                   <h2 className="text-xl font-semibold mb-4">Delivery</h2>
                   <div className="space-y-4">
                     <select className="w-full p-3 border border-gray-300 rounded-md"><option>United Arab Emirates</option></select>
-                    <div className="grid grid-cols-2 gap-4">
-                      <input type="text" placeholder="First name*" required value={customer.name.split(' ')[0] || ''} onChange={(e) => { const lastName = customer.name.split(' ').slice(1).join(' ') || ''; setCustomer({...customer, name: e.target.value + ' ' + lastName}); }} className="w-full p-3 border border-gray-300 rounded-md"/>
-                      <input type="text" placeholder="Last name*" required value={customer.name.split(' ').slice(1).join(' ') || ''} onChange={(e) => { const firstName = customer.name.split(' ')[0] || ''; setCustomer({...customer, name: firstName + ' ' + e.target.value}); }} className="w-full p-3 border border-gray-300 rounded-md"/>
+                    <div className="grid grid-cols-2 gap-4"> 
+                      <input type="text" placeholder="First name*" required value={customer.firstName} onChange={(e) => setCustomer({...customer, firstName: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
+                      <input type="text" placeholder="Last name*" required value={customer.lastName} onChange={(e) => setCustomer({...customer, lastName: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
                     </div>
                     <input type="text" placeholder="Address*" required value={customer.address.street} onChange={(e) => setCustomer({...customer, address: {...customer.address, street: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
                     <div className="grid grid-cols-2 gap-4">
