@@ -413,6 +413,7 @@ export default function CheckoutPage() {
                       <input type="text" placeholder="State*" required value={customer.address.state} onChange={(e) => setCustomer({...customer, address: {...customer.address, state: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
                     </div>
                     <input type="text" placeholder="ZIP code*" required value={customer.address.zipCode} onChange={(e) => setCustomer({...customer, address: {...customer.address, zipCode: e.target.value}})} className="w-full p-3 border border-gray-300 rounded-md"/>
+                    <input type="tel" placeholder="Phone*" required value={customer.phone} onChange={(e) => setCustomer({...customer, phone: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
                   </div>
                 </div>
 
@@ -452,6 +453,7 @@ export default function CheckoutPage() {
                     <label htmlFor="remember" className="text-sm">Save my information for a faster checkout</label>
                   </div>
                 </div>
+
               )}
 
                 <button 
