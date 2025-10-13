@@ -393,12 +393,12 @@ export default function ProductDetail({ product }: { product: Product }) {
   return (
     <div className="bg-white">
       {/* Main Product Section - Now Dark */}
-      <section className="py-12 bg-[#212121] text-white">
+      <section className="py-12 bg-white text-[#212121]">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Product Images */}
             <div className="space-y-4">
-              <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-800 cursor-pointer">
+              <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer">
                 <Image
                   src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
                   alt={product.name}
@@ -411,16 +411,16 @@ export default function ProductDetail({ product }: { product: Product }) {
                 {currentImages && currentImages.length > 1 && (
                   <>
                     <button 
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition-colors"
                       onClick={prevImage}
                     >
-                      <ChevronLeft className="h-4 w-4 text-black" />
+                      <ChevronLeft className="h-4 w-4 text-white" />
                     </button>
                     <button 
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center hover:bg-white transition-colors"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition-colors"
                       onClick={nextImage}
                     >
-                      <ChevronRight className="h-4 w-4 text-black" />
+                      <ChevronRight className="h-4 w-4 text-white" />
                     </button>
                   </>
                 )}
@@ -432,7 +432,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                       <button
                         key={index}
                         className={`w-2 h-2 rounded-full transition-colors ${
-                          index === activeImageIndex ? 'bg-white' : 'bg-white/50'
+                          index === activeImageIndex ? 'bg-black' : 'bg-black/50'
                         }`}
                         onClick={() => setActiveImageIndex(index)}
                       />
@@ -448,7 +448,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     <button
                         key={index}
                       className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${
-                        index === activeImageIndex ? 'border-white' : 'border-transparent hover:border-gray-400'
+                        index === activeImageIndex ? 'border-black' : 'border-transparent hover:border-gray-600'
                       }`}
                       onClick={() => setActiveImageIndex(index)}
                     >
@@ -468,23 +468,23 @@ export default function ProductDetail({ product }: { product: Product }) {
             {/* Product Info */}
             <div className="space-y-6">
               <div>
-                <h1 className="text-3xl font-bold text-white mb-2">{product.name}</h1>
+                <h1 className="text-3xl font-bold text-[#212121] mb-2">{product.name}</h1>
                 <div className="flex items-center space-x-4">
                   {selectedVariation?.originalPrice && (
-                    <span className="text-gray-400 line-through text-lg">
+                    <span className="text-gray-500 line-through text-lg">
                       {formatCurrency(parseFloat(selectedVariation.originalPrice.replace(/[^0-9.]/g, '')))}
                     </span>
                   )}
-                  <span className="text-2xl font-bold text-white">
+                  <span className="text-2xl font-bold text-[#212121]">
                     {formatCurrency(finalPrice)}
                   </span>
                   {((product as any).discountPercentage || 0) > 0 && (
-                    <span className="text-lg text-gray-300 line-through ml-2">
+                    <span className="text-lg text-gray-400 line-through ml-2">
                       {formatCurrency(currentPrice)}
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-300">EARN 507 PACK VIP POINTS</p>
+                <p className="text-sm text-gray-600">EARN 507 PACK VIP POINTS</p>
               </div>
 
               {/* Rating and Actions */}
@@ -498,22 +498,22 @@ export default function ProductDetail({ product }: { product: Product }) {
                       />
                     ))}
                   </div>
-                  <span className="text-sm text-gray-300">({product.reviewCount || 0} reviews)</span>
+                  <span className="text-sm text-gray-600">({product.reviewCount || 0} reviews)</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <button 
                     onClick={handleWishlistToggle}
                     className={`p-2 rounded-full transition-colors ${
                       isInWishlist(product.id) 
-                        ? 'bg-red-500 text-white' 
-                        : 'bg-gray-700 text-white hover:bg-gray-600'
+                        ? 'bg-red-500 text-white'
+                        : 'bg-gray-200 text-black hover:bg-gray-300'
                     }`}
                   >
                     <Heart className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
                   </button>
                   <button 
                     onClick={handleShare}
-                    className="p-2 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors"
+                    className="p-2 bg-gray-200 text-black rounded-full hover:bg-gray-300 transition-colors"
                   >
                     <Share2 className="h-5 w-5" />
                   </button>
@@ -523,8 +523,8 @@ export default function ProductDetail({ product }: { product: Product }) {
               {/* Color/Pattern Selection */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-white">Color</span>
-                  <span className="text-sm text-white">{selectedColor}</span>
+                  <span className="text-sm font-medium text-[#212121]">Color</span>
+                  <span className="text-sm text-[#212121]">{selectedColor}</span>
                 </div>
                 <div className="flex space-x-2">
                   {colorOptions.map((color) => (
@@ -532,8 +532,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                       key={color.name}
                       className={`w-12 h-12 rounded-lg border-2 transition-colors cursor-pointer ${
                         selectedColor === color.name
-                          ? "border-white"
-                          : "border-gray-600 hover:border-gray-400"
+                          ? "border-black"
+                          : "border-gray-300 hover:border-gray-500"
                       }`}
                       onClick={() => {
                         setSelectedColor(color.name)
@@ -576,8 +576,8 @@ export default function ProductDetail({ product }: { product: Product }) {
               {/* Size Selection */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-white">Size</span>
-                  <button className="text-sm text-white underline hover:no-underline">SIZE GUIDE</button>
+                  <span className="text-sm font-medium text-[#212121]">Size</span>
+                  <button className="text-sm text-[#212121] underline hover:no-underline">SIZE GUIDE</button>
                 </div>
                 <div className="flex space-x-2">
                   {sizeOptions.map((size) => (
@@ -585,8 +585,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                       key={size}
                       className={`px-3 py-2 rounded-md border-2 font-medium transition-colors ${
                         selectedSize === size
-                          ? "bg-white text-[#212121] border-white"
-                          : "bg-transparent text-white border-gray-600 hover:border-white"
+                          ? "bg-[#212121] text-white border-[#212121]"
+                          : "bg-transparent text-[#212121] border-gray-300 hover:border-black"
                       }`}
                       onClick={() => setSelectedSize(size)}
                     >
@@ -594,17 +594,17 @@ export default function ProductDetail({ product }: { product: Product }) {
                     </button>
                   ))}
                 </div>
-                <p className="text-sm text-gray-400">Keelan is 6'2" and wears Medium</p>
+                <p className="text-sm text-gray-500">Keelan is 6'2" and wears Medium</p>
               </div>
 
               {/* Quantity Selection */}
               <div className="space-y-3">
-                <span className="text-sm font-medium text-white">Quantity</span>
+                <span className="text-sm font-medium text-[#212121]">Quantity</span>
                 <div className="flex items-center space-x-2">
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10 text-white border-gray-600 hover:bg-gray-700"
+                    className="h-10 w-10 text-black border-gray-300 hover:bg-gray-100"
                     onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
                   >
                     <Minus className="h-4 w-4" />
@@ -613,7 +613,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10 text-white border-gray-600 hover:bg-gray-700"
+                    className="h-10 w-10 text-black border-gray-300 hover:bg-gray-100"
                     onClick={() => setQuantity(prev => prev + 1)}
                   >
                     <Plus className="h-4 w-4" />
@@ -625,7 +625,7 @@ export default function ProductDetail({ product }: { product: Product }) {
               <div className="space-y-3">
                 <Button
                   size="lg"
-                  className="w-full font-semibold py-4 rounded-md transition-all duration-300 bg-white text-[#212121] hover:bg-gray-100"
+                  className="w-full font-semibold py-4 rounded-md transition-all duration-300 bg-[#212121] text-white hover:bg-black"
                   onClick={handleAddToCart}
                 >
                   ADD TO CART
@@ -634,7 +634,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                 asChild
                   variant="outline"
                 size="lg"
-                  className="w-full border-white text-white hover:bg-white hover:text-[#212121] font-semibold py-4 rounded-md transition-all duration-300"
+                  className="w-full border-black text-black hover:bg-black hover:text-white font-semibold py-4 rounded-md transition-all duration-300"
               >
                   <Link href="/cart">VIEW CART</Link>
               </Button>
@@ -671,17 +671,17 @@ export default function ProductDetail({ product }: { product: Product }) {
       </section>
 
       {/* Dark Product Details Section */}
-      <section className="bg-[#1a1a1a] text-white py-12">
+      <section className="bg-gray-50 text-[#212121] py-12">
         <div className="container mx-auto px-4">
           {/* Grid layout updated to two columns */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* Left Side - Collapsible Sections */}
             <div className="space-y-4">
               {/* Product Description */}
-              <div className="py-4 border-b border-gray-600">
+              <div className="py-4 border-b border-gray-300">
                   <div className="space-y-4">
                     {product.description && (
-                      <p className="text-gray-300 text-sm leading-relaxed">
+                      <p className="text-gray-600 text-sm leading-relaxed">
                         {product.description}
                       </p>
                     )}
@@ -690,12 +690,12 @@ export default function ProductDetail({ product }: { product: Product }) {
 
               {/* Purpose */}
               <Collapsible open={openSections.purpose} onOpenChange={() => toggleSection("purpose")}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-600 hover:border-gray-500 transition-colors">
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-300 hover:border-gray-400 transition-colors">
                   <span className="text-sm font-medium uppercase tracking-wide">PURPOSE</span>
                   {openSections.purpose ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="py-6">
-                  <div className="text-gray-300 text-sm leading-relaxed">
+                  <div className="text-gray-600 text-sm leading-relaxed">
                     {product.purpose ? (
                       <p>{product.purpose}</p>
                     ) : (
@@ -710,12 +710,12 @@ export default function ProductDetail({ product }: { product: Product }) {
 
               {/* Features & Fit */}
               <Collapsible open={openSections.features} onOpenChange={() => toggleSection("features")}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-600 hover:border-gray-500 transition-colors">
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-300 hover:border-gray-400 transition-colors">
                   <span className="text-sm font-medium uppercase tracking-wide">FEATURES & FIT</span>
                   {openSections.features ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="py-6">
-                  <div className="text-gray-300 text-sm leading-relaxed space-y-2">
+                  <div className="text-gray-600 text-sm leading-relaxed space-y-2">
                     {product.features ? (
                       <div dangerouslySetInnerHTML={{ __html: product.features.replace(/\n/g, '<br/>') }} />
                     ) : (
@@ -733,28 +733,28 @@ export default function ProductDetail({ product }: { product: Product }) {
 
               {/* Materials & Care */}
               <Collapsible open={openSections.materials} onOpenChange={() => toggleSection("materials")}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-600 hover:border-gray-500 transition-colors">
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-300 hover:border-gray-400 transition-colors">
                   <span className="text-sm font-medium uppercase tracking-wide">MATERIALS & CARE</span>
                   {openSections.materials ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="py-6">
-                  <div className="text-gray-300 text-sm leading-relaxed space-y-4">
+                  <div className="text-gray-600 text-sm leading-relaxed space-y-4">
                     {product.materials && (
                       <div>
-                        <h4 className="font-medium text-white mb-2">Materials:</h4>
+                        <h4 className="font-medium text-[#212121] mb-2">Materials:</h4>
                         <div dangerouslySetInnerHTML={{ __html: product.materials.replace(/\n/g, '<br/>') }} />
                       </div>
                     )}
                     {product.care && (
                       <div>
-                        <h4 className="font-medium text-white mb-2">Care Instructions:</h4>
+                        <h4 className="font-medium text-[#212121] mb-2">Care Instructions:</h4>
                         <div dangerouslySetInnerHTML={{ __html: product.care.replace(/\n/g, '<br/>') }} />
                       </div>
                     )}
                     {!product.materials && !product.care && (
                       <>
                         <div>
-                          <h4 className="font-medium text-white mb-2">Materials:</h4>
+                          <h4 className="font-medium text-[#212121] mb-2">Materials:</h4>
                           <ul className="list-disc pl-5 space-y-1">
                             <li>88% Polyester, 12% Elastane</li>
                             <li>Moisture-wicking fabric technology</li>
@@ -762,7 +762,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                           </ul>
                         </div>
                         <div>
-                          <h4 className="font-medium text-white mb-2">Care Instructions:</h4>
+                          <h4 className="font-medium text-[#212121] mb-2">Care Instructions:</h4>
                           <ul className="list-disc pl-5 space-y-1">
                             <li>Machine wash cold with like colors</li>
                             <li>Do not bleach</li>
@@ -778,7 +778,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
               {/* Reviews */}
               <Collapsible open={openSections.reviews} onOpenChange={() => toggleSection("reviews")}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-600 hover:border-gray-500 transition-colors">
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-300 hover:border-gray-400 transition-colors">
                   <div className="flex items-center space-x-3">
                     <span className="text-sm font-medium uppercase tracking-wide">REVIEWS</span>
                     <div className="flex">
@@ -808,12 +808,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                       <>
                         {/* Product Highlight Heading */}
                         <div className="mb-6">
-                          <h3 className="text-sm font-medium uppercase tracking-wide text-white">PRODUCT HIGHLIGHT</h3>
+                          <h3 className="text-sm font-medium uppercase tracking-wide text-[#212121]">PRODUCT HIGHLIGHT</h3>
                         </div>
                         
                         {/* Highlighted Product - Only Image */}
                         <div className="mb-6">
-                          <div className="bg-[#2a2a2a] rounded-lg overflow-hidden hover:bg-[#3a3a3a] transition-colors">
+                          <div className="bg-gray-100 rounded-lg overflow-hidden hover:bg-gray-200 transition-colors">
                             <div className="relative aspect-square">
                               <Image
                                 src={getFullImageUrl(highlightedProduct.image)}
@@ -853,14 +853,14 @@ export default function ProductDetail({ product }: { product: Product }) {
               shopTheLookItems.map((item) => (
                 <Link key={item.id} href={`/product/${item.id}`} className="block">
                   <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                <div className="relative aspect-[4/5] overflow-hidden">
+                <div className="relative aspect-[4/5] overflow-hidden rounded-lg">
                   <Image
                     src={getFullImageUrl(item.image)}
                     alt={item.name}
                     fill
                     className="object-cover hover:scale-105 transition-transform duration-300"
                   />
-                  {item.isNew && <Badge className="absolute top-2 left-2 bg-[#212121] text-white text-xs">NEW</Badge>}
+                  {item.isNew && <Badge className="absolute top-2 left-2 bg-black text-white text-xs">NEW</Badge>}
                 </div>
                 <div className="p-4">
                   <h3 className="text-sm font-medium text-[#212121] mb-2 line-clamp-2">{item.name}</h3>
@@ -921,14 +921,14 @@ export default function ProductDetail({ product }: { product: Product }) {
                 carouselItems.slice(currentCarouselIndex, currentCarouselIndex + 4).map((item) => (
                   <Link key={item.id} href={`/product/${item.id}`} className="group block">
                     <div className="relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="aspect-square relative overflow-hidden">
+                  <div className="aspect-square relative overflow-hidden rounded-lg">
                     <Image
                           src={getFullImageUrl(item.image)}
                           alt={item.name}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute top-3 right-3 bg-[#212121] text-white text-xs font-bold px-2 py-1 rounded">
+                    <div className="absolute top-3 right-3 bg-black text-white text-xs font-bold px-2 py-1 rounded">
                           -{item.discount}%
                     </div>
                   </div>
@@ -949,14 +949,14 @@ export default function ProductDetail({ product }: { product: Product }) {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Form */}
-            <div className="bg-[#2a2a2a] p-8 lg:p-12 rounded-lg">
+            <div className="bg-gray-100 p-8 lg:p-12 rounded-lg">
               <div className="space-y-8">
                 {/* Heading */}
                 <div className="space-y-4">
-                  <h2 className="text-3xl lg:text-4xl font-bold text-[#cbf26c] leading-tight uppercase tracking-wide">
+                  <h2 className="text-3xl lg:text-4xl font-bold text-[#ebff00] leading-tight uppercase tracking-wide">
                     JOIN THE ATHLEKT FAMILY
                   </h2>
-                  <p className="text-white text-base leading-relaxed">
+                  <p className="text-black text-base leading-relaxed">
                     But I Must Explain To You How All This Mistaken Idea Of Denouncing Pleasure And Praising Pain Was
                     Born...
                   </p>
@@ -972,7 +972,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                       value={formData.firstName}
                       onChange={handleInputChange}
                       placeholder="First Name*"
-                      className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
+                      className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg focus:outline-none"
                       required
                     />
                   </div>
@@ -985,7 +985,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                       value={formData.lastName}
                       onChange={handleInputChange}
                       placeholder="Last Name"
-                      className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
+                      className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg focus:outline-none"
                       required
                     />
                   </div>
@@ -998,7 +998,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="Email"
-                      className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
+                      className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg focus:outline-none"
                       required
                     />
                   </div>
@@ -1011,17 +1011,17 @@ export default function ProductDetail({ product }: { product: Product }) {
                       value={formData.phone}
                       onChange={handleInputChange}
                       placeholder="Phone"
-                      className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none focus:outline-none"
+                      className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg focus:outline-none"
                       required
                     />
                   </div>
 
                   {/* Submit Button */}
                   <div className="pt-4">
-                    <button
+                    <button 
                       type="submit"
                       disabled={isSubmitting}
-                      className="bg-[#4a4a4a] text-white hover:bg-[#5a5a5a] font-semibold px-8 py-4 h-auto rounded-none border-l-4 border-[#cbf26c] transition-all duration-300 hover:border-l-[#9fcc3b] disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-[#ebff00] text-black hover:bg-opacity-80 font-semibold px-8 py-4 h-auto rounded-lg border-l-4 border-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isSubmitting ? 'Sending...' : 'Send'}
                     </button>
@@ -1029,7 +1029,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
                   {/* Success/Error Message */}
                   {submitMessage && (
-                    <div className={`text-sm ${submitMessage.includes('Thank you') ? 'text-[#cbf26c]' : 'text-red-400'}`}>
+                    <div className={`text-sm ${submitMessage.includes('Thank you') ? 'text-green-600' : 'text-red-500'}`}>
                       {submitMessage}
                     </div>
                   )}

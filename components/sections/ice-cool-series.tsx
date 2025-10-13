@@ -35,7 +35,7 @@ export default function IceCoolSeries() {
           <Button
             size="lg"
             variant="outline"
-            className="border-2 border-white text-white hover:bg-white hover:text-[#cbf26c] bg-transparent font-semibold text-lg px-12 py-6 h-auto rounded-none transition-all duration-300 hover:scale-105"
+            className="border-2 border-white text-white hover:bg-white hover:text-[#cbf26c] bg-transparent font-semibold text-lg px-12 py-6 h-auto rounded-lg transition-all duration-300 hover:scale-105"
           >
             Shop Now
           </Button>

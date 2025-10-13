@@ -122,9 +122,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
 
   if (loading) {
     return (
-      <div className="bg-[#212121] min-h-screen">
+      <div className="bg-white min-h-screen">
         <div className="container mx-auto px-4 py-12">
-          <div className="text-white text-center">
+          <div className="text-[#212121] text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold uppercase tracking-wide mb-8">
               {getHeading()}
             </h1>
@@ -136,9 +136,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
   }
 
   return (
-    <div className="bg-[#212121]">
+    <div className="bg-white">
       {/* Header Section - Dark Background */}
-      <div className="bg-[#212121] text-white py-12">
+      <div className="bg-white text-[#212121] py-12">
         <div className="container mx-auto px-4">
           {/* Main Heading */}
           <div className="mb-8">
@@ -152,9 +152,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 <Button
                   key={tab.id}
                   variant="ghost"
-                  className={`px-4 py-2 text-sm font-medium uppercase tracking-wide rounded-none border-b-2 transition-colors ${selectedCategory === tab.id
-                      ? "bg-[#cbf26c] text-[#212121] border-[#cbf26c] hover:bg-[#9fcc3b]"
-                      : "bg-transparent text-white border-transparent hover:bg-gray-800 hover:text-[#cbf26c]"
+                  className={`px-4 py-2 text-sm font-medium uppercase tracking-wide rounded-md border-b-2 transition-colors ${selectedCategory === tab.id
+                      ? "bg-[#ebff00] text-black border-[#ebff00] hover:bg-opacity-80"
+                      : "bg-transparent text-[#212121] border-transparent hover:bg-gray-100 hover:text-black"
                     }`}
                   onClick={() => setSelectedCategory(tab.id)}
                 >
@@ -167,13 +167,13 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
             <div className="flex items-center gap-4 mt-4 lg:mt-0">
               <div className="flex items-center gap-2">
                 <span className="text-sm uppercase tracking-wide">GRID</span>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-gray-800">
+                <Button variant="ghost" size="icon" className="text-[#212121] hover:bg-gray-100">
                   <Grid3X3 className="h-4 w-4" />
                 </Button>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm uppercase tracking-wide">FILTER & SORT</span>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-gray-800">
+                <Button variant="ghost" size="icon" className="text-[#212121] hover:bg-gray-100">
                   <SlidersHorizontal className="h-4 w-4" />
                 </Button>
               </div>
@@ -181,8 +181,8 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
           </div>
 
           {/* Load Previous Button */}
-          <div className="text-center">
-            <Button className="bg-[#cbf26c] text-[#212121] hover:bg-[#9fcc3b] font-medium px-8 py-3 text-sm uppercase tracking-wide rounded-md">
+          <div className="text-center mb-8">
+            <Button className="bg-[#ebff00] text-black hover:bg-opacity-80 font-medium px-8 py-3 text-sm uppercase tracking-wide rounded-md">
               LOAD PREVIOUS
             </Button>
           </div>
@@ -190,17 +190,17 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
       </div>
 
       {/* Products Grid Section */}
-      <div className="py-8">
+      <div className="py-8 bg-gray-50">
         <div className="container mx-auto px-4">
           {filteredProducts.length === 0 ? (
-            <div className="text-center text-white py-12">
+            <div className="text-center text-[#212121] py-12">
               <h2 className="text-2xl font-bold mb-4">No products found</h2>
               <p className="text-gray-400">No products available for the selected category.</p>
             </div>
           ) : (
             <>
               {/* First Grid - 2x2 with tall right card */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-0 mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
                 {/* Top Left */}
                 {filteredProducts[0] && (
                   <div className="lg:col-span-1">
@@ -261,7 +261,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 for (let i = 0; i < remainingProducts.length; i += 4) {
                   const rowProducts = remainingProducts.slice(i, i + 4);
                   rows.push(
-                    <div key={i} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-0 mb-12">
+                    <div key={i} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
                       {rowProducts.map((product, index) => (
                         <ProductCard
                           key={product.id}
@@ -284,8 +284,8 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
 
               {/* Load More Section - Only show if there are more products */}
               {filteredProducts.length > 15 && (
-                <div className="text-center">
-                  <Button className="bg-[#cbf26c] text-[#212121] hover:bg-[#9fcc3b] font-semibold px-8 py-3 text-sm uppercase tracking-wide rounded-md">
+                <div className="text-center mt-8">
+                  <Button className="bg-[#ebff00] text-black hover:bg-opacity-80 font-semibold px-8 py-3 text-sm uppercase tracking-wide rounded-md">
                     LOAD MORE PRODUCTS
                   </Button>
                 </div>

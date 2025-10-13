@@ -141,10 +141,10 @@ export default function ProductCarousel() {
 
   if (loading) {
     return (
-      <section className="py-20 bg-[#212121] relative">
+      <section className="py-20 bg-white relative">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white uppercase tracking-wide">
+            <h2 className="text-3xl md:text-4xl font-bold text-[#212121] uppercase tracking-wide">
               FEATURED COLLECTIONS MEN & WOMEN
             </h2>
           </div>
@@ -157,11 +157,11 @@ export default function ProductCarousel() {
   }
 
   return (
-    <section className="py-20 bg-[#212121] relative">
+    <section className="py-20 bg-white relative">
       <div className="container mx-auto px-4">
         {/* Section Heading */}
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-white uppercase tracking-wide">
+          <h2 className="text-3xl md:text-4xl font-bold text-[#212121] uppercase tracking-wide">
             FEATURED COLLECTIONS MEN & WOMEN
           </h2>
         </div>
@@ -170,7 +170,7 @@ export default function ProductCarousel() {
         <Button
           variant="ghost"
           size="icon"
-          className={`absolute left-8 top-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full bg-transparent hover:bg-black/20 transition-all duration-300 ${
+          className={`absolute left-8 top-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full bg-gray-800/10 hover:bg-gray-800/20 transition-all duration-300 ${
             !canScrollLeft ? "opacity-50 cursor-not-allowed" : ""
           }`}
           onClick={scrollLeft}
@@ -182,7 +182,7 @@ export default function ProductCarousel() {
         <Button
           variant="ghost"
           size="icon"
-          className={`absolute right-8 top-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full bg-transparent hover:bg-black/20 transition-all duration-300 ${
+          className={`absolute right-8 top-1/2 -translate-y-1/2 z-10 w-16 h-16 rounded-full bg-gray-800/10 hover:bg-gray-800/20 transition-all duration-300 ${
             !canScrollRight ? "opacity-50 cursor-not-allowed" : ""
           }`}
           onClick={scrollRight}
@@ -207,7 +207,7 @@ export default function ProductCarousel() {
               className="flex-shrink-0 w-64 group cursor-pointer"
               onClick={() => handleCategoryClick(categoryWithSubs)}
             >
-              <div className="relative overflow-hidden bg-white p-1 shadow-lg hover:shadow-xl transition-all duration-300">
+              <div className="relative overflow-hidden rounded-lg bg-white p-1 shadow-lg hover:shadow-xl transition-all duration-300">
                 <Image
                   src={categoryWithSubs.carouselImage || categoryWithSubs.image || "/placeholder.svg"}
                   alt={categoryWithSubs.name}
@@ -217,7 +217,7 @@ export default function ProductCarousel() {
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300" />
                 {categoryWithSubs.discountPercentage && categoryWithSubs.discountPercentage > 0 && (
-                  <div className="absolute top-4 left-4 bg-[#cbf26c] text-[#212121] px-3 py-1 rounded-md font-bold text-sm">
+                  <div className="absolute top-4 left-4 bg-[#ebff00] text-black px-3 py-1 rounded-md font-bold text-sm">
                     {categoryWithSubs.discountPercentage}% OFF
                   </div>
                 )}
@@ -225,7 +225,7 @@ export default function ProductCarousel() {
 
               {/* Display sub-category name if available, otherwise category name */}
               <div className="mt-4 text-center">
-                <p className="text-white text-sm font-medium uppercase tracking-wide">
+                <p className="text-[#212121] text-sm font-medium uppercase tracking-wide">
                   {categoryWithSubs.subCategories.length > 0 
                     ? categoryWithSubs.subCategories[0].name 
                     : categoryWithSubs.name

@@ -62,7 +62,7 @@ export default function RelatedProducts({
             <Link key={product.id} href={`/product/${product.id}`} className="block">
               <Card className="group cursor-pointer border-none shadow-none hover:shadow-lg transition-shadow bg-white">
                 <CardContent className="p-0">
-                  <div className="relative overflow-hidden rounded-lg mb-4">
+                  <div className="relative overflow-hidden mb-4">
                     <Image
                       src={product.image || "/placeholder.svg"}
                       alt={product.name}

@@ -96,11 +96,11 @@ export default function MenCollection() {
   }
 
   return (
-    <section className="py-20 bg-[#212121]">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         {/* Section Heading */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white uppercase tracking-wide">MEN COLLECTION</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#212121] uppercase tracking-wide">MEN COLLECTION</h2>
         </div>
 
         {/* Grid Layout */}
@@ -114,7 +114,7 @@ export default function MenCollection() {
                   <div className="relative overflow-hidden rounded-lg mb-4">
                     <div className="w-full h-[380px] bg-gray-600 animate-pulse" />
                   </div>
-                  <div className="text-white">
+                  <div className="text-[#212121]">
                     <div className="h-6 bg-gray-600 rounded mb-2 animate-pulse" />
                     <div className="h-4 bg-gray-600 rounded animate-pulse" />
                   </div>
@@ -138,19 +138,19 @@ export default function MenCollection() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                     {categoryWithSubs.discountPercentage && categoryWithSubs.discountPercentage > 0 && (
-                      <div className="absolute top-4 left-4 bg-[#cbf26c] text-[#212121] px-3 py-1 rounded-md font-bold text-sm">
+                      <div className="absolute top-4 left-4 bg-[#ebff00] text-black px-3 py-1 rounded-md font-bold text-sm">
                         {categoryWithSubs.discountPercentage}% OFF
                       </div>
                     )}
                   </div>
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 text-[#cbf26c]">
+                  <div className="text-[#212121]">
+                    <h3 className="text-lg font-bold mb-2 text-black">
                       {categoryWithSubs.subCategories.length > 0 
                         ? categoryWithSubs.subCategories[0].name 
                         : categoryWithSubs.name
                       }
                     </h3>
-                    <p className="text-lg font-semibold">
+                    <p className="text-lg font-semibold text-gray-800">
                       {categoryWithSubs.description || "Premium athletic wear for men."}
                     </p>
                   </div>
@@ -170,9 +170,9 @@ export default function MenCollection() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                   </div>
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 text-[#cbf26c]">Golden Era Fresh Legacy - Marvelous</h3>
-                    <p className="text-lg font-semibold">$50.00</p>
+                  <div className="text-black">
+                    <h3 className="text-lg font-bold mb-2 text-black">Golden Era Fresh Legacy - Marvelous</h3>
+                    <p className="text-lg font-semibold text-gray-800">$50.00</p>
                   </div>
                 </div>
 
@@ -187,9 +187,9 @@ export default function MenCollection() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                   </div>
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 text-[#cbf26c]">3" Jogger Shorts - Navy</h3>
-                    <p className="text-lg font-semibold">$50.00</p>
+                  <div className="text-black">
+                    <h3 className="text-lg font-bold mb-2 text-black">3" Jogger Shorts - Navy</h3>
+                    <p className="text-lg font-semibold text-gray-800">$50.00</p>
                   </div>
                 </div>
 
@@ -204,9 +204,9 @@ export default function MenCollection() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                   </div>
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 text-[#cbf26c]">Sweat Tee - Paloma Grey Marl</h3>
-                    <p className="text-lg font-semibold">$40.00</p>
+                  <div className="text-black">
+                    <h3 className="text-lg font-bold mb-2 text-black">Sweat Tee - Paloma Grey Marl</h3>
+                    <p className="text-lg font-semibold text-gray-800">$40.00</p>
                   </div>
                 </div>
 
@@ -221,9 +221,9 @@ export default function MenCollection() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                   </div>
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 text-[#cbf26c]">Golden Era Fresh Legacy - Paloma</h3>
-                    <p className="text-lg font-semibold">$50.00</p>
+                  <div className="text-black">
+                    <h3 className="text-lg font-bold mb-2 text-black">Golden Era Fresh Legacy - Paloma</h3>
+                    <p className="text-lg font-semibold text-gray-800">$50.00</p>
                   </div>
                 </div>
               </>

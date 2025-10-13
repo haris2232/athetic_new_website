@@ -70,7 +70,7 @@ export default function WishlistPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           {wishlistItems.map((item) => (
             <Link key={item.id} href={`/product/${item.id}`} className="group block">
-              <div className="relative overflow-hidden bg-white hover:shadow-md transition-shadow duration-300">
+              <div className="relative overflow-hidden bg-white hover:shadow-md transition-shadow duration-300 rounded-lg">
                 {/* Product Image */}
                 <div className="relative overflow-hidden aspect-[3/4]">
                   <Image
@@ -104,13 +104,13 @@ export default function WishlistPage() {
                 </div>
 
                 {/* Product Info Overlay */}
-                <div className="absolute bottom-0 left-0 right-0 bg-[#212121] text-white p-4">
+                <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm text-[#212121] p-4">
                   {/* Product Name */}
                   <h3 className="text-sm font-medium mb-2 leading-tight">{item.name}</h3>
 
                   {/* Pricing */}
                   <div className="flex items-center space-x-2">
-                    <span className="text-lg font-bold text-white">{formatPrice(item.price)}</span>
+                    <span className="text-lg font-bold text-[#212121]">{formatPrice(item.price)}</span>
                   </div>
                 </div>
 

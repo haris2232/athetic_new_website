@@ -96,11 +96,11 @@ export default function WomenCollection() {
   }
 
   return (
-    <section className="py-20 bg-[#212121]">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         {/* Section Heading */}
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white uppercase tracking-wide">WOMEN COLLECTION</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#212121] uppercase tracking-wide">WOMEN COLLECTION</h2>
         </div>
 
         {/* Grid Layout */}
@@ -131,7 +131,7 @@ export default function WomenCollection() {
                   <div className="relative overflow-hidden rounded-lg mb-4">
                     <div className="w-full h-[380px] bg-gray-600 animate-pulse" />
                   </div>
-                  <div className="text-white">
+                  <div className="text-[#212121]">
                     <div className="h-6 bg-gray-600 rounded mb-2 animate-pulse" />
                     <div className="h-4 bg-gray-600 rounded animate-pulse" />
                   </div>
@@ -155,19 +155,19 @@ export default function WomenCollection() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                     {categoryWithSubs.discountPercentage && categoryWithSubs.discountPercentage > 0 && (
-                      <div className="absolute top-4 left-4 bg-[#cbf26c] text-[#212121] px-3 py-1 rounded-md font-bold text-sm">
+                      <div className="absolute top-4 left-4 bg-[#ebff00] text-black px-3 py-1 rounded-md font-bold text-sm">
                         {categoryWithSubs.discountPercentage}% OFF
                       </div>
                     )}
                   </div>
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 uppercase text-[#cbf26c]">
+                  <div className="text-[#212121]">
+                    <h3 className="text-lg font-bold mb-2 uppercase text-black">
                       {categoryWithSubs.subCategories.length > 0 
                         ? categoryWithSubs.subCategories[0].name 
                         : categoryWithSubs.name
                       }
                     </h3>
-                    <p className="text-sm text-gray-300 leading-relaxed">
+                    <p className="text-sm text-gray-600 leading-relaxed">
                       {categoryWithSubs.description || "Get ready for the ultimate style and performance combo."}
                     </p>
                   </div>
@@ -187,9 +187,9 @@ export default function WomenCollection() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                   </div>
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 uppercase text-[#cbf26c]">T-Shirts & Tops</h3>
-                    <p className="text-sm text-gray-300 leading-relaxed">
+                  <div className="text-black">
+                    <h3 className="text-lg font-bold mb-2 uppercase text-black">T-Shirts & Tops</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
                       Get ready for the ultimate style and performance combo with our women's gym t-shirts.
                     </p>
                   </div>
@@ -206,9 +206,9 @@ export default function WomenCollection() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                   </div>
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 uppercase text-[#cbf26c]">Running</h3>
-                    <p className="text-sm text-gray-300 leading-relaxed">
+                  <div className="text-black">
+                    <h3 className="text-lg font-bold mb-2 uppercase text-black">Running</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
                       Running stuff so good it'll (almost) make you want to do cardio.
                     </p>
                   </div>
@@ -225,9 +225,9 @@ export default function WomenCollection() {
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                   </div>
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 uppercase text-[#cbf26c]">Ready for Lift(ing) Off</h3>
-                    <p className="text-sm text-gray-300 leading-relaxed">
+                  <div className="text-black">
+                    <h3 className="text-lg font-bold mb-2 uppercase text-black">Ready for Lift(ing) Off</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
                       These new rest day essentials make for perfect travel fits.
                     </p>
                   </div>
@@ -243,13 +243,13 @@ export default function WomenCollection() {
                       className="w-full h-[380px] object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
-                    <div className="absolute top-4 left-4 bg-[#cbf26c] text-[#212121] px-3 py-1 rounded-md font-bold text-sm">
+                    <div className="absolute top-4 left-4 bg-[#ebff00] text-black px-3 py-1 rounded-md font-bold text-sm">
                       30% OFF
                     </div>
                   </div>
-                  <div className="text-white">
-                    <h3 className="text-lg font-bold mb-2 uppercase text-[#cbf26c]">Extra 30% Off Last Chance Looks</h3>
-                    <p className="text-sm text-gray-300 leading-relaxed">
+                  <div className="text-black">
+                    <h3 className="text-lg font-bold mb-2 uppercase text-black">Extra 30% Off Last Chance Looks</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">
                       This bank holiday grab your new season staples and make it the kit you wear when you hit a PB.
                     </p>
                   </div>

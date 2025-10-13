@@ -116,7 +116,7 @@ export function BundleSection({ category }: BundleSectionProps) {
       <img
         src="/bundle.png"
         alt="Bundle Promotion"
-        className="w-full rounded-md shadow-md mb-8"
+        className="w-full rounded-lg shadow-md mb-8"
         style={{ maxHeight: '500px', objectFit: 'cover' }}
       />
       <div className="flex flex-col lg:flex-row gap-8">
@@ -125,25 +125,25 @@ export function BundleSection({ category }: BundleSectionProps) {
           const savingsPercentage = Math.round((savings / bundle.originalPrice) * 100)
 
           return (
-            <div key={bundle._id} className="flex-1 bg-[#1a1a1a] rounded-lg p-6">
-              <h2 className="text-white text-2xl font-bold mb-6 text-center">{bundle.name}</h2>
+            <div key={bundle._id} className="flex-1 bg-gray-100 rounded-lg p-6">
+              <h2 className="text-[#212121] text-2xl font-bold mb-6 text-center">{bundle.name}</h2>
 
               {/* THIS IS THE MODIFIED LINE */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 {bundle.products.map((product, productIndex) => (
-                  <div key={productIndex} className="bg-[#2a2a2a] rounded-lg p-4">
+                  <div key={productIndex} className="bg-white rounded-lg p-4 shadow-sm">
                     <img
                       src={product.images?.[0] || "/placeholder.svg"}
                       alt={product.title || product.name}
                       className="w-full h-32 object-cover rounded-lg mb-2"
                     />
-                    <h3 className="text-white text-sm font-medium">{product.title || product.name}</h3>
-                    <p className="text-gray-400 text-xs">{product.description || 'Premium quality'}</p>
+                    <h3 className="text-[#212121] text-sm font-medium">{product.title || product.name}</h3>
+                    <p className="text-gray-500 text-xs">{product.description || 'Premium quality'}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-white font-bold">{formatCurrency(product.basePrice || parseFloat(product.price || '0'))}</span>
+                      <span className="text-[#212121] font-bold">{formatCurrency(product.basePrice || parseFloat(product.price || '0'))}</span>
                       <div className="flex items-center">
                         <span className="text-yellow-400 text-xs">★</span>
-                        <span className="text-white text-xs ml-1">{product.reviewRating || product.rating || 4.5}</span>
+                        <span className="text-[#212121] text-xs ml-1">{product.reviewRating || product.rating || 4.5}</span>
                       </div>
                     </div>
                   </div>
@@ -152,10 +152,10 @@ export function BundleSection({ category }: BundleSectionProps) {
 
               <div className="text-center">
                 <div className="mb-4">
-                  <div className="text-gray-400 text-sm line-through">
+                  <div className="text-gray-500 text-sm line-through">
                     Original: {formatCurrency(bundle.originalPrice)}
                   </div>
-                  <div className="text-white text-xl font-bold">
+                  <div className="text-[#212121] text-xl font-bold">
                     Bundle: {formatCurrency(bundle.bundlePrice)}
                   </div>
                   <div className="text-green-400 text-sm font-medium">

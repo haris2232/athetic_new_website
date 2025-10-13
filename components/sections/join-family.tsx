@@ -55,18 +55,18 @@ export default function JoinFamily() {
   }
 
   return (
-    <section className="py-20 bg-[#212121]">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           {/* Left Side - Form */}
-          <div className="bg-[#212121] p-8 lg:p-0 rounded-lg">
+          <div className="bg-gray-100 p-8 lg:p-12 rounded-lg">
             <div className="space-y-8">
               {/* Heading */}
               <div className="space-y-4">
-                <h2 className="text-3xl lg:text-4xl font-bold text-[#cbf26c] leading-tight uppercase tracking-wide">
+                <h2 className="text-3xl lg:text-4xl font-bold text-[#ebff00] leading-tight uppercase tracking-wide">
                   JOIN THE ATHLEKT FAMILY
                 </h2>
-                <p className="text-white text-base leading-relaxed">
+                <p className="text-black text-base leading-relaxed">
                   But I Must Explain To You How All This Mistaken Idea Of Denouncing Pleasure And Praising Pain Was
                   Born...
                 </p>
@@ -82,7 +82,7 @@ export default function JoinFamily() {
                     placeholder="First Name"
                     value={formData.firstName}
                     onChange={handleInputChange}
-                    className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none"
+                    className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg"
                     required
                   />
                 </div>
@@ -95,7 +95,7 @@ export default function JoinFamily() {
                     placeholder="Last Name"
                     value={formData.lastName}
                     onChange={handleInputChange}
-                    className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none"
+                    className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg"
                     required
                   />
                 </div>
@@ -108,7 +108,7 @@ export default function JoinFamily() {
                     placeholder="Email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none"
+                    className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg"
                     required
                   />
                 </div>
@@ -121,7 +121,7 @@ export default function JoinFamily() {
                     placeholder="Phone"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="w-full h-14 px-4 bg-transparent border border-[#4a4a4a] text-white placeholder:text-[#9a9a9a] focus:border-[#cbf26c] focus:ring-0 rounded-none"
+                    className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg"
                     required
                   />
                 </div>
@@ -131,7 +131,7 @@ export default function JoinFamily() {
                   <Button
                     type="submit"
                     disabled={isSubmitting}
-                    className="bg-[#4a4a4a] text-white hover:bg-[#5a5a5a] font-semibold px-8 py-4 h-auto rounded-none border-l-4 border-[#cbf26c] transition-all duration-300 hover:border-l-[#9fcc3b] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-[#ebff00] text-black hover:bg-opacity-80 font-semibold px-8 py-4 h-auto rounded-lg border-l-4 border-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? 'Sending...' : 'Send'}
                   </Button>
@@ -139,7 +139,7 @@ export default function JoinFamily() {
 
                 {/* Success/Error Message */}
                 {submitMessage && (
-                  <div className={`text-sm ${submitMessage.includes('Thank you') ? 'text-[#cbf26c]' : 'text-red-400'}`}>
+                  <div className={`text-sm ${submitMessage.includes('Thank you') ? 'text-green-600' : 'text-red-500'}`}>
                     {submitMessage}
                   </div>
                 )}

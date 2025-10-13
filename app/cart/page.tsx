@@ -197,11 +197,11 @@ export default function CartPage() {
       <Header />
       <main className="flex-1">
         <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen">
-          <div className="bg-[#212121] text-white p-8 lg:p-12">
+          <div className="bg-white text-[#212121] p-8 lg:p-12">
             <div className="max-w-2xl mx-auto">
               <div className="mb-12">
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl lg:text-3xl font-bold text-[#cbf26c] uppercase tracking-wide">
+                  <h2 className="text-2xl lg:text-3xl font-bold text-[#ebff00] uppercase tracking-wide">
                     {getCurrencySymbol()} {Math.floor(amountForFreeShipping)} MORE TO GET FREE SHIPPING
                   </h2>
                 </div>
@@ -210,15 +210,15 @@ export default function CartPage() {
                     Array.from({ length: 3 }).map((_, index) => (
                       <div key={index} className="group">
                         <div className="relative bg-white rounded-lg overflow-hidden mb-4">
-                          <div className="aspect-[3/4] relative bg-gray-200 animate-pulse">
+                          <div className="aspect-[3/4] relative bg-gray-300 animate-pulse">
                             <div className="absolute top-3 right-3 w-8 h-8 bg-white/80 rounded-full flex items-center justify-center">
                               <Heart className="h-4 w-4 text-gray-400" />
                             </div>
                           </div>
                         </div>
                         <div className="space-y-1">
-                          <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                          <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
+                          <div className="h-4 bg-gray-300 rounded animate-pulse"></div>
+                          <div className="h-6 bg-gray-300 rounded animate-pulse"></div>
                         </div>
                       </div>
                     ))
@@ -233,7 +233,7 @@ export default function CartPage() {
                       
                       return (
                         <Link key={productId} href={`/product/${productId}`} className="group block">
-                          <div className="relative bg-white rounded-lg overflow-hidden mb-4 cursor-pointer">
+                          <div className="relative bg-gray-100 rounded-lg overflow-hidden mb-4 cursor-pointer">
                             <div className="aspect-[3/4] relative">
                               <Image
                                 src={productImage}
@@ -265,8 +265,8 @@ export default function CartPage() {
                             </div>
                           </div>
                           <div className="space-y-1">
-                            <h3 className="text-sm font-medium text-white">{productName}</h3>
-                            <p className="text-lg font-bold text-white">{formatPrice(productPrice)}</p>
+                            <h3 className="text-sm font-medium text-[#212121]">{productName}</h3>
+                            <p className="text-lg font-bold text-[#212121]">{formatPrice(productPrice)}</p>
                           </div>
                         </Link>
                       );
@@ -290,12 +290,12 @@ export default function CartPage() {
               </div>
             </div>
           </div>
-          <div className="bg-white p-8 lg:p-12">
+          <div className="bg-[#212121] text-white p-8 lg:p-12">
             <div className="max-w-md mx-auto">
               {shippingInfo && (
                 <div className="mb-8">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-[#212121]">
+                    <span className="text-sm font-medium text-white">
                       {shippingInfo.isFreeShipping
                         ? "Free Shipping Applied!"
                         : `You're ${Math.floor(amountForFreeShipping)} AED away from Free Standard Shipping`
@@ -306,11 +306,11 @@ export default function CartPage() {
                     <>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                          className="bg-[#ebff00] h-2 rounded-full transition-all duration-300"
                           style={{ width: `${Math.min(100, (subtotal / freeShippingThreshold) * 100)}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                      <div className="flex justify-between text-xs text-gray-400 mt-1">
                         <span>{formatPrice(0)}</span>
                         <span>{formatPrice(freeShippingThreshold)}</span>
                       </div>
@@ -318,14 +318,14 @@ export default function CartPage() {
                   )}
                 </div>
               )}
-              <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+              <div className="mb-4 p-4 bg-gray-800 rounded-lg">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Items in cart</span>
-                  <span className="text-sm font-medium text-gray-600">{cartItems.length} items</span>
+                  <span className="text-sm font-medium text-gray-300">Items in cart</span>
+                  <span className="text-sm font-medium text-gray-300">{cartItems.length} items</span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
-                  <span className="text-sm text-gray-600">Total quantity</span>
-                  <span className="text-sm font-medium text-gray-600">
+                  <span className="text-sm text-gray-300">Total quantity</span>
+                  <span className="text-sm font-medium text-gray-300">
                     {cartItems.reduce((sum, item) => sum + item.quantity, 0)} pieces
                   </span>
                 </div>
@@ -351,7 +351,7 @@ export default function CartPage() {
                       />
                     </div>
                     <div className="flex-1 space-y-1">
-                      <h3 className="font-semibold text-[#212121]">
+                      <h3 className="font-semibold text-white">
                         {item.isBundle ? (
                           <div className="flex items-center space-x-2">
                             <Package className="h-4 w-4 text-green-600" />
@@ -379,16 +379,16 @@ export default function CartPage() {
                       {!item.isBundle && (
                         <>
                           <p className="text-sm text-gray-600">{item.fit}</p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-400">
                             {item.color} | {item.size}
                           </p>
                         </>
                       )}
                       <div className="space-y-1">
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-400">
                           {item.isBundle ? 'Bundle Price:' : 'Price:'} {formatPrice(item.price)} each
                         </p>
-                        <p className="font-bold text-[#212121]">{formatPrice(item.price * item.quantity)} total</p>
+                        <p className="font-bold text-white">{formatPrice(item.price * item.quantity)} total</p>
                       </div>
                     </div>
                     <div className="flex flex-col items-end space-y-2">
@@ -407,11 +407,11 @@ export default function CartPage() {
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
-                      <div className="flex items-center border border-gray-200 rounded-md">
+                      <div className="flex items-center border border-gray-600 rounded-md">
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-r-none"
+                          className="h-8 w-8 text-gray-300 hover:bg-gray-700 rounded-r-none"
                           onClick={() => {
                             updateQuantity(item.id, item.quantity - 1);
                             showNotification(`${item.name} quantity updated.`);
@@ -420,13 +420,13 @@ export default function CartPage() {
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
-                        <span className="w-8 text-center text-sm font-medium text-[#212121] select-none">
+                        <span className="w-8 text-center text-sm font-medium text-white select-none">
                           {item.quantity}
                         </span>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-gray-500 hover:bg-gray-100 rounded-l-none"
+                          className="h-8 w-8 text-gray-300 hover:bg-gray-700 rounded-l-none"
                           onClick={() => {
                             updateQuantity(item.id, item.quantity + 1);
                             showNotification(`${item.name} quantity updated.`);
@@ -459,8 +459,8 @@ export default function CartPage() {
               )}
               <div className="space-y-4 mb-8">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Subtotal</span>
-                  <span className="font-medium">{formatPrice(subtotal)}</span>
+                  <span className="text-gray-300">Subtotal</span>
+                  <span className="font-medium text-white">{formatPrice(subtotal)}</span>
                 </div>
                 {bundleDiscount?.hasBundleDiscount && (
                   <div className="flex justify-between text-green-600">
@@ -478,7 +478,7 @@ export default function CartPage() {
                   </div>
                 )}
                 <div className="flex justify-between">
-                  <span className="text-gray-600">
+                  <span className="text-gray-300">
                     {shippingInfo?.isFreeShipping ? "Shipping" : "Estimated Shipping"}
                   </span>
                   <span className={`font-medium ${shippingInfo?.isFreeShipping ? 'text-green-600' : ''}`}>
@@ -487,17 +487,17 @@ export default function CartPage() {
                 </div>
                 <div className="border-t pt-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-[#212121]">Total</span>
+                    <span className="text-lg font-semibold text-white">Total</span>
                     <div className="text-right">
-                      <span className="text-sm text-gray-500 mr-2">{currency}</span>
-                      <span className="text-xl font-bold text-[#212121]">{formatPrice(total)}</span>
+                      <span className="text-sm text-gray-400 mr-2">{currency}</span>
+                      <span className="text-xl font-bold text-white">{formatPrice(total)}</span>
                     </div>
                   </div>
                 </div>
               </div>
               <Button
                 asChild
-                className="w-full bg-[#212121] text-white hover:bg-black font-semibold py-4 text-lg rounded-md mb-6"
+                className="w-full bg-white text-[#212121] hover:bg-gray-200 font-semibold py-4 text-lg rounded-md mb-6"
               >
                 <Link href="/checkout">CHECKOUT</Link>
               </Button>

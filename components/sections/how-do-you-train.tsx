@@ -110,11 +110,11 @@ export default function HowDoYouTrain() {
   }
 
   return (
-    <section className="py-20 bg-[#212121]">
+    <section className="py-20 bg-white">
       <div className="container mx-auto px-4">
         {/* Section Heading */}
         <div className="mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold text-white uppercase tracking-wide">HOW DO YOU TRAIN?</h2>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#212121] uppercase tracking-wide">HOW DO YOU TRAIN?</h2>
         </div>
 
         {/* Training Categories Grid */}
@@ -148,26 +148,26 @@ export default function HowDoYouTrain() {
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors duration-300" />
                   {categoryWithSubs.discountPercentage && categoryWithSubs.discountPercentage > 0 && (
-                    <div className="absolute top-4 left-4 bg-[#cbf26c] text-[#212121] px-3 py-1 rounded-md font-bold text-sm">
+                    <div className="absolute top-4 left-4 bg-[#ebff00] text-black px-3 py-1 rounded-md font-bold text-sm">
                       {categoryWithSubs.discountPercentage}% OFF
                     </div>
                   )}
                 </div>
                 <div className="mb-4">
-                  <h3 className="text-2xl font-bold text-white uppercase tracking-wide text-center">
+                  <h3 className="text-2xl font-bold text-[#212121] uppercase tracking-wide text-center">
                     {categoryWithSubs.subCategories.length > 0 
                       ? categoryWithSubs.subCategories[0].name 
                       : categoryWithSubs.name
                     }
                   </h3>
-                  <p className="text-sm text-gray-300 text-center mt-2">
+                  <p className="text-sm text-gray-600 text-center mt-2">
                     {categoryWithSubs.description || "Premium training gear for your workout."}
                   </p>
                 </div>
                 <div className="flex justify-center">
                   <Button
                     variant="outline"
-                    className="border-2 border-[#cbf26c] text-[#cbf26c] hover:bg-[#cbf26c] hover:text-[#212121] bg-transparent font-semibold px-8 py-3 rounded-none transition-all duration-300 hover:scale-105"
+                    className="border-2 border-black text-black hover:bg-black hover:text-white bg-transparent font-semibold px-8 py-3 rounded-lg transition-all duration-300 hover:scale-105"
                   >
                     Shop Now
                   </Button>
@@ -190,13 +190,13 @@ export default function HowDoYouTrain() {
                 </div>
 
                 <div className="mb-4">
-                  <h3 className="text-2xl font-bold text-white uppercase tracking-wide text-center">{category.title}</h3>
+                  <h3 className="text-2xl font-bold text-[#212121] uppercase tracking-wide text-center">{category.title}</h3>
                 </div>
 
                 <div className="flex justify-center">
                   <Button
                     variant="outline"
-                    className="border-2 border-[#cbf26c] text-[#cbf26c] hover:bg-[#cbf26c] hover:text-[#212121] bg-transparent font-semibold px-8 py-3 rounded-none transition-all duration-300 hover:scale-105"
+                    className="border-2 border-black text-black hover:bg-black hover:text-white bg-transparent font-semibold px-8 py-3 rounded-lg transition-all duration-300 hover:scale-105"
                   >
                     Shop Now
                   </Button>

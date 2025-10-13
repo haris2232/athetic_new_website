@@ -95,7 +95,7 @@ const products = [
           {products.map((product) => (
             <Link key={product.id} href={`/product/${product.id}`} className="group block">
               <div className="relative bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer">
-                <div className="aspect-[3/4] relative">
+                <div className="aspect-[3/4] relative overflow-hidden rounded-lg">
                   <Image
                     src={product.image}
                     alt={product.name}

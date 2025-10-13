@@ -142,11 +142,11 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
       {/* Reviews Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <span className="text-sm font-medium uppercase tracking-wide text-white">REVIEWS</span>
+          <span className="text-sm font-medium uppercase tracking-wide text-[#212121]">REVIEWS</span>
           {reviews.length > 0 && (
             <div className="flex items-center space-x-2">
               {renderStars(averageRating)}
-              <span className="text-sm text-gray-300">({reviews.length} reviews)</span>
+              <span className="text-sm text-gray-600">({reviews.length} reviews)</span>
             </div>
           )}
         </div>
@@ -155,7 +155,7 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
           size="sm" 
           variant="outline" 
           onClick={() => setShowReviewForm(!showReviewForm)}
-          className="text-white border-gray-600 hover:bg-gray-700"
+          className="text-[#212121] border-gray-300 hover:bg-gray-100"
         >
           <MessageSquare className="h-4 w-4 mr-2" />
           Write Review
@@ -164,46 +164,46 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
 
       {/* Review Form */}
       {showReviewForm && (
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-600">
-          <h3 className="text-lg font-medium text-white mb-4">Write a Review</h3>
+        <div className="bg-gray-100 p-6 rounded-lg border border-gray-200">
+          <h3 className="text-lg font-medium text-[#212121] mb-4">Write a Review</h3>
           
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">Rating</label>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Rating</label>
               {renderStars(newReview.rating, true, (rating) => 
                 setNewReview(prev => ({ ...prev, rating }))
               )}
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">Your Name</label>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Your Name</label>
               <Input
                 value={newReview.customerName}
                 onChange={(e) => setNewReview(prev => ({ ...prev, customerName: e.target.value }))}
                 placeholder="Enter your name"
-                className="bg-gray-700 border-gray-600 text-white"
+                className="bg-white border-gray-300 text-[#212121]"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">Your Email</label>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Your Email</label>
               <Input
                 type="email"
                 value={newReview.customerEmail}
                 onChange={(e) => setNewReview(prev => ({ ...prev, customerEmail: e.target.value }))}
                 placeholder="Enter your email"
-                className="bg-gray-700 border-gray-600 text-white"
+                className="bg-white border-gray-300 text-[#212121]"
               />
             </div>
 
             <div>
-              <label className="text-sm font-medium text-gray-300 mb-2 block">Your Review</label>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Your Review</label>
               <Textarea
                 value={newReview.comment}
                 onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
                 placeholder="Share your experience with this product..."
                 rows={4}
-                className="bg-gray-700 border-gray-600 text-white"
+                className="bg-white border-gray-300 text-[#212121]"
               />
             </div>
 
@@ -219,7 +219,7 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
               <Button 
                 variant="outline" 
                 onClick={() => setShowReviewForm(false)}
-                className="border-gray-600 text-white hover:bg-gray-700"
+                className="border-gray-300 text-[#212121] hover:bg-gray-200"
               >
                 Cancel
               </Button>
@@ -232,35 +232,35 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
       <div className="space-y-4">
         {loading ? (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
-            <p className="text-gray-400 mt-2">Loading reviews...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-500 mx-auto"></div>
+            <p className="text-gray-500 mt-2">Loading reviews...</p>
           </div>
         ) : reviews.length > 0 ? (
           reviews.map((review) => (
-            <div key={review._id} className="border-b border-gray-600 pb-4">
+            <div key={review._id} className="border-b border-gray-200 pb-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-2">
                   {renderStars(review.rating)}
-                  <span className="text-sm font-medium text-white">
+                  <span className="text-sm font-medium text-[#212121]">
                     {review.customer.name}
                   </span>
                 </div>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-500">
                   {new Date(review.createdAt).toLocaleDateString()}
                 </span>
               </div>
               
-              <p className="text-sm text-gray-300 mb-2">
+              <p className="text-sm text-gray-600 mb-2">
                 {review.comment}
               </p>
               
               {review.adminResponse && (
-                <div className="bg-blue-900/20 p-3 rounded-lg border-l-4 border-blue-500 mt-3">
+                <div className="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-500 mt-3">
                   <div className="flex items-center mb-1">
                     <MessageSquare className="h-3 w-3 mr-2 text-blue-400" />
                     <span className="text-xs font-medium text-blue-400">Store Response</span>
                   </div>
-                  <p className="text-xs text-gray-300">{review.adminResponse}</p>
+                  <p className="text-xs text-gray-600">{review.adminResponse}</p>
                   {review.responseDate && (
                     <p className="text-xs text-gray-500 mt-1">
                       {new Date(review.responseDate).toLocaleDateString()}
@@ -273,7 +273,7 @@ export default function ProductReviews({ product }: ProductReviewsProps) {
         ) : (
           <div className="text-center py-8">
             <Star className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-300 mb-2">No reviews yet</h3>
+            <h3 className="text-lg font-medium text-gray-700 mb-2">No reviews yet</h3>
             <p className="text-gray-500">Be the first to review this product!</p>
           </div>
         )}
