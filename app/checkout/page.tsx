@@ -244,11 +244,13 @@ export default function CheckoutPage() {
 
       const orderData = {
         customer: {
-          ...customer,
           name: `${customer.firstName} ${customer.lastName}`.trim(),
+          email: customer.email,
+          phone: customer.phone,
+          address: customer.address, // Explicitly include the address object
         },
         items: mappedItems,
-        couponCode: appliedCoupon ? appliedCoupon.coupon.code : null,
+        couponCode: appliedCoupon?.coupon?.code || null,
         discountAmount,
         subtotal,
         shippingCost: shipping,
