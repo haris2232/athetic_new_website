@@ -3,7 +3,7 @@ import Hero from "@/components/sections/hero"
 import ProductCarousel from "@/components/sections/product-carousel"
 import BrandStatement from "@/components/sections/brand-statement"
 import WomenCollection from "@/components/sections/women-collection"
-import MenBrandStatement from "@/components/sections/men-brand-statement"
+// import MenBrandStatement from "@/components/sections/men-brand-statement"
 import MenCollection from "@/components/sections/men-collection"
 import { BundleSection } from "@/components/sections/bundle-section"
 import IceCoolSeries from "@/components/sections/ice-cool-series"
@@ -21,7 +21,7 @@ export default function HomePage() {
         <ProductCarousel />
         <BrandStatement />
         <WomenCollection />
-        <MenBrandStatement />
+        {/* <MenBrandStatement /> */}
         <MenCollection />
         <BundleSection />
         <IceCoolSeries />

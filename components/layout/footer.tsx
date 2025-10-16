@@ -78,7 +78,7 @@ export default function Footer() {
                 placeholder="Enter your email"
                 className="bg-[#141619] border-[#141619] text-white placeholder:text-[#6e6e6e]"
               />
-              <Button className="w-full bg-[#cbf26c] text-[#212121] hover:bg-[#9fcc3b] font-semibold">Subscribe</Button>
+              <Button className="w-full bg-[#e9fc00] text-[#212121] hover:bg-[#9fcc3b] font-semibold">Subscribe</Button>
             </div>
           </div>
         </div>

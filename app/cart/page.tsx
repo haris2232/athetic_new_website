@@ -201,7 +201,7 @@ export default function CartPage() {
             <div className="max-w-2xl mx-auto">
               <div className="mb-12">
                 <div className="flex items-center justify-between mb-8">
-                  <h2 className="text-2xl lg:text-3xl font-bold text-[#ebff00] uppercase tracking-wide">
+                  <h2 className="text-2xl lg:text-3xl font-bold text-[#000000] uppercase tracking-wide">
                     {getCurrencySymbol()} {Math.floor(amountForFreeShipping)} MORE TO GET FREE SHIPPING
                   </h2>
                 </div>
@@ -280,7 +280,7 @@ export default function CartPage() {
                   <Button
                     asChild
                     size="lg"
-                    className="bg-[#cbf26c] text-[#212121] hover:bg-[#9fcc3b] font-semibold px-12 py-4 text-lg rounded-md"
+                    className="bg-[#e9fc00] text-[#212121] hover:bg-[#9fcc3b] font-semibold px-12 py-4 text-lg rounded-md"
                   >
                     <Link href="/collection">
                       Shop Now

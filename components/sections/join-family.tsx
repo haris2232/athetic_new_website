@@ -63,7 +63,7 @@ export default function JoinFamily() {
             <div className="space-y-8">
               {/* Heading */}
               <div className="space-y-4">
-                <h2 className="text-3xl lg:text-4xl font-bold text-[#ebff00] leading-tight uppercase tracking-wide">
+                <h2 className="text-3xl lg:text-4xl font-bold text-[#000000] leading-tight uppercase tracking-wide">
                   JOIN THE ATHLEKT FAMILY
                 </h2>
                 <p className="text-black text-base leading-relaxed">
