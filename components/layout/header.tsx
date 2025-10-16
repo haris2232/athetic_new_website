@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
 import { Search, Heart, User, ShoppingBag, Menu, X, ChevronDown, LogOut } from "lucide-react"
@@ -16,18 +16,75 @@ interface SubCategory {
   category: string
 }
 
+interface ProductSuggestion {
+  _id: string;
+  name: string;
+  slug: string;
+  images: { url: string }[];
+  price: number;
+}
+
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isCategoriesOpen, setIsCategoriesOpen] = useState(false)
+  const [isMenMenuOpen, setIsMenMenuOpen] = useState(false) // ADDED: State for Men dropdown
+  const [isWomenMenuOpen, setIsWomenMenuOpen] = useState(false) // ADDED: State for Women dropdown
   const [isTopSellerOpen, setIsTopSellerOpen] = useState(false) // ADDED: State for new Top Sellers dropdown
-  // REMOVED: const [isSaleOpen, setIsSaleOpen] = useState(false)
-  const [selectedGender, setSelectedGender] = useState("men") // Track selected gender
+  // REMOVED: isCategoriesOpen and selectedGender states
   const [user, setUser] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<ProductSuggestion[]>([])
+  const [isSearchLoading, setIsSearchLoading] = useState(false)
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false)
   const [subCategories, setSubCategories] = useState<SubCategory[]>([])
   const [loading, setLoading] = useState(true)
   const pathname = usePathname()
+  const router = useRouter()
   const { cartCount } = useCart()
   const { wishlistCount } = useWishlist()
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      setIsSearchDropdownOpen(false)
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      // If inside mobile menu, close it after search
+      if (isMenuOpen) {
+        setIsMenuOpen(false)
+      }
+    }
+  }
+
+  // Debounced search suggestions fetching
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) {
+      setSearchResults([])
+      setIsSearchDropdownOpen(false)
+      return
+    }
+
+    setIsSearchLoading(true)
+    setIsSearchDropdownOpen(true)
+
+    const delayDebounceFn = setTimeout(() => {
+      fetch(`https://athlekt.com/backendnew/api/products/search?q=${encodeURIComponent(searchQuery.trim())}&limit=5`)
+        .then(res => res.json())
+        .then(data => {
+          setSearchResults(data.products || [])
+          setIsSearchLoading(false)
+        })
+        .catch(error => {
+          console.error("Error fetching search results:", error)
+          setIsSearchLoading(false)
+          setSearchResults([])
+        })
+    }, 300) // 300ms debounce delay
+
+    return () => clearTimeout(delayDebounceFn)
+  }, [searchQuery])
+
+  const handleSuggestionClick = () => {
+    setIsSearchDropdownOpen(false);
+    setSearchQuery('');
+  }
 
   // Fetch sub-categories from backend
   useEffect(() => {
@@ -144,6 +201,28 @@ export default function Header() {
     }))
   }
 
+  // Reusable component for category dropdowns
+  const CategoryDropdown = ({ gender, isOpen, onMouseEnter, onMouseLeave, onLinkClick }: { gender: 'men' | 'women', isOpen: boolean, onMouseEnter: () => void, onMouseLeave: () => void, onLinkClick: () => void }) => {
+    const categories = getSubCategories(gender);
+    return (
+      <div className="relative group" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+        <Link href={`/categories?gender=${gender}`} className={`transition-colors font-medium tracking-wide uppercase text-sm ${isActivePath(`/${gender}`) ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"}`}>
+          {gender}
+        </Link>
+        <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
+          <div className="bg-white shadow-lg rounded-md overflow-hidden z-50 min-w-[200px]">
+            {categories.map(category => (
+              <Link key={category.id} href={`${category.href}?gender=${gender}`} className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors" onClick={onLinkClick}>
+                {category.label}
+              </Link>
+            ))}
+            {categories.length === 0 && <div className="px-6 py-3 text-gray-400">{loading ? "Loading..." : "No categories"}</div>}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <header className="bg-[#0f1013] text-white sticky top-0 z-50">
       {/* Top Utility Bar */}
@@ -218,82 +297,23 @@ export default function Header() {
               COLLECTION
             </Link>
 
-            {/* Categories with Dropdown */}
-            <div
-              className="relative group"
-              onMouseEnter={() => setIsCategoriesOpen(true)}
-              onMouseLeave={() => setIsCategoriesOpen(false)}
-            >
-              <Link
-                href="/categories"
-                className={`transition-colors font-medium tracking-wide uppercase text-sm ${
-                  isActivePath("/categories") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
-                }`}
-              >
-                CATEGORIES
-              </Link>
+            {/* Men's Category Dropdown */}
+            <CategoryDropdown
+              gender="men"
+              isOpen={isMenMenuOpen}
+              onMouseEnter={() => setIsMenMenuOpen(true)}
+              onMouseLeave={() => setIsMenMenuOpen(false)}
+              onLinkClick={() => setIsMenMenuOpen(false)}
+            />
 
-              {/* Dropdown Menu */}
-              <div
-                className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ${
-                  isCategoriesOpen ? "opacity-100 visible" : "opacity-0 invisible"
-                }`}
-              >
-                <div className="bg-white shadow-lg rounded-md overflow-hidden z-50">
-                  <div className="grid grid-cols-2 min-w-[400px]">
-                    {/* Left Column - Gender Categories */}
-                    <div className="bg-white">
-                      <button
-                        onClick={() => setSelectedGender("men")}
-                        className={`block w-full text-left px-6 py-3 transition-colors font-medium ${
-                          selectedGender === "men" ? "bg-[#cbf26c] text-[#212121]" : "text-[#212121] hover:bg-gray-50"
-                        }`}
-                      >
-                        Men
-                      </button>
-                      <button
-                        onClick={() => setSelectedGender("women")}
-                        className={`block w-full text-left px-6 py-3 transition-colors font-medium ${
-                          selectedGender === "women" ? "bg-[#cbf26c] text-[#212121]" : "text-[#212121] hover:bg-gray-50"
-                        }`}
-                      >
-                        Women
-                      </button>
-                    </div>
-
-                    {/* Right Column - Product Types */}
-                    <div className="bg-white border-l border-gray-200">
-                      {getSubCategories(selectedGender).map((category, index) => (
-                        <Link
-                          key={`${category.label}-${selectedGender}-${index}`}
-                          href={`${category.href}?gender=${selectedGender}`}
-                          className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors"
-                          onClick={() => setIsCategoriesOpen(false)}
-                        >
-                          {category.label}
-                        </Link>
-                      ))}
-                      {getSubCategories(selectedGender).length === 0 && (
-                        <div className="px-6 py-3 text-gray-400">
-                          {loading ? "Loading..." : "No sub-categories available"}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* View All Categories Link */}
-                  <div className="border-t border-gray-200 bg-gray-50">
-                    <Link
-                      href={`/categories?gender=${selectedGender}`}
-                      className="block px-6 py-3 text-center text-[#212121] hover:bg-gray-100 transition-colors font-medium"
-                      onClick={() => setIsCategoriesOpen(false)}
-                    >
-                      View All {selectedGender === "women" ? "Women's" : "Men's"} Products
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </div>
+            {/* Women's Category Dropdown */}
+            <CategoryDropdown
+              gender="women"
+              isOpen={isWomenMenuOpen}
+              onMouseEnter={() => setIsWomenMenuOpen(true)}
+              onMouseLeave={() => setIsWomenMenuOpen(false)}
+              onLinkClick={() => setIsWomenMenuOpen(false)}
+            />
 
             {/* Sale Link */}
             <Link href="/sale">
@@ -357,7 +377,42 @@ export default function Header() {
                   type="search"
                   placeholder="What are you looking for to..."
                   className="pl-10 pr-4 w-80 bg-white text-[#212121] border-none rounded-md h-10 placeholder:text-[#6e6e6e]"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value)
+                    if (e.target.value) {
+                      setIsSearchDropdownOpen(true)
+                    } else {
+                      setIsSearchDropdownOpen(false)
+                    }
+                  }}
+                  onKeyDown={handleSearch}
+                  onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)} // Delay to allow click
+                  onFocus={() => searchQuery && setSearchResults.length > 0 && setIsSearchDropdownOpen(true)}
                 />
+                {/* Search Suggestions Dropdown */}
+                {isSearchDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden z-50">
+                    {isSearchLoading ? (
+                      <div className="p-4 text-center text-gray-500">Loading...</div>
+                    ) : searchResults.length > 0 ? (
+                      searchResults.map((product) => (
+                        <Link key={product._id} href={`/product/${product.slug}`} onClick={handleSuggestionClick} className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0">
+                          <Image 
+                            src={product.images[0]?.url || '/placeholder.png'} 
+                            alt={product.name} 
+                            width={40} 
+                            height={40} 
+                            className="w-10 h-10 object-cover rounded-md mr-3"
+                          />
+                          <span className="text-[#212121] text-sm">{product.name}</span>
+                        </Link>
+                      ))
+                    ) : (
+                      <div className="p-4 text-center text-gray-500">No products found.</div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -438,13 +493,11 @@ export default function Header() {
 
               {/* Mobile Categories */}
               <div className="space-y-3">
-                <span
-                  className={`font-medium tracking-wide uppercase text-sm ${
-                    isActivePath("/categories") ? "text-[#cbf26c]" : "text-white"
-                  }`}
-                >
-                  CATEGORIES
-                </span>
+                <Link href="/categories" onClick={() => setIsMenuOpen(false)}>
+                  <span className={`font-medium tracking-wide uppercase text-sm ${isActivePath("/categories") ? "text-[#cbf26c]" : "text-white"}`}>
+                    CATEGORIES
+                  </span>
+                </Link>
                 <div className="pl-4 space-y-2">
                   <Link
                     href="/categories?gender=men"
@@ -507,7 +560,40 @@ export default function Header() {
                     type="search"
                     placeholder="What are you looking for to..."
                     className="pl-10 bg-white text-[#212121] border-none rounded-md h-10 placeholder:text-[#6e6e6e]"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value)
+                      if (e.target.value) {
+                        setIsSearchDropdownOpen(true)
+                      } else {
+                        setIsSearchDropdownOpen(false)
+                      }
+                    }}
+                    onKeyDown={handleSearch}
+                    onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)}
+                    onFocus={() => searchQuery && setSearchResults.length > 0 && setIsSearchDropdownOpen(true)}
                   />
+                  {/* Mobile Search Suggestions Dropdown */}
+                  {isSearchDropdownOpen && (
+                    <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden z-50">
+                      {isSearchLoading ? (
+                        <div className="p-4 text-center text-gray-500">Loading...</div>
+                      ) : searchResults.length > 0 ? (
+                        searchResults.map((product) => (
+                          <Link key={product._id} href={`/product/${product.slug}`} onClick={handleSuggestionClick} className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0">
+                            <Image 
+                              src={product.images[0]?.url || '/placeholder.png'} 
+                              alt={product.name} 
+                              width={40} 
+                              height={40} 
+                              className="w-10 h-10 object-cover rounded-md mr-3"
+                            />
+                            <span className="text-[#212121] text-sm">{product.name}</span>
+                          </Link>
+                        ))
+                      ) : <div className="p-4 text-center text-gray-500">No products found.</div>}
+                    </div>
+                  )}
                 </div>
               </div>
 
