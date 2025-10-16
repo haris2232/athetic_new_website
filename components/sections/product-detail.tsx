@@ -484,7 +484,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-gray-600">EARN 507 PACK VIP POINTS</p>
+                {/* <p className="text-sm text-gray-600">EARN 507 PACK VIP POINTS</p> */}
               </div>
 
               {/* Rating and Actions */}
