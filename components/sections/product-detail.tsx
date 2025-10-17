@@ -50,6 +50,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState('')
   const [zoomImage, setZoomImage] = useState<string | null>(null)
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false)
 
   // Use dynamic color options from product
   const colorOptions = product.colors || [
@@ -577,7 +578,12 @@ export default function ProductDetail({ product }: { product: Product }) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-[#212121]">Size</span>
-                  <button className="text-sm text-[#212121] underline hover:no-underline">SIZE GUIDE</button>
+                  {product.sizeGuideImage && (
+                    <button 
+                      onClick={() => setIsSizeGuideOpen(true)}
+                      className="text-sm text-[#212121] underline hover:no-underline"
+                    >SIZE GUIDE</button>
+                  )}
                 </div>
                 <div className="flex space-x-2">
                   {sizeOptions.map((size) => (
@@ -1071,6 +1077,30 @@ export default function ProductDetail({ product }: { product: Product }) {
                 width={800}
                 height={800}
                 className="w-full h-auto max-h-[80vh] object-contain"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Size Guide Modal */}
+      {isSizeGuideOpen && product.sizeGuideImage && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setIsSizeGuideOpen(false)}>
+          <div className="relative max-w-2xl max-h-[90vh] w-full bg-white rounded-lg p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setIsSizeGuideOpen(false)}
+              className="absolute -top-4 -right-4 bg-white hover:bg-gray-200 text-black rounded-full p-2 transition-colors duration-200 shadow-lg z-10"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <h2 className="text-xl font-bold text-center mb-4 text-gray-800">Size Guide</h2>
+            <div className="relative rounded-lg overflow-auto max-h-[75vh]">
+              <Image
+                src={getFullImageUrl(product.sizeGuideImage)}
+                alt="Product size guide"
+                width={800}
+                height={1200}
+                className="w-full h-auto object-contain"
               />
             </div>
           </div>
