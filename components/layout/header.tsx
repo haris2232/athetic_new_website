@@ -247,9 +247,9 @@ export default function Header() {
                   Login
                 </Link>
               )}
-              <Link href="/accessibility" className="text-[#d9d9d9] hover:text-white transition-colors">
+              {/* <Link href="/accessibility" className="text-[#d9d9d9] hover:text-white transition-colors">
                 Accessibility Statement
-              </Link>
+              </Link> */}
               <Link href="/help" className="text-[#d9d9d9] hover:text-white transition-colors">
                 Help
               </Link>
@@ -258,9 +258,9 @@ export default function Header() {
                   Email Sign Up
                 </Link>
               )}
-              <Link href="/blog" className="text-[#d9d9d9] hover:text-white transition-colors">
+              {/* <Link href="/blog" className="text-[#d9d9d9] hover:text-white transition-colors">
                 Blog
-              </Link>
+              </Link> */}
               <div className="flex items-center text-[#d9d9d9] hover:text-white transition-colors cursor-pointer">
                 English
                 <ChevronDown className="h-3 w-3 ml-1" />
