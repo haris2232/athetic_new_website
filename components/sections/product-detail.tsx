@@ -530,9 +530,9 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="uppercase text-black mb-0"
                     style={{
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: 'clamp(48px, 4.8vw, 70px)',
+                      fontSize: 'clamp(36px, 3.8vw, 56px)', // Reduced from 48px-70px to 36px-56px
                       fontWeight: 400,
-                      lineHeight: 'clamp(44px, 4.4vw, 64px)',
+                      lineHeight: 'clamp(34px, 3.6vw, 52px)', // Reduced line height
                       letterSpacing: '-2px',
                       color: '#000000',
                       margin: 0,
@@ -558,14 +558,14 @@ export default function ProductDetail({ product }: { product: Product }) {
                         className="line-through md:w-full md:text-right"
                         style={{
                           fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: 'clamp(12px, 1.2vw, 18px)',
+                          fontSize: 'clamp(11px, 1.1vw, 16px)', // Reduced from 12px-18px to 11px-16px
                           fontWeight: 400,
                           color: '#000000',
                           textDecorationColor: '#EF4444',
                           textDecorationThickness: '2px',
                           marginBottom: '4px',
-                          lineHeight: 'clamp(44px, 4.4vw, 64px)',
-                          height: 'clamp(44px, 4.4vw, 64px)',
+                          lineHeight: 'clamp(28px, 3vw, 40px)', // Reduced line height
+                          height: 'clamp(28px, 3vw, 40px)', // Reduced height
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'flex-end',
@@ -579,12 +579,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                       className="text-black md:w-full md:text-right"
                       style={{
                         fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                        fontSize: 'clamp(28px, 3vw, 42px)',
+                        fontSize: 'clamp(22px, 2.4vw, 34px)', // Reduced from 28px-42px to 22px-34px
                         fontWeight: 700,
-                        lineHeight: 'clamp(44px, 4.4vw, 64px)',
+                        lineHeight: 'clamp(34px, 3.6vw, 52px)', // Reduced line height
                         letterSpacing: '0px',
                         color: '#000000',
-                        height: 'clamp(44px, 4.4vw, 64px)',
+                        height: 'clamp(34px, 3.6vw, 52px)', // Reduced height
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'flex-end',
@@ -601,7 +601,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                   className="text-black mb-8"
                   style={{
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: 'clamp(14px, 1.25vw, 18px)',
+                    fontSize: 'clamp(13px, 1.15vw, 16px)', // Reduced from 14px-18px to 13px-16px
                     fontWeight: 400,
                     lineHeight: '1.5',
                     letterSpacing: '0px',
@@ -625,7 +625,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                       className="uppercase text-black"
                       style={{
                         fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                        fontSize: '14px',
+                        fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
                         fontWeight: 600,
                         lineHeight: '1'
                       }}
@@ -638,10 +638,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                         className="transition-colors cursor-pointer flex items-center justify-center flex-shrink-0"
                         style={{
                           fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: '14px',
+                          fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
                           fontWeight: 600,
-                          width: '32px',
-                          height: '32px',
+                          width: 'clamp(28px, 2.8vw, 32px)', // Responsive width
+                          height: 'clamp(28px, 2.8vw, 32px)', // Responsive height
                           borderRadius: '8px',
                           border: '2px solid #000000',
                           backgroundColor: selectedSize === size ? '#E5E7EB' : '#FFFFFF',
@@ -655,12 +655,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                   </button>
                     ))}
                 </div>
-                  <div className="flex items-center gap-2 cursor-pointer">
+                  <div className="flex items-center gap-2 cursor-pointer" style={{ flexWrap: 'nowrap' }}>
                     <span 
-                      className="uppercase text-black"
+                      className="uppercase text-black whitespace-nowrap"
                       style={{
                         fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                        fontSize: '14px',
+                        fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
                         fontWeight: 600,
                         lineHeight: '1'
                       }}
@@ -679,7 +679,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="uppercase text-black"
                     style={{
                       fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '14px',
+                      fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
                       fontWeight: 600,
                       lineHeight: '1'
                     }}
@@ -696,8 +696,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                       key={color.name}
                         className="transition-colors cursor-pointer flex-shrink-0"
                         style={{
-                          width: '32px',
-                          height: '32px',
+                          width: 'clamp(28px, 2.8vw, 32px)', // Responsive width
+                          height: 'clamp(28px, 2.8vw, 32px)', // Responsive height
                           borderRadius: '8px',
                           border: selectedColor === color.name
                             ? '2px solid #000000'
@@ -726,12 +726,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                   className="flex items-center justify-between"
                   style={{
                     width: '100%',
-                    maxWidth: '156px',
-                    height: '64px',
+                    maxWidth: 'clamp(120px, 13vw, 140px)', // Reduced from 156px to 120px-140px
+                    height: 'clamp(50px, 5.5vw, 58px)', // Reduced from 64px to 50px-58px
                     borderRadius: '20px',
                     border: '2px solid #000000',
                     backgroundColor: '#FFFFFF',
-                    padding: '0 24px'
+                    padding: '0 clamp(16px, 1.8vw, 20px)' // Reduced padding
                   }}
                 >
                   <Button
@@ -752,7 +752,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="text-center"
                     style={{
                       fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '18px',
+                      fontSize: 'clamp(16px, 1.6vw, 18px)', // Responsive font size
                       fontWeight: 600,
                       color: '#000000'
                     }}
@@ -782,16 +782,16 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="uppercase font-semibold transition-all duration-300"
                     style={{
                       fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '16px',
+                      fontSize: 'clamp(14px, 1.4vw, 16px)', // Responsive font size
                       fontWeight: 600,
                       color: '#EBFF00',
                       backgroundColor: '#000000',
-                      width: '364px',
-                      height: '67px',
+                      width: 'clamp(280px, 30vw, 340px)', // Reduced from 364px to 280px-340px
+                      height: 'clamp(52px, 5.5vw, 60px)', // Reduced from 67px to 52px-60px
                       borderRadius: '20px',
                       border: 'none',
-                      padding: '6.36px 25.42px',
-                      gap: '6.36px'
+                      padding: 'clamp(4px, 0.5vw, 6px) clamp(20px, 2.2vw, 24px)', // Responsive padding
+                      gap: 'clamp(4px, 0.5vw, 6px)'
                     }}
                   onClick={handleAddToCart}
                 >
@@ -802,13 +802,13 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <div
                     className="flex items-center justify-center flex-shrink-0"
                     style={{
-                      width: '88px',
-                      height: '64px',
+                      width: 'clamp(70px, 7.5vw, 80px)', // Reduced from 88px to 70px-80px
+                      height: 'clamp(50px, 5.5vw, 58px)', // Reduced from 64px to 50px-58px
                       borderRadius: '20px',
                       border: '2px solid #000000',
                       backgroundColor: '#FFFFFF',
-                      padding: '10px',
-                      gap: '10px',
+                      padding: 'clamp(8px, 0.9vw, 10px)', // Responsive padding
+                      gap: 'clamp(8px, 0.9vw, 10px)',
                       cursor: 'pointer'
                     }}
                     onClick={handleWishlistToggle}
@@ -1170,54 +1170,6 @@ export default function ProductDetail({ product }: { product: Product }) {
         </div>
       </section>
 
-      {/* YOU MAY ALSO LIKE - Figma styled (same as MEN page) */}
-      <section className="bg-white text-[#212121] pt-0 pb-20 mt-12">
-        <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between mb-8 gap-6">
-            <div className="flex-1 flex flex-col">
-              <h1 
-                className="uppercase mb-6 text-black leading-none"
-                style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontWeight: 400,
-                  fontSize: '90px',
-                  letterSpacing: '-3.37px'
-                }}
-              >
-                YOU MAY ALSO LIKE
-              </h1>
-            </div>
-            <div className="flex-1 lg:max-w-[412px] flex flex-col">
-              <p 
-                className="text-black text-left leading-normal"
-                style={{
-                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: '14px',
-                  letterSpacing: '0px',
-                  fontWeight: 500
-                }}
-              >
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-            {[3,4,5,6].map((idx) => (
-              <div key={idx} className="bg-white relative overflow-hidden w-full" style={{ aspectRatio: '307/450' }}>
-                <img src={`/${idx}.png`} alt="Product" className="w-full h-full object-cover" style={{ borderRadius: '32px' }} />
-                <div className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between" style={{ height: '60px' }}>
-                  <div className="flex flex-col text-left">
-                    <span className="uppercase text-white" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '13.41px', lineHeight: '14.6px', letterSpacing: '0px', fontWeight: 500 }}>LORIUM IPSUM DOLOR</span>
-                    <span className="uppercase text-white" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '13.41px', lineHeight: '14.6px', letterSpacing: '0px', fontWeight: 500 }}>SIT DE VENUM</span>
-                  </div>
-                  <p className="text-white font-bold text-right" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '22px', lineHeight: '26px', letterSpacing: '0px', fontWeight: 600 }}>AED 59</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Customer Reviews Section - Figma Design */}
       <section className="bg-white text-[#212121] py-12">
@@ -1366,115 +1318,6 @@ export default function ProductDetail({ product }: { product: Product }) {
         </div>
       </section>
 
-      {/* Join the Athlekt Family Section */}
-      <section className="bg-white py-20">
-        <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Left Side - Form */}
-            <div className="bg-gray-100 p-8 lg:p-12 rounded-lg">
-              <div className="space-y-8">
-                {/* Heading */}
-                <div className="space-y-4">
-                  <h2 className="text-3xl lg:text-4xl font-bold text-[#000000] leading-tight uppercase tracking-wide">
-                    JOIN THE ATHLEKT FAMILY
-                  </h2>
-                  <p className="text-black text-base leading-relaxed">
-                    But I Must Explain To You How All This Mistaken Idea Of Denouncing Pleasure And Praising Pain Was
-                    Born...
-                  </p>
-                </div>
-
-                {/* Form */}
-                <form onSubmit={handleFormSubmit} className="space-y-6">
-                  {/* First Name */}
-                  <div>
-                    <input
-                      type="text"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleInputChange}
-                      placeholder="First Name*"
-                      className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  {/* Last Name */}
-                  <div>
-                    <input
-                      type="text"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleInputChange}
-                      placeholder="Last Name"
-                      className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  {/* Email */}
-                  <div>
-                    <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      placeholder="Email"
-                      className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  {/* Phone */}
-                  <div>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone}
-                      onChange={handleInputChange}
-                      placeholder="Phone"
-                      className="w-full h-14 px-4 bg-transparent border border-gray-300 text-black placeholder:text-gray-500 focus:border-[#ebff00] focus:ring-0 rounded-lg focus:outline-none"
-                      required
-                    />
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="pt-4">
-                    <button 
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="bg-[#ebff00] text-black hover:bg-opacity-80 font-semibold px-8 py-4 h-auto rounded-lg border-l-4 border-black transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting ? 'Sending...' : 'Send'}
-                    </button>
-                  </div>
-
-                  {/* Success/Error Message */}
-                  {submitMessage && (
-                    <div className={`text-sm ${submitMessage.includes('Thank you') ? 'text-green-600' : 'text-red-500'}`}>
-                      {submitMessage}
-                    </div>
-                  )}
-                </form>
-              </div>
-            </div>
-
-            {/* Right Side - Image */}
-            <div className="relative">
-              <div className="relative overflow-hidden rounded-lg">
-                <Image
-                  src="\images\menbanner.png"
-                  alt="Young man in black tank top wearing SQUATWOLF cap in gym"
-                  width={600}
-                  height={700}
-                  className="w-full h-[700px] object-cover"
-                  priority
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Zoom Modal */}
       {zoomImage && (

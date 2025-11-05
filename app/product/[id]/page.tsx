@@ -2,7 +2,6 @@ import { notFound } from "next/navigation"
 import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import ProductDetail from "@/components/sections/product-detail"
-import RelatedProducts from "@/components/sections/related-products"
 import { getProductById } from "@/lib/api"
 
 // Create mock product for static MEN section products
@@ -69,7 +68,6 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       <Header />
       <main>
         <ProductDetail product={product} />
-        <RelatedProducts currentProductId={product.id} category={product.category} />
       </main>
       <Footer />
     </div>
