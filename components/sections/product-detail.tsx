@@ -399,23 +399,23 @@ export default function ProductDetail({ product }: { product: Product }) {
   return (
     <div className="bg-white overflow-x-hidden">
       {/* Main Product Section - Figma Design */}
-      <section className="py-6 md:py-8 lg:py-10 xl:py-12 bg-white text-[#212121]">
+      <section className="py-4 md:py-6 lg:py-8 xl:py-10 bg-white text-[#212121]">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="flex flex-col md:flex-row gap-6 md:gap-8 lg:gap-10 xl:gap-12 items-start">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-5 lg:gap-6 xl:gap-8 items-start">
             {/* Product Images - Fully Responsive */}
             <div className="w-full lg:w-auto flex-shrink-0 md:self-start">
               {/* Desktop & Tablet - Responsive Sizes */}
               <div className="hidden md:flex md:gap-4 xl:gap-6 flex-shrink-0">
                 {/* Thumbnails - Left side, vertical stack - Responsive */}
                 {currentImages && currentImages.length > 0 && (
-                  <div className="flex flex-col gap-3 md:gap-4 xl:gap-5 flex-shrink-0">
+                  <div className="flex flex-col flex-shrink-0" style={{ gap: 'clamp(12px, 1.2vw, 20px)' }}>
                     {currentImages.map((image, index) => (
                       <button
                         key={index}
                         className="relative overflow-hidden transition-colors flex-shrink-0"
                         style={{
-                          width: 'clamp(100px, 12vw, 173px)',
-                          height: 'clamp(90px, 11vw, 158px)',
+                          width: 'clamp(70px, 9vw, 140px)', // Reduced from 100px-173px to 70px-140px
+                          height: 'clamp(79px, 9.87vw, 127px)', // Calculated to match main image height: (mainImageHeight - 2×gap) / 3
                           borderRadius: '12px',
                           border: index === activeImageIndex ? '2px solid #3B82F6' : '2px solid #D1D5DB',
                           backgroundColor: '#FFFFFF',
@@ -430,7 +430,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                   className="object-cover"
                           style={{
                             objectFit: 'cover',
-                            objectPosition: 'center',
+                            objectPosition: 'center top',
                             borderRadius: '12px'
                           }}
                         />
@@ -443,8 +443,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                 <div 
                   className="relative overflow-hidden bg-white flex-shrink-0"
                   style={{
-                    width: 'clamp(280px, 35vw, 455px)',
-                    height: 'clamp(320px, 40vw, 514px)',
+                    width: 'clamp(220px, 28vw, 380px)', // Reduced from 280px-455px to 220px-380px
+                    height: 'clamp(260px, 32vw, 420px)', // Reduced from 320px-514px to 260px-420px
                     borderRadius: '12px',
                     opacity: 1,
                     backgroundColor: '#FFFFFF'
@@ -457,7 +457,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="object-cover"
                     style={{
                       objectFit: 'cover',
-                      objectPosition: 'center',
+                      objectPosition: 'center top',
                       borderRadius: '12px'
                     }}
                     priority
@@ -492,7 +492,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                         className="object-cover"
                         style={{
                           objectFit: 'cover',
-                          objectPosition: 'center',
+                          objectPosition: 'center top',
                           borderRadius: '8px'
                         }}
                       />
@@ -510,7 +510,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="object-cover"
                     style={{
                       objectFit: 'cover',
-                      objectPosition: 'center',
+                      objectPosition: 'center top',
                       borderRadius: '12px'
                     }}
                     priority
@@ -525,14 +525,14 @@ export default function ProductDetail({ product }: { product: Product }) {
               {/* Top Section - Aligned with Image Top */}
               <div className="flex flex-col md:flex-shrink-0">
                 {/* Product Name & Price Row - Figma Exact */}
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
                   <h1 
                     className="uppercase text-black mb-0"
                     style={{
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: 'clamp(36px, 3.8vw, 56px)', // Reduced from 48px-70px to 36px-56px
+                      fontSize: 'clamp(28px, 3.2vw, 48px)', // Further reduced from 36px-56px to 28px-48px
                       fontWeight: 400,
-                      lineHeight: 'clamp(34px, 3.6vw, 52px)', // Reduced line height
+                      lineHeight: 'clamp(26px, 3vw, 44px)', // Further reduced line height
                       letterSpacing: '-2px',
                       color: '#000000',
                       margin: 0,
@@ -542,10 +542,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                   >
                     {(() => {
                       const name = product.name || "MEN'S HYBRID CLASSIC";
-                      // Figma: "MEN'S" on first line, "HYBRID CLASSIC" on second line
+                      // "MEN'S" on first line, "HYBRID CLASSIC" on second line (both words together)
                       if (name.startsWith("MEN'S ")) {
                         const rest = name.replace("MEN'S ", "");
-                        return "MEN'S\n" + rest;
+                        // Replace space between HYBRID and CLASSIC with non-breaking space to keep them on one line
+                        const restWithNonBreakingSpace = rest.replace(/HYBRID CLASSIC/g, 'HYBRID\u00A0CLASSIC');
+                        return "MEN'S\n" + restWithNonBreakingSpace;
                       }
                       return name;
                     })()}
@@ -579,12 +581,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                       className="text-black md:w-full md:text-right"
                       style={{
                         fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                        fontSize: 'clamp(22px, 2.4vw, 34px)', // Reduced from 28px-42px to 22px-34px
+                      fontSize: 'clamp(18px, 2vw, 28px)', // Further reduced from 22px-34px to 18px-28px
                         fontWeight: 700,
-                        lineHeight: 'clamp(34px, 3.6vw, 52px)', // Reduced line height
+                      lineHeight: 'clamp(26px, 3vw, 40px)', // Further reduced line height
                         letterSpacing: '0px',
                         color: '#000000',
-                        height: 'clamp(34px, 3.6vw, 52px)', // Reduced height
+                      height: 'clamp(26px, 3vw, 40px)', // Further reduced height
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'flex-end',
@@ -598,15 +600,15 @@ export default function ProductDetail({ product }: { product: Product }) {
 
                 {/* Description - Figma Exact Spacing */}
                 <p 
-                  className="text-black mb-8"
+                  className="text-black mb-6"
                   style={{
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: 'clamp(13px, 1.15vw, 16px)', // Reduced from 14px-18px to 13px-16px
+                    fontSize: 'clamp(12px, 1.1vw, 14px)', // Further reduced from 13px-16px to 12px-14px
                     fontWeight: 400,
-                    lineHeight: '1.5',
+                    lineHeight: '1.4',
                     letterSpacing: '0px',
                     color: '#000000',
-                    maxWidth: '334px',
+                    maxWidth: 'clamp(280px, 30vw, 300px)', // Reduced max width
                     margin: 0
                   }}
                 >
@@ -615,10 +617,10 @@ export default function ProductDetail({ product }: { product: Product }) {
                   </div>
 
               {/* Middle Section - Centered between Top and Bottom */}
-              <div className="flex flex-col md:justify-center md:py-8">
+              <div className="flex flex-col md:justify-center md:py-4">
 
               {/* Size Selection - Figma Exact Alignment */}
-              <div className="mb-8">
+              <div className="mb-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center" style={{ gap: '12px' }}>
                     <span 
@@ -673,7 +675,7 @@ export default function ProductDetail({ product }: { product: Product }) {
               </div>
 
               {/* Color Selection - Figma Exact Alignment */}
-              <div className="mb-8">
+              <div className="mb-6">
                 <div className="flex items-center" style={{ gap: '12px' }}>
                   <span 
                     className="uppercase text-black"
@@ -726,8 +728,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                   className="flex items-center justify-between"
                   style={{
                     width: '100%',
-                    maxWidth: 'clamp(120px, 13vw, 140px)', // Reduced from 156px to 120px-140px
-                    height: 'clamp(50px, 5.5vw, 58px)', // Reduced from 64px to 50px-58px
+                    maxWidth: 'clamp(100px, 11vw, 120px)', // Further reduced from 120px-140px to 100px-120px
+                    height: 'clamp(42px, 4.5vw, 50px)', // Further reduced from 50px-58px to 42px-50px
                     borderRadius: '20px',
                     border: '2px solid #000000',
                     backgroundColor: '#FFFFFF',
@@ -782,12 +784,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="uppercase font-semibold transition-all duration-300"
                     style={{
                       fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(14px, 1.4vw, 16px)', // Responsive font size
+                      fontSize: 'clamp(12px, 1.2vw, 14px)', // Further reduced font size
                       fontWeight: 600,
                       color: '#EBFF00',
                       backgroundColor: '#000000',
-                      width: 'clamp(280px, 30vw, 340px)', // Reduced from 364px to 280px-340px
-                      height: 'clamp(52px, 5.5vw, 60px)', // Reduced from 67px to 52px-60px
+                      width: 'clamp(240px, 26vw, 300px)', // Further reduced from 280px-340px to 240px-300px
+                      height: 'clamp(45px, 4.8vw, 52px)', // Further reduced from 52px-60px to 45px-52px
                       borderRadius: '20px',
                       border: 'none',
                       padding: 'clamp(4px, 0.5vw, 6px) clamp(20px, 2.2vw, 24px)', // Responsive padding
@@ -802,8 +804,8 @@ export default function ProductDetail({ product }: { product: Product }) {
                   <div
                     className="flex items-center justify-center flex-shrink-0"
                     style={{
-                      width: 'clamp(70px, 7.5vw, 80px)', // Reduced from 88px to 70px-80px
-                      height: 'clamp(50px, 5.5vw, 58px)', // Reduced from 64px to 50px-58px
+                      width: 'clamp(60px, 6.5vw, 70px)', // Further reduced from 70px-80px to 60px-70px
+                      height: 'clamp(42px, 4.5vw, 50px)', // Further reduced from 50px-58px to 42px-50px
                       borderRadius: '20px',
                       border: '2px solid #000000',
                       backgroundColor: '#FFFFFF',
@@ -856,20 +858,20 @@ export default function ProductDetail({ product }: { product: Product }) {
       </section>
 
       {/* Description, Fit, Material & Care, Reviews Section - Figma Design */}
-      <section className="bg-white text-[#212121] py-12">
+      <section className="bg-white text-[#212121] py-8">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Top Horizontal Line */}
-          <div className="border-t border-black mb-12"></div>
+          <div className="border-t border-black mb-8"></div>
           
-          {/* Three Column Layout (match Figma widths exactly on md+) */}
-          <div className="grid grid-cols-1 gap-6 md:gap-6 md:[grid-template-columns:526px_378px_307px]">
+          {/* Three Column Layout (match Figma widths exactly on md+) - Responsive */}
+          <div className="grid grid-cols-1 gap-4 md:gap-4 md:[grid-template-columns:clamp(400px,45vw,460px)_clamp(280px,32vw,340px)_clamp(240px,28vw,280px)]">
             {/* Column 1: DESCRIPTION */}
             <div className="border-b border-black pb-8 md:border-b-0 md:pb-0 md:pr-8">
               <h2 
-                className="uppercase text-black mb-4"
+                className="uppercase text-black mb-3"
                 style={{
                   fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                  fontSize: '20px',
+                  fontSize: 'clamp(16px, 1.6vw, 18px)', // Responsive font size
                   fontWeight: 700,
                   letterSpacing: '0px'
                 }}
@@ -880,12 +882,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                 className="text-black"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: '16px',
+                  fontSize: 'clamp(13px, 1.3vw, 15px)', // Responsive font size
                   fontWeight: 400,
-                  lineHeight: '20px',
+                  lineHeight: '1.4',
                   letterSpacing: '0px',
                   margin: 0,
-                  maxWidth: '526px'
+                  maxWidth: 'clamp(400px, 45vw, 460px)' // Responsive max width
                 }}
               >
                 The Athlekt Classic Hybrid Tee is designed to move with you wherever the day takes you. Lightweight, breathable, and stretchable, it delivers all-day comfort whether you're training, on the move, or unwinding after a long day. Its adaptive fit complements every body type from athletes to dads with dad bods offering a clean, confident silhouette without compromising comfort. Perfect for both lifestyle and gym, this tee keeps you cool, sharp, and ready for anything from your morning session to your evening plans. One tee. Every moment. Athlekt.
@@ -893,14 +895,14 @@ export default function ProductDetail({ product }: { product: Product }) {
               </div>
 
             {/* Column 2: FIT and MATERIAL & CARE */}
-            <div className="space-y-1 border-b border-black pb-8 md:border-b-0 md:pb-0 md:pr-8">
+            <div className="space-y-1 border-b border-black pb-6 md:border-b-0 md:pb-0 md:pr-6">
               {/* FIT */}
               <div>
                 <h2 
-                  className="uppercase text-black mb-4"
+                  className="uppercase text-black mb-3"
                   style={{
                     fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                    fontSize: '20px',
+                    fontSize: 'clamp(16px, 1.6vw, 18px)', // Responsive font size
                     fontWeight: 700,
                     letterSpacing: '0px'
                   }}
@@ -911,12 +913,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                   className="text-black"
                   style={{
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '16px',
+                    fontSize: 'clamp(13px, 1.3vw, 15px)', // Responsive font size
                     fontWeight: 400,
-                    lineHeight: '20px',
+                    lineHeight: '1.4',
                     letterSpacing: '0px',
                     margin: 0,
-                    maxWidth: '378px'
+                    maxWidth: 'clamp(280px, 32vw, 340px)' // Responsive max width
                   }}
                 >
                   Boxy, oversized look—size down if you prefer a closer fit.
@@ -924,12 +926,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                   </div>
 
               {/* MATERIAL & CARE */}
-              <div className="pt-8">
+              <div className="pt-6">
                 <h2 
-                  className="uppercase text-black mb-4"
+                  className="uppercase text-black mb-3"
                   style={{
                     fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                    fontSize: '20px',
+                    fontSize: 'clamp(16px, 1.6vw, 18px)', // Responsive font size
                     fontWeight: 700,
                     letterSpacing: '0px'
                   }}
@@ -941,12 +943,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="text-black"
                     style={{
                       fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '16px',
+                      fontSize: 'clamp(13px, 1.3vw, 15px)', // Responsive font size
                       fontWeight: 400,
-                      lineHeight: '20px',
+                      lineHeight: '1.4',
                       letterSpacing: '0px',
                       margin: 0,
-                      maxWidth: '526px'
+                      maxWidth: 'clamp(400px, 45vw, 460px)' // Responsive max width
                     }}
                   >
                     This lightweight, drapey fabric is smooth on the outside and looped on the inside with a slightly faded, vintage-looking finish
@@ -955,12 +957,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="text-black"
                     style={{
                       fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '16px',
+                      fontSize: 'clamp(13px, 1.3vw, 15px)', // Responsive font size
                       fontWeight: 400,
-                      lineHeight: '20px',
+                      lineHeight: '1.4',
                       letterSpacing: '0px',
                       margin: 0,
-                      maxWidth: '526px'
+                      maxWidth: 'clamp(400px, 45vw, 460px)' // Responsive max width
                     }}
                   >
                     65% Cotton, 35% Polyester
@@ -972,21 +974,21 @@ export default function ProductDetail({ product }: { product: Product }) {
             {/* Column 3: REVIEWS */}
             <div>
               <h2 
-                className="uppercase text-black mb-4"
+                className="uppercase text-black mb-3"
                 style={{
                   fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                  fontSize: '20px',
+                  fontSize: 'clamp(16px, 1.6vw, 18px)', // Responsive font size
                   fontWeight: 700,
                   letterSpacing: '0px'
                 }}
               >
                 REVIEWS
               </h2>
-              <div className="flex items-center mb-4" style={{ gap: '9px' }}>
+              <div className="flex items-center mb-3" style={{ gap: 'clamp(6px, 0.7vw, 8px)' }}>
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className="h-4 w-4"
+                    className="h-3 w-3"
                     style={{
                       fill: i < 4 ? '#c9ff4a' : 'transparent',
                       stroke: '#000000',
@@ -999,12 +1001,12 @@ export default function ProductDetail({ product }: { product: Product }) {
                 className="text-black"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: '16px',
+                  fontSize: 'clamp(13px, 1.3vw, 15px)', // Responsive font size
                   fontWeight: 400,
-                  lineHeight: '20px',
+                  lineHeight: '1.4',
                   letterSpacing: '0px',
                   margin: 0,
-                  maxWidth: '307px'
+                  maxWidth: 'clamp(240px, 28vw, 280px)' // Responsive max width
                 }}
               >
                 Boxy, oversized look—size down if you prefer a closer fit. Boxy, oversized look—size down if you prefer a closer fit.
@@ -1018,33 +1020,37 @@ export default function ProductDetail({ product }: { product: Product }) {
       </section>
 
       {/* Bundles Section - Figma Design */}
-      <section className="bg-white text-[#212121] py-12">
+      <section className="bg-white text-[#212121] py-8">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8 gap-6">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6 gap-6 lg:gap-8">
             <h1 
-              className="uppercase text-black leading-none"
+              className="uppercase text-black leading-none flex-shrink-0"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
-                fontSize: '90px',
-                letterSpacing: '-3.37px'
+                fontSize: 'clamp(48px, 6vw, 70px)', // Responsive font size
+                letterSpacing: '-3.37px',
+                minWidth: 'fit-content'
               }}
             >
               BUNDLES
             </h1>
             <p 
-              className="text-black text-left leading-normal lg:max-w-[412px]"
+              className="text-black text-left leading-normal flex-1 lg:max-w-[clamp(300px, 32vw, 380px)]"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: '14px',
+                fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
                 letterSpacing: '0px',
-                fontWeight: 500
+                fontWeight: 500,
+                lineHeight: '1.5',
+                maxWidth: 'clamp(300px, 32vw, 380px)',
+                width: '100%'
               }}
             >
               Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
             {[1, 2, 3, 4].map((idx) => (
               <div 
                 key={idx}
@@ -1140,59 +1146,545 @@ export default function ProductDetail({ product }: { product: Product }) {
             </p>
                   </div>
 
-          {/* Desktop mosaic grid - exact Figma: left 2x2, big center, right 2x2 */}
-          <div className="hidden lg:grid gap-8 [grid-template-columns:204px_204px_384px_204px_204px] [grid-auto-rows:231px]">
-            {/* Left 2x2 (each 204x231, radius 24) */}
-            <div className="rounded-[24px] bg-black [grid-column:1/2] [grid-row:1/2]" />
-            <div className="rounded-[24px] bg-gray-300 [grid-column:2/3] [grid-row:1/2]" />
-            <div className="rounded-[24px] bg-gray-300 [grid-column:1/2] [grid-row:2/3]" />
-            <div className="rounded-[24px] bg-black [grid-column:2/3] [grid-row:2/3]" />
+          {/* Desktop mosaic grid - exact Figma: left 2x2, big center, right 2x2 - Responsive */}
+          <div 
+            className="hidden lg:grid"
+            style={{
+              gap: 'clamp(16px, 1.6vw, 24px)', // Responsive gap
+              gridTemplateColumns: 'repeat(5, 1fr)', // Use fr units for flexibility
+              gridAutoRows: 'clamp(180px, 18vw, 200px)', // Responsive row height
+              maxWidth: '100%',
+              overflow: 'hidden'
+            }}
+          >
+            {/* Left 2x2 - Responsive sizes with images */}
+            <div 
+              className="rounded-[24px] bg-black relative overflow-hidden"
+              style={{
+                gridColumn: '1/2',
+                gridRow: '1/2',
+                width: '100%',
+                height: '100%',
+                minWidth: 'clamp(140px, 14vw, 160px)',
+                minHeight: 'clamp(180px, 18vw, 200px)'
+              }}
+            >
+              <Image
+                src="/10.png"
+                alt="Community Highlight"
+                fill
+                className="object-cover rounded-[24px]"
+                style={{
+                  objectPosition: 'center top' // Face fully visible from top
+                }}
+              />
+            </div>
+            <div 
+              className="rounded-[24px] bg-gray-300 relative overflow-hidden"
+              style={{
+                gridColumn: '2/3',
+                gridRow: '1/2',
+                width: '100%',
+                height: '100%',
+                minWidth: 'clamp(140px, 14vw, 160px)',
+                minHeight: 'clamp(180px, 18vw, 200px)'
+              }}
+            >
+              <Image
+                src="/11.png"
+                alt="Community Highlight"
+                fill
+                className="object-cover rounded-[24px]"
+                style={{
+                  objectPosition: 'center top' // Face fully visible from top
+                }}
+              />
+            </div>
+            <div 
+              className="rounded-[24px] bg-gray-300 relative overflow-hidden"
+              style={{
+                gridColumn: '1/2',
+                gridRow: '2/3',
+                width: '100%',
+                height: '100%',
+                minWidth: 'clamp(140px, 14vw, 160px)',
+                minHeight: 'clamp(180px, 18vw, 200px)'
+              }}
+            >
+              <Image
+                src="/12.png"
+                alt="Community Highlight"
+                fill
+                className="object-cover rounded-[24px]"
+                style={{
+                  objectPosition: 'center top' // Face fully visible from top
+                }}
+              />
+            </div>
+            <div 
+              className="rounded-[24px] bg-black relative overflow-hidden"
+              style={{
+                gridColumn: '2/3',
+                gridRow: '2/3',
+                width: '100%',
+                height: '100%',
+                minWidth: 'clamp(140px, 14vw, 160px)',
+                minHeight: 'clamp(180px, 18vw, 200px)'
+              }}
+            >
+              <Image
+                src="/13.png"
+                alt="Community Highlight"
+                fill
+                className="object-cover rounded-[24px]"
+                style={{
+                  objectPosition: 'center top' // Face fully visible from top
+                }}
+              />
+            </div>
 
-            {/* Center big tile: 384x490, radius 24 */}
-            <div className="rounded-[24px] bg-black [grid-column:3/4] [grid-row:1/3] h-[490px]" />
+            {/* Center big tile - Responsive with image */}
+            <div 
+              className="rounded-[24px] bg-black relative overflow-hidden"
+              style={{
+                gridColumn: '3/4',
+                gridRow: '1/3',
+                width: '100%',
+                height: 'clamp(380px, 38vw, 420px)', // Responsive height (2 rows + gap)
+                minWidth: 'clamp(240px, 24vw, 280px)'
+              }}
+            >
+              <Image
+                src="/10.png"
+                alt="Community Highlight"
+                fill
+                className="object-cover rounded-[24px]"
+                style={{
+                  objectPosition: 'center top' // Face fully visible from top
+                }}
+              />
+            </div>
 
-            {/* Right 2x2 */}
-            <div className="rounded-[24px] bg-black [grid-column:4/5] [grid-row:1/2]" />
-            <div className="rounded-[24px] bg-gray-300 [grid-column:5/6] [grid-row:1/2]" />
-            <div className="rounded-[24px] bg-gray-300 [grid-column:4/5] [grid-row:2/3]" />
-            <div className="rounded-[24px] bg-black [grid-column:5/6] [grid-row:2/3]" />
+            {/* Right 2x2 - Responsive sizes with images */}
+            <div 
+              className="rounded-[24px] bg-black relative overflow-hidden"
+              style={{
+                gridColumn: '4/5',
+                gridRow: '1/2',
+                width: '100%',
+                height: '100%',
+                minWidth: 'clamp(140px, 14vw, 160px)',
+                minHeight: 'clamp(180px, 18vw, 200px)'
+              }}
+            >
+              <Image
+                src="/11.png"
+                alt="Community Highlight"
+                fill
+                className="object-cover rounded-[24px]"
+                style={{
+                  objectPosition: 'center top' // Face fully visible from top
+                }}
+              />
+            </div>
+            <div 
+              className="rounded-[24px] bg-gray-300 relative overflow-hidden"
+              style={{
+                gridColumn: '5/6',
+                gridRow: '1/2',
+                width: '100%',
+                height: '100%',
+                minWidth: 'clamp(140px, 14vw, 160px)',
+                minHeight: 'clamp(180px, 18vw, 200px)'
+              }}
+            >
+              <Image
+                src="/12.png"
+                alt="Community Highlight"
+                fill
+                className="object-cover rounded-[24px]"
+                style={{
+                  objectPosition: 'center top' // Face fully visible from top
+                }}
+              />
+            </div>
+            <div 
+              className="rounded-[24px] bg-gray-300 relative overflow-hidden"
+              style={{
+                gridColumn: '4/5',
+                gridRow: '2/3',
+                width: '100%',
+                height: '100%',
+                minWidth: 'clamp(140px, 14vw, 160px)',
+                minHeight: 'clamp(180px, 18vw, 200px)'
+              }}
+            >
+              <Image
+                src="/13.png"
+                alt="Community Highlight"
+                fill
+                className="object-cover rounded-[24px]"
+                style={{
+                  objectPosition: 'center top' // Face fully visible from top
+                }}
+              />
+            </div>
+            <div 
+              className="rounded-[24px] bg-black relative overflow-hidden"
+              style={{
+                gridColumn: '5/6',
+                gridRow: '2/3',
+                width: '100%',
+                height: '100%',
+                minWidth: 'clamp(140px, 14vw, 160px)',
+                minHeight: 'clamp(180px, 18vw, 200px)'
+              }}
+            >
+              <Image
+                src="/10.png"
+                alt="Community Highlight"
+                fill
+                className="object-cover rounded-[24px]"
+                style={{
+                  objectPosition: 'center top' // Face fully visible from top
+                }}
+              />
+            </div>
           </div>
 
           {/* Mobile simple grid */}
           <div className="grid md:hidden grid-cols-2 gap-4">
-            {[...Array(8)].map((_, i) => (
+            {[10, 11, 12, 13, 10, 11, 12, 13].map((imgIdx, i) => (
               <div
                 key={i}
-                className={`rounded-[24px] aspect-square ${i % 2 === 0 ? 'bg-black' : 'bg-gray-300'}`}
-              />
+                className="rounded-[24px] aspect-square relative overflow-hidden bg-gray-300"
+              >
+                <Image
+                  src={`/${imgIdx}.png`}
+                  alt="Community Highlight"
+                  fill
+                  className="object-cover rounded-[24px]"
+                  style={{
+                    objectPosition: 'center top' // Face fully visible from top
+                  }}
+                />
+              </div>
             ))}
           </div>
         </div>
       </section>
 
+      {/* YOU MAY ALSO LIKE Section - Same as MEN page */}
+      <div className="bg-white text-[#212121] pt-0 pb-20">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          {/* Top Section - YOU MAY ALSO LIKE heading and Lorem ipsum */}
+          <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between mb-8 gap-6">
+            {/* Left - YOU MAY ALSO LIKE Heading */}
+            <div className="flex-1 flex flex-col">
+              <h1 
+                className="uppercase mb-6 text-black leading-none"
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontWeight: 400,
+                  fontSize: '90px',
+                  letterSpacing: '-3.37px'
+                }}
+              >
+                YOU MAY ALSO LIKE
+              </h1>
+            </div>
+            
+            {/* Right - Lorem ipsum text */}
+            <div className="flex-1 lg:max-w-[412px] flex flex-col">
+              <p 
+                className="text-black text-left leading-normal"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: '14px',
+                  letterSpacing: '0px',
+                  fontWeight: 500
+                }}
+              >
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+              </p>
+            </div>
+          </div>
+
+          {/* Product Grid - 4 Products */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            {/* Product 1 */}
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/3.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                  <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                  </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+                </div>
+              </div>
+
+            {/* Product 2 */}
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/4.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+          </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+        </div>
+            </div>
+
+            {/* Product 3 */}
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/5.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+
+            {/* Product 4 */}
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/6.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Customer Reviews Section - Figma Design */}
-      <section className="bg-white text-[#212121] py-12">
+      <section className="bg-white text-[#212121] py-8">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <h1 
-            className="uppercase text-black mb-8"
+            className="uppercase text-black mb-6"
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
               fontWeight: 400,
-              fontSize: 'clamp(48px, 8vw, 90px)',
+              fontSize: 'clamp(40px, 6.5vw, 70px)', // Reduced from 48px-90px to 40px-70px
               letterSpacing: '-3.37px'
             }}
           >
             CUSTOMER REVIEWS
           </h1>
-            <div className="grid grid-cols-1 lg:grid-cols-[414px_1fr] gap-8 lg:gap-12 xl:gap-16">
+            <div className="grid grid-cols-1 lg:grid-cols-[clamp(320px,38vw,380px)_1fr] gap-6 lg:gap-8 xl:gap-10">
             {/* Left - Overall Rating */}
-            <div className="w-full lg:w-[414px] lg:max-w-[414px]" style={{ marginTop: '8px' }}>
+            <div className="w-full lg:max-w-[clamp(320px,38vw,380px)]" style={{ marginTop: '8px' }}>
               <p 
                 className="text-black mb-2"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(24px, 3vw, 35px)',
+                  fontSize: 'clamp(20px, 2.4vw, 28px)', // Reduced from 24px-35px to 20px-28px
                   letterSpacing: '-1px',
                   fontWeight: 500
                 }}
@@ -1203,17 +1695,17 @@ export default function ProductDetail({ product }: { product: Product }) {
                 className="text-black mb-2"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(20px, 2.5vw, 31px)',
+                  fontSize: 'clamp(18px, 2vw, 25px)', // Reduced from 20px-31px to 18px-25px
                   fontWeight: 500
                 }}
               >
                 4 out of 5
               </p>
-              <div className="flex items-center mb-4 w-full md:w-[200px]" style={{ gap: '7px', height: '40px', marginTop: '4px' }}>
+              <div className="flex items-center mb-4 w-full md:w-[clamp(160px,18vw,200px)]" style={{ gap: 'clamp(5px, 0.6vw, 7px)', height: 'clamp(32px, 3.5vw, 40px)', marginTop: '4px' }}>
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className="h-7 w-7"
+                    className="h-5 w-5"
                     style={{
                       fill: i < 4 ? '#c9ff4a' : 'transparent',
                       stroke: '#000000',
@@ -1223,16 +1715,16 @@ export default function ProductDetail({ product }: { product: Product }) {
                 ))}
               </div>
               <Button
-                className="bg-black text-white hover:bg-gray-800 w-full md:w-[388px] md:max-w-[388px] lg:w-[388px] xl:w-[388px]"
+                className="bg-black text-white hover:bg-gray-800 w-full md:max-w-[clamp(300px,34vw,340px)]"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: '16px',
+                  fontSize: 'clamp(14px, 1.4vw, 16px)', // Responsive font size
                   fontWeight: 500,
-                  height: '67px',
+                  height: 'clamp(50px, 5.5vw, 58px)', // Reduced from 67px to 50px-58px
                   borderRadius: '20px',
-                  paddingLeft: '25px',
-                  paddingRight: '25px',
-                  marginTop: '56px'
+                  paddingLeft: 'clamp(20px, 2.2vw, 25px)',
+                  paddingRight: 'clamp(20px, 2.2vw, 25px)',
+                  marginTop: 'clamp(40px, 4.5vw, 48px)' // Reduced from 56px to 40px-48px
                 }}
               >
                 Write a Review
@@ -1240,13 +1732,13 @@ export default function ProductDetail({ product }: { product: Product }) {
                     </div>
 
             {/* Right - Individual Reviews */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 xl:gap-10 w-full overflow-visible">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 xl:gap-8 w-full overflow-visible">
               {[1, 2].map((idx) => (
                 <div 
                   key={idx}
-                  className="p-4 w-full"
+                  className="p-3 w-full"
                   style={{
-                    minHeight: '298px',
+                    minHeight: 'clamp(240px, 28vw, 260px)', // Reduced from 298px to 240px-260px
                     width: '100%',
                     maxWidth: '100%',
                     borderRadius: '32px',
@@ -1257,18 +1749,18 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="text-black mb-2"
                     style={{
                       fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(24px, 3vw, 35px)',
+                      fontSize: 'clamp(20px, 2.4vw, 28px)', // Reduced from 24px-35px to 20px-28px
                       letterSpacing: '-1px',
                       fontWeight: 500
                     }}
                   >
                     Awesome hoodie
                   </h3>
-                    <div className="flex items-center mb-2" style={{ gap: '9px', height: '19px' }}>
+                    <div className="flex items-center mb-2" style={{ gap: 'clamp(6px, 0.7vw, 8px)', height: 'clamp(16px, 1.8vw, 19px)' }}>
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className="h-4 w-4"
+                          className="h-3 w-3"
                           style={{
                             fill: '#c9ff4a',
                             stroke: '#000000',
@@ -1281,7 +1773,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="text-black mb-2"
                     style={{
                       fontFamily: "'Gilroy-Regular', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(14px, 1.5vw, 20px)',
+                      fontSize: 'clamp(12px, 1.3vw, 16px)', // Reduced from 14px-20px to 12px-16px
                       fontWeight: 400,
                       letterSpacing: '0px'
                     }}
@@ -1292,7 +1784,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                     className="text-black"
                     style={{
                       fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(14px, 1.5vw, 20px)',
+                      fontSize: 'clamp(12px, 1.3vw, 16px)', // Reduced from 14px-20px to 12px-16px
                       fontWeight: 500
                     }}
                   >
