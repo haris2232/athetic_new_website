@@ -12,6 +12,7 @@ import { useWishlist } from "@/lib/wishlist-context"
 import { formatCurrency } from "@/lib/utils"
 import { Product } from "@/lib/types"
 import ProductReviews from "@/components/sections/product-reviews"
+// Related section styled like MEN page (static figma block)
 import { submitForm } from "@/lib/api"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew';
@@ -21,6 +22,10 @@ const getFullImageUrl = (url: string | undefined): string => {
       return "/placeholder.svg";
   }
   if (url.startsWith('http')) {
+      return url;
+  }
+  // If it's a local public image (starts with /), return as-is
+  if (url.startsWith('/') && !url.includes('backendnew') && !url.includes('api')) {
       return url;
   }
   return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
@@ -392,258 +397,432 @@ export default function ProductDetail({ product }: { product: Product }) {
   }
 
   return (
-    <div className="bg-white">
-      {/* Main Product Section - Now Dark */}
-      <section className="py-12 bg-white text-[#212121]">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Product Images */}
-            <div className="space-y-4">
-              <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 cursor-pointer">
-                <Image
-                  src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
-                  alt={product.name}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-
-                {/* Navigation arrows */}
-                {currentImages && currentImages.length > 1 && (
-                  <>
-                    <button 
-                      className="absolute left-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition-colors"
-                      onClick={prevImage}
-                    >
-                      <ChevronLeft className="h-4 w-4 text-white" />
-                    </button>
-                    <button 
-                      className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 bg-black/10 rounded-full flex items-center justify-center hover:bg-black/20 transition-colors"
-                      onClick={nextImage}
-                    >
-                      <ChevronRight className="h-4 w-4 text-white" />
-                    </button>
-                  </>
-                )}
-
-                {/* Image indicators */}
-                {currentImages && currentImages.length > 1 && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-                    {currentImages.map((_, index) => (
+    <div className="bg-white overflow-x-hidden">
+      {/* Main Product Section - Figma Design */}
+      <section className="py-6 md:py-8 lg:py-10 xl:py-12 bg-white text-[#212121]">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          <div className="flex flex-col md:flex-row gap-6 md:gap-8 lg:gap-10 xl:gap-12 items-start">
+            {/* Product Images - Fully Responsive */}
+            <div className="w-full lg:w-auto flex-shrink-0 md:self-start">
+              {/* Desktop & Tablet - Responsive Sizes */}
+              <div className="hidden md:flex md:gap-4 xl:gap-6 flex-shrink-0">
+                {/* Thumbnails - Left side, vertical stack - Responsive */}
+                {currentImages && currentImages.length > 0 && (
+                  <div className="flex flex-col gap-3 md:gap-4 xl:gap-5 flex-shrink-0">
+                    {currentImages.map((image, index) => (
                       <button
                         key={index}
-                        className={`w-2 h-2 rounded-full transition-colors ${
-                          index === activeImageIndex ? 'bg-black' : 'bg-black/50'
-                        }`}
+                        className="relative overflow-hidden transition-colors flex-shrink-0"
+                        style={{
+                          width: 'clamp(100px, 12vw, 173px)',
+                          height: 'clamp(90px, 11vw, 158px)',
+                          borderRadius: '12px',
+                          border: index === activeImageIndex ? '2px solid #3B82F6' : '2px solid #D1D5DB',
+                          backgroundColor: '#FFFFFF',
+                          opacity: 1
+                        }}
                         onClick={() => setActiveImageIndex(index)}
-                      />
+                      >
+                <Image
+                          src={getFullImageUrl(image)}
+                          alt={`${product.name} ${index + 1}`}
+                  fill
+                  className="object-cover"
+                          style={{
+                            objectFit: 'cover',
+                            objectPosition: 'center',
+                            borderRadius: '12px'
+                          }}
+                        />
+                    </button>
                     ))}
                 </div>
                 )}
+                
+                {/* Main Image - Responsive */}
+                <div 
+                  className="relative overflow-hidden bg-white flex-shrink-0"
+                  style={{
+                    width: 'clamp(280px, 35vw, 455px)',
+                    height: 'clamp(320px, 40vw, 514px)',
+                    borderRadius: '12px',
+                    opacity: 1,
+                    backgroundColor: '#FFFFFF'
+                  }}
+                >
+                  <Image
+                    src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    style={{
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                      borderRadius: '12px'
+                    }}
+                    priority
+                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 40vw, 455px"
+                  />
+                </div>
             </div>
 
-              {/* Thumbnail images - Show all images in carousel format */}
+              {/* Mobile - Responsive */}
+              <div className="md:hidden flex flex-col gap-4">
+                {/* Mobile Thumbnails - Horizontal */}
               {currentImages && currentImages.length > 0 && (
-                <div className={`grid gap-2 ${currentImages.length <= 4 ? 'grid-cols-4' : 'grid-cols-5'}`}>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
                   {currentImages.map((image, index) => (
                     <button
                         key={index}
-                      className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${
-                        index === activeImageIndex ? 'border-black' : 'border-transparent hover:border-gray-600'
-                      }`}
+                        className="relative overflow-hidden transition-colors flex-shrink-0"
+                        style={{
+                          width: '80px',
+                          height: '80px',
+                          borderRadius: '8px',
+                          border: index === activeImageIndex ? '2px solid #3B82F6' : '2px solid #D1D5DB',
+                          backgroundColor: '#FFFFFF',
+                          opacity: 1
+                        }}
                       onClick={() => setActiveImageIndex(index)}
                     >
                       <Image
                         src={getFullImageUrl(image)}
                         alt={`${product.name} ${index + 1}`}
-                        width={100}
-                        height={100}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
+                        style={{
+                          objectFit: 'cover',
+                          objectPosition: 'center',
+                          borderRadius: '8px'
+                        }}
                       />
                     </button>
                   ))}
                 </div>
                 )}
+                
+                {/* Main Image - Mobile */}
+                <div className="relative w-full overflow-hidden bg-white rounded-xl" style={{ aspectRatio: '4/5', minHeight: '400px' }}>
+                  <Image
+                    src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    style={{
+                      objectFit: 'cover',
+                      objectPosition: 'center',
+                      borderRadius: '12px'
+                    }}
+                    priority
+                    sizes="100vw"
+                  />
+                </div>
+              </div>
               </div>
 
-            {/* Product Info */}
-            <div className="space-y-6">
-              <div>
-                <h1 className="text-3xl font-bold text-[#212121] mb-2">{product.name}</h1>
-                <div className="flex items-center space-x-4">
-                  {selectedVariation?.originalPrice && (
-                    <span className="text-gray-500 line-through text-lg">
-                      {formatCurrency(parseFloat(selectedVariation.originalPrice.replace(/[^0-9.]/g, '')))}
-                    </span>
-                  )}
-                  <span className="text-2xl font-bold text-[#212121]">
-                    {formatCurrency(finalPrice)}
-                  </span>
-                  {((product as any).discountPercentage || 0) > 0 && (
-                    <span className="text-lg text-gray-400 line-through ml-2">
-                      {formatCurrency(currentPrice)}
-                    </span>
-                  )}
-                </div>
-                {/* <p className="text-sm text-gray-600">EARN 507 PACK VIP POINTS</p> */}
-              </div>
-
-              {/* Rating and Actions */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`h-4 w-4 ${i < (product.rating || 0) ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}`} 
-                      />
-                    ))}
-                  </div>
-                  <span className="text-sm text-gray-600">({product.reviewCount || 0} reviews)</span>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button 
-                    onClick={handleWishlistToggle}
-                    className={`p-2 rounded-full transition-colors ${
-                      isInWishlist(product.id) 
-                        ? 'bg-red-500 text-white'
-                        : 'bg-gray-200 text-black hover:bg-gray-300'
-                    }`}
+            {/* Product Info - Figma Exact Spacing */}
+            <div className="w-full md:w-auto md:flex-1 flex-shrink-0 flex flex-col md:justify-between md:self-stretch">
+              {/* Top Section - Aligned with Image Top */}
+              <div className="flex flex-col md:flex-shrink-0">
+                {/* Product Name & Price Row - Figma Exact */}
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-6">
+                  <h1 
+                    className="uppercase text-black mb-0"
+                    style={{
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      fontSize: 'clamp(48px, 4.8vw, 70px)',
+                      fontWeight: 400,
+                      lineHeight: 'clamp(44px, 4.4vw, 64px)',
+                      letterSpacing: '-2px',
+                      color: '#000000',
+                      margin: 0,
+                      padding: 0,
+                      whiteSpace: 'pre-line'
+                    }}
                   >
-                    <Heart className={`h-5 w-5 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
-                  </button>
-                  <button 
-                    onClick={handleShare}
-                    className="p-2 bg-gray-200 text-black rounded-full hover:bg-gray-300 transition-colors"
-                  >
-                    <Share2 className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Color/Pattern Selection */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#212121]">Color</span>
-                  <span className="text-sm text-[#212121]">{selectedColor}</span>
-                </div>
-                <div className="flex space-x-2">
-                  {colorOptions.map((color) => (
-                    <div
-                      key={color.name}
-                      className={`w-12 h-12 rounded-lg border-2 transition-colors cursor-pointer ${
-                        selectedColor === color.name
-                          ? "border-black"
-                          : "border-gray-300 hover:border-gray-500"
-                      }`}
-                      onClick={() => {
-                        setSelectedColor(color.name)
-                        setActiveImageIndex(0) // Reset to first image when color changes
+                    {(() => {
+                      const name = product.name || "MEN'S HYBRID CLASSIC";
+                      // Figma: "MEN'S" on first line, "HYBRID CLASSIC" on second line
+                      if (name.startsWith("MEN'S ")) {
+                        const rest = name.replace("MEN'S ", "");
+                        return "MEN'S\n" + rest;
+                      }
+                      return name;
+                    })()}
+                  </h1>
+                  
+                  {/* Price - Responsive and Right Aligned */}
+                  <div className="flex flex-col items-start md:items-end md:text-right mt-0" style={{ paddingTop: '0px', width: '100%', maxWidth: '100%' }}>
+                    {selectedVariation?.originalPrice || (product as any).originalPrice ? (
+                      <span 
+                        className="line-through md:w-full md:text-right"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(12px, 1.2vw, 18px)',
+                          fontWeight: 400,
+                          color: '#000000',
+                          textDecorationColor: '#EF4444',
+                          textDecorationThickness: '2px',
+                          marginBottom: '4px',
+                          lineHeight: 'clamp(44px, 4.4vw, 64px)',
+                          height: 'clamp(44px, 4.4vw, 64px)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                          width: '100%'
+                        }}
+                      >
+                        {formatCurrency(parseFloat((selectedVariation?.originalPrice || (product as any).originalPrice || product.originalPrice || "0").replace(/[^0-9.]/g, '')))}
+                    </span>
+                    ) : null}
+                    <span 
+                      className="text-black md:w-full md:text-right"
+                      style={{
+                        fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(28px, 3vw, 42px)',
+                        fontWeight: 700,
+                        lineHeight: 'clamp(44px, 4.4vw, 64px)',
+                        letterSpacing: '0px',
+                        color: '#000000',
+                        height: 'clamp(44px, 4.4vw, 64px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        width: '100%'
                       }}
                     >
-                      {color.hex ? (
-                        <div 
-                          className="w-full h-full rounded-md" 
-                          style={{ backgroundColor: color.hex }}
-                        />
-                      ) : (
-                        <div className="w-full h-full rounded-md overflow-hidden relative group">
-                          <Image 
-                            src={getFullImageUrl(color.image)} 
-                            alt={color.name} 
-                            width={48}
-                            height={48}
-                            className="object-cover w-full h-full" 
-                          />
-                          {/* Zoom Icon Overlay */}
-                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                            <div
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                setZoomImage(getFullImageUrl(color.image))
-                              }}
-                              className="bg-white/90 hover:bg-white text-gray-800 rounded-full p-1.5 shadow-lg transition-all duration-200 hover:scale-110 cursor-pointer"
-                            >
-                              <ZoomIn className="h-3 w-3" />
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                    {formatCurrency(finalPrice)}
+                  </span>
                 </div>
               </div>
 
-              {/* Size Selection */}
-              <div className="space-y-3">
+                {/* Description - Figma Exact Spacing */}
+                <p 
+                  className="text-black mb-8"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(14px, 1.25vw, 18px)',
+                    fontWeight: 400,
+                    lineHeight: '1.5',
+                    letterSpacing: '0px',
+                    color: '#000000',
+                    maxWidth: '334px',
+                    margin: 0
+                  }}
+                >
+                  {product.description || "Designed for a boxy, oversized look—size down if you prefer a closer fit."}
+                </p>
+                  </div>
+
+              {/* Middle Section - Centered between Top and Bottom */}
+              <div className="flex flex-col md:justify-center md:py-8">
+
+              {/* Size Selection - Figma Exact Alignment */}
+              <div className="mb-8">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-[#212121]">Size</span>
-                  {product.sizeGuideImage && (
-                    <button 
-                      onClick={() => setIsSizeGuideOpen(true)}
-                      className="text-sm text-[#212121] underline hover:no-underline"
-                    >SIZE GUIDE</button>
-                  )}
-                </div>
-                <div className="flex space-x-2">
-                  {sizeOptions.map((size) => (
-                    <button
-                      key={size}
-                      className={`px-3 py-2 rounded-md border-2 font-medium transition-colors ${
-                        selectedSize === size
-                          ? "bg-[#212121] text-white border-[#212121]"
-                          : "bg-transparent text-[#212121] border-gray-300 hover:border-black"
-                      }`}
-                      onClick={() => setSelectedSize(size)}
+                  <div className="flex items-center" style={{ gap: '12px' }}>
+                    <span 
+                      className="uppercase text-black"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        lineHeight: '1'
+                      }}
                     >
-                      {size}
-                    </button>
-                  ))}
+                      SIZE:
+                    </span>
+                    {sizeOptions.slice(0, 4).map((size) => (
+                  <button 
+                        key={size}
+                        className="transition-colors cursor-pointer flex items-center justify-center flex-shrink-0"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          border: '2px solid #000000',
+                          backgroundColor: selectedSize === size ? '#E5E7EB' : '#FFFFFF',
+                          color: '#000000',
+                          lineHeight: '1',
+                          padding: 0
+                        }}
+                        onClick={() => setSelectedSize(size)}
+                      >
+                        {size}
+                  </button>
+                    ))}
                 </div>
-                <p className="text-sm text-gray-500">Keelan is 6'2" and wears Medium</p>
+                  <div className="flex items-center gap-2 cursor-pointer">
+                    <span 
+                      className="uppercase text-black"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: '14px',
+                        fontWeight: 600,
+                        lineHeight: '1'
+                      }}
+                    >
+                      SIZE CHART
+                    </span>
+                    <Package className="h-4 w-4 text-black flex-shrink-0" />
+              </div>
+                </div>
               </div>
 
-              {/* Quantity Selection */}
-              <div className="space-y-3">
-                <span className="text-sm font-medium text-[#212121]">Quantity</span>
-                <div className="flex items-center space-x-2">
+              {/* Color Selection - Figma Exact Alignment */}
+              <div className="mb-8">
+                <div className="flex items-center" style={{ gap: '12px' }}>
+                  <span 
+                    className="uppercase text-black"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      lineHeight: '1'
+                    }}
+                  >
+                    COLOR:
+                  </span>
+                  {colorOptions.slice(0, 4).map((color, idx) => {
+                    // Default colors: gray, black, yellow, blue
+                    const defaultColors = ['#808080', '#000000', '#FFFF00', '#0066FF']
+                    const colorHex = color.hex || defaultColors[idx] || '#808080'
+                    
+                    return (
+                    <div
+                      key={color.name}
+                        className="transition-colors cursor-pointer flex-shrink-0"
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '8px',
+                          border: selectedColor === color.name
+                            ? '2px solid #000000'
+                            : '1px solid #D1D5DB',
+                          backgroundColor: colorHex,
+                          opacity: 1
+                        }}
+                      onClick={() => {
+                        setSelectedColor(color.name)
+                          setActiveImageIndex(0)
+                        }}
+                      />
+                    )
+                  })}
+                            </div>
+                </div>
+              </div>
+
+              {/* Bottom Section - Aligned with Image Bottom */}
+              <div className="flex flex-col md:flex-shrink-0">
+
+              {/* Quantity Selection & Action Buttons - Figma Exact Spacing */}
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+                {/* Quantity Selector - Figma Exact */}
+                <div 
+                  className="flex items-center justify-between"
+                  style={{
+                    width: '100%',
+                    maxWidth: '156px',
+                    height: '64px',
+                    borderRadius: '20px',
+                    border: '2px solid #000000',
+                    backgroundColor: '#FFFFFF',
+                    padding: '0 24px'
+                  }}
+                >
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
-                    className="h-10 w-10 text-black border-gray-300 hover:bg-gray-100"
+                    className="h-full text-black hover:bg-gray-100"
+                    style={{
+                      minWidth: 'auto',
+                      padding: '0',
+                      border: 'none',
+                      borderRadius: '0'
+                    }}
                     onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
                   >
-                    <Minus className="h-4 w-4" />
+                    <Minus className="h-5 w-5" />
                   </Button>
-                  <span className="text-lg font-semibold w-12 text-center">{quantity}</span>
+                  <span 
+                    className="text-center"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '18px',
+                      fontWeight: 600,
+                      color: '#000000'
+                    }}
+                  >
+                    {quantity}
+                  </span>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
-                    className="h-10 w-10 text-black border-gray-300 hover:bg-gray-100"
+                    className="h-full text-black hover:bg-gray-100"
+                    style={{
+                      minWidth: 'auto',
+                      padding: '0',
+                      border: 'none',
+                      borderRadius: '0'
+                    }}
                     onClick={() => setQuantity(prev => prev + 1)}
                   >
-                    <Plus className="h-4 w-4" />
+                    <Plus className="h-5 w-5" />
                   </Button>
-                </div>
               </div>
 
-              {/* Add to Cart */}
-              <div className="space-y-3">
+                {/* Action Buttons - Figma Exact */}
+                <div className="flex gap-3 flex-1">
                 <Button
                   size="lg"
-                  className="w-full font-semibold py-4 rounded-md transition-all duration-300 bg-[#212121] text-white hover:bg-black"
+                    className="uppercase font-semibold transition-all duration-300"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '16px',
+                      fontWeight: 600,
+                      color: '#EBFF00',
+                      backgroundColor: '#000000',
+                      width: '364px',
+                      height: '67px',
+                      borderRadius: '20px',
+                      border: 'none',
+                      padding: '6.36px 25.42px',
+                      gap: '6.36px'
+                    }}
                   onClick={handleAddToCart}
                 >
-                  ADD TO CART
+                    ADD TO BAG
                 </Button>
-              <Button
-                asChild
-                  variant="outline"
-                size="lg"
-                  className="w-full border-black text-black hover:bg-black hover:text-white font-semibold py-4 rounded-md transition-all duration-300"
-              >
-                  <Link href="/cart">VIEW CART</Link>
-              </Button>
+                  
+                  {/* Wishlist Button - Figma Exact */}
+                  <div
+                    className="flex items-center justify-center flex-shrink-0"
+                    style={{
+                      width: '88px',
+                      height: '64px',
+                      borderRadius: '20px',
+                      border: '2px solid #000000',
+                      backgroundColor: '#FFFFFF',
+                      padding: '10px',
+                      gap: '10px',
+                      cursor: 'pointer'
+                    }}
+                    onClick={handleWishlistToggle}
+                  >
+                    <Heart 
+                      className={`h-6 w-6 ${isInWishlist(product.id) ? 'fill-current text-red-500' : 'text-black'}`}
+                      style={{
+                        strokeWidth: isInWishlist(product.id) ? 0 : 2,
+                        stroke: '#000000'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
               </div>
 
               {/* Shop the Look */}
@@ -676,275 +855,512 @@ export default function ProductDetail({ product }: { product: Product }) {
         </div>
       </section>
 
-      {/* Dark Product Details Section */}
-      <section className="bg-gray-50 text-[#212121] py-12">
-        <div className="container mx-auto px-4">
-          {/* Grid layout updated to two columns */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* Left Side - Collapsible Sections */}
-            <div className="space-y-4">
-              {/* Product Description */}
-              <div className="py-4 border-b border-gray-300">
-                  <div className="space-y-4">
-                    {product.description && (
-                      <p className="text-gray-600 text-sm leading-relaxed">
-                        {product.description}
-                      </p>
-                    )}
-                  </div>
+      {/* Description, Fit, Material & Care, Reviews Section - Figma Design */}
+      <section className="bg-white text-[#212121] py-12">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          {/* Top Horizontal Line */}
+          <div className="border-t border-black mb-12"></div>
+          
+          {/* Three Column Layout (match Figma widths exactly on md+) */}
+          <div className="grid grid-cols-1 gap-6 md:gap-6 md:[grid-template-columns:526px_378px_307px]">
+            {/* Column 1: DESCRIPTION */}
+            <div className="border-b border-black pb-8 md:border-b-0 md:pb-0 md:pr-8">
+              <h2 
+                className="uppercase text-black mb-4"
+                style={{
+                  fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  letterSpacing: '0px'
+                }}
+              >
+                DESCRIPTION
+              </h2>
+              <p 
+                className="text-black"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  lineHeight: '20px',
+                  letterSpacing: '0px',
+                  margin: 0,
+                  maxWidth: '526px'
+                }}
+              >
+                The Athlekt Classic Hybrid Tee is designed to move with you wherever the day takes you. Lightweight, breathable, and stretchable, it delivers all-day comfort whether you're training, on the move, or unwinding after a long day. Its adaptive fit complements every body type from athletes to dads with dad bods offering a clean, confident silhouette without compromising comfort. Perfect for both lifestyle and gym, this tee keeps you cool, sharp, and ready for anything from your morning session to your evening plans. One tee. Every moment. Athlekt.
+              </p>
               </div>
 
-              {/* Purpose */}
-              <Collapsible open={openSections.purpose} onOpenChange={() => toggleSection("purpose")}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-300 hover:border-gray-400 transition-colors">
-                  <span className="text-sm font-medium uppercase tracking-wide">PURPOSE</span>
-                  {openSections.purpose ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </CollapsibleTrigger>
-                <CollapsibleContent className="py-6">
-                  <div className="text-gray-600 text-sm leading-relaxed">
-                    {product.purpose ? (
-                      <p>{product.purpose}</p>
-                    ) : (
-                      <p>
-                        Designed for high-intensity training, running, and everyday athletic activities. These shorts
-                        provide optimal comfort and performance for all your fitness needs.
-                      </p>
-                    )}
+            {/* Column 2: FIT and MATERIAL & CARE */}
+            <div className="space-y-1 border-b border-black pb-8 md:border-b-0 md:pb-0 md:pr-8">
+              {/* FIT */}
+              <div>
+                <h2 
+                  className="uppercase text-black mb-4"
+                  style={{
+                    fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    letterSpacing: '0px'
+                  }}
+                >
+                  FIT
+                </h2>
+                <p 
+                  className="text-black"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '16px',
+                    fontWeight: 400,
+                    lineHeight: '20px',
+                    letterSpacing: '0px',
+                    margin: 0,
+                    maxWidth: '378px'
+                  }}
+                >
+                  Boxy, oversized look—size down if you prefer a closer fit.
+                </p>
                   </div>
-                </CollapsibleContent>
-              </Collapsible>
 
-              {/* Features & Fit */}
-              <Collapsible open={openSections.features} onOpenChange={() => toggleSection("features")}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-300 hover:border-gray-400 transition-colors">
-                  <span className="text-sm font-medium uppercase tracking-wide">FEATURES & FIT</span>
-                  {openSections.features ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </CollapsibleTrigger>
-                <CollapsibleContent className="py-6">
-                  <div className="text-gray-600 text-sm leading-relaxed space-y-2">
-                    {product.features ? (
-                      <div dangerouslySetInnerHTML={{ __html: product.features.replace(/\n/g, '<br/>') }} />
-                    ) : (
-                      <ul className="list-disc pl-5 space-y-1">
-                        <li>7-inch inseam for optimal coverage</li>
-                        <li>Regular fit design</li>
-                        <li>Elastic waistband with drawstring</li>
-                        <li>Secure zip pocket for essentials</li>
-                        <li>Four-way stretch construction</li>
-                      </ul>
-                    )}
+              {/* MATERIAL & CARE */}
+              <div className="pt-8">
+                <h2 
+                  className="uppercase text-black mb-4"
+                  style={{
+                    fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    letterSpacing: '0px'
+                  }}
+                >
+                  MATERIAL & CARE
+                </h2>
+                <div className="space-y-2">
+                  <p 
+                    className="text-black"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '16px',
+                      fontWeight: 400,
+                      lineHeight: '20px',
+                      letterSpacing: '0px',
+                      margin: 0,
+                      maxWidth: '526px'
+                    }}
+                  >
+                    This lightweight, drapey fabric is smooth on the outside and looped on the inside with a slightly faded, vintage-looking finish
+                  </p>
+                  <p 
+                    className="text-black"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '16px',
+                      fontWeight: 400,
+                      lineHeight: '20px',
+                      letterSpacing: '0px',
+                      margin: 0,
+                      maxWidth: '526px'
+                    }}
+                  >
+                    65% Cotton, 35% Polyester
+                  </p>
                   </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              {/* Materials & Care */}
-              <Collapsible open={openSections.materials} onOpenChange={() => toggleSection("materials")}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-300 hover:border-gray-400 transition-colors">
-                  <span className="text-sm font-medium uppercase tracking-wide">MATERIALS & CARE</span>
-                  {openSections.materials ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </CollapsibleTrigger>
-                <CollapsibleContent className="py-6">
-                  <div className="text-gray-600 text-sm leading-relaxed space-y-4">
-                    {product.materials && (
-                      <div>
-                        <h4 className="font-medium text-[#212121] mb-2">Materials:</h4>
-                        <div dangerouslySetInnerHTML={{ __html: product.materials.replace(/\n/g, '<br/>') }} />
                       </div>
-                    )}
-                    {product.care && (
-                      <div>
-                        <h4 className="font-medium text-[#212121] mb-2">Care Instructions:</h4>
-                        <div dangerouslySetInnerHTML={{ __html: product.care.replace(/\n/g, '<br/>') }} />
                       </div>
-                    )}
-                    {!product.materials && !product.care && (
-                      <>
-                        <div>
-                          <h4 className="font-medium text-[#212121] mb-2">Materials:</h4>
-                          <ul className="list-disc pl-5 space-y-1">
-                            <li>88% Polyester, 12% Elastane</li>
-                            <li>Moisture-wicking fabric technology</li>
-                            <li>Anti-odor treatment</li>
-                          </ul>
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-[#212121] mb-2">Care Instructions:</h4>
-                          <ul className="list-disc pl-5 space-y-1">
-                            <li>Machine wash cold with like colors</li>
-                            <li>Do not bleach</li>
-                            <li>Tumble dry low</li>
-                            <li>Do not iron</li>
-                          </ul>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
 
-              {/* Reviews */}
-              <Collapsible open={openSections.reviews} onOpenChange={() => toggleSection("reviews")}>
-                <CollapsibleTrigger className="flex items-center justify-between w-full py-4 border-b border-gray-300 hover:border-gray-400 transition-colors">
-                  <div className="flex items-center space-x-3">
-                    <span className="text-sm font-medium uppercase tracking-wide">REVIEWS</span>
-                    <div className="flex">
+            {/* Column 3: REVIEWS */}
+            <div>
+              <h2 
+                className="uppercase text-black mb-4"
+                style={{
+                  fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                  fontSize: '20px',
+                  fontWeight: 700,
+                  letterSpacing: '0px'
+                }}
+              >
+                REVIEWS
+              </h2>
+              <div className="flex items-center mb-4" style={{ gap: '9px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="h-4 w-4"
+                    style={{
+                      fill: i < 4 ? '#c9ff4a' : 'transparent',
+                      stroke: '#000000',
+                      strokeWidth: 1
+                    }}
+                  />
+                ))}
+              </div>
+              <p 
+                className="text-black"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: '16px',
+                  fontWeight: 400,
+                  lineHeight: '20px',
+                  letterSpacing: '0px',
+                  margin: 0,
+                  maxWidth: '307px'
+                }}
+              >
+                Boxy, oversized look—size down if you prefer a closer fit. Boxy, oversized look—size down if you prefer a closer fit.
+              </p>
+                  </div>
+            </div>
+
+          {/* Bottom Horizontal Line */}
+          <div className="border-t border-black mt-4"></div>
+                        </div>
+      </section>
+
+      {/* Bundles Section - Figma Design */}
+      <section className="bg-white text-[#212121] py-12">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8 gap-6">
+            <h1 
+              className="uppercase text-black leading-none"
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontWeight: 400,
+                fontSize: '90px',
+                letterSpacing: '-3.37px'
+              }}
+            >
+              BUNDLES
+            </h1>
+            <p 
+              className="text-black text-left leading-normal lg:max-w-[412px]"
+              style={{
+                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                fontSize: '14px',
+                letterSpacing: '0px',
+                fontWeight: 500
+              }}
+            >
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((idx) => (
+              <div 
+                key={idx}
+                className="bg-white relative overflow-hidden w-full"
+                style={{
+                  aspectRatio: '307/450'
+                }}
+              >
+                <img 
+                  src={`/${idx + 2}.png`} 
+                  alt="Bundle Product" 
+                  className="w-full h-full object-cover"
+                  style={{
+                    borderRadius: '32px'
+                  }}
+                />
+                <div 
+                  className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                  style={{
+                    height: '60px'
+                  }}
+                >
+                  <div className="flex flex-col text-left">
+                    <span 
+                      className="uppercase text-white"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: '13.41px',
+                        lineHeight: '14.6px',
+                        letterSpacing: '0px',
+                        fontWeight: 500
+                      }}
+                    >
+                      LORIUM IPSUM DOLOR
+                    </span>
+                    <span 
+                      className="uppercase text-white"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: '13.41px',
+                        lineHeight: '14.6px',
+                        letterSpacing: '0px',
+                        fontWeight: 500
+                      }}
+                    >
+                      SIT DE VENUM
+                    </span>
+                            </div>
+                  <p 
+                    className="text-white font-bold text-right"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '22px',
+                      lineHeight: '26px',
+                      letterSpacing: '0px',
+                      fontWeight: 600
+                    }}
+                  >
+                    AED 59
+                  </p>
+                          </div>
+                        </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Community Highlights Section - Figma Design */}
+      <section className="bg-white text-[#212121] py-12">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8 gap-6">
+            <h1 
+              className="uppercase text-black leading-none"
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontWeight: 400,
+                fontSize: '90px',
+                letterSpacing: '-3.37px'
+              }}
+            >
+              COMMUNITY HIGHLIGHTS
+            </h1>
+            <p 
+              className="text-black text-left leading-normal lg:max-w-[412px]"
+              style={{
+                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                fontSize: '14px',
+                letterSpacing: '0px',
+                fontWeight: 500
+              }}
+            >
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+            </p>
+                  </div>
+
+          {/* Desktop mosaic grid - exact Figma: left 2x2, big center, right 2x2 */}
+          <div className="hidden lg:grid gap-8 [grid-template-columns:204px_204px_384px_204px_204px] [grid-auto-rows:231px]">
+            {/* Left 2x2 (each 204x231, radius 24) */}
+            <div className="rounded-[24px] bg-black [grid-column:1/2] [grid-row:1/2]" />
+            <div className="rounded-[24px] bg-gray-300 [grid-column:2/3] [grid-row:1/2]" />
+            <div className="rounded-[24px] bg-gray-300 [grid-column:1/2] [grid-row:2/3]" />
+            <div className="rounded-[24px] bg-black [grid-column:2/3] [grid-row:2/3]" />
+
+            {/* Center big tile: 384x490, radius 24 */}
+            <div className="rounded-[24px] bg-black [grid-column:3/4] [grid-row:1/3] h-[490px]" />
+
+            {/* Right 2x2 */}
+            <div className="rounded-[24px] bg-black [grid-column:4/5] [grid-row:1/2]" />
+            <div className="rounded-[24px] bg-gray-300 [grid-column:5/6] [grid-row:1/2]" />
+            <div className="rounded-[24px] bg-gray-300 [grid-column:4/5] [grid-row:2/3]" />
+            <div className="rounded-[24px] bg-black [grid-column:5/6] [grid-row:2/3]" />
+          </div>
+
+          {/* Mobile simple grid */}
+          <div className="grid md:hidden grid-cols-2 gap-4">
+            {[...Array(8)].map((_, i) => (
+              <div
+                key={i}
+                className={`rounded-[24px] aspect-square ${i % 2 === 0 ? 'bg-black' : 'bg-gray-300'}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* YOU MAY ALSO LIKE - Figma styled (same as MEN page) */}
+      <section className="bg-white text-[#212121] pt-0 pb-20 mt-12">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between mb-8 gap-6">
+            <div className="flex-1 flex flex-col">
+              <h1 
+                className="uppercase mb-6 text-black leading-none"
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontWeight: 400,
+                  fontSize: '90px',
+                  letterSpacing: '-3.37px'
+                }}
+              >
+                YOU MAY ALSO LIKE
+              </h1>
+            </div>
+            <div className="flex-1 lg:max-w-[412px] flex flex-col">
+              <p 
+                className="text-black text-left leading-normal"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: '14px',
+                  letterSpacing: '0px',
+                  fontWeight: 500
+                }}
+              >
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            {[3,4,5,6].map((idx) => (
+              <div key={idx} className="bg-white relative overflow-hidden w-full" style={{ aspectRatio: '307/450' }}>
+                <img src={`/${idx}.png`} alt="Product" className="w-full h-full object-cover" style={{ borderRadius: '32px' }} />
+                <div className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between" style={{ height: '60px' }}>
+                  <div className="flex flex-col text-left">
+                    <span className="uppercase text-white" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '13.41px', lineHeight: '14.6px', letterSpacing: '0px', fontWeight: 500 }}>LORIUM IPSUM DOLOR</span>
+                    <span className="uppercase text-white" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '13.41px', lineHeight: '14.6px', letterSpacing: '0px', fontWeight: 500 }}>SIT DE VENUM</span>
+                  </div>
+                  <p className="text-white font-bold text-right" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '22px', lineHeight: '26px', letterSpacing: '0px', fontWeight: 600 }}>AED 59</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Customer Reviews Section - Figma Design */}
+      <section className="bg-white text-[#212121] py-12">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          <h1 
+            className="uppercase text-black mb-8"
+            style={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontWeight: 400,
+              fontSize: 'clamp(48px, 8vw, 90px)',
+              letterSpacing: '-3.37px'
+            }}
+          >
+            CUSTOMER REVIEWS
+          </h1>
+            <div className="grid grid-cols-1 lg:grid-cols-[414px_1fr] gap-8 lg:gap-12 xl:gap-16">
+            {/* Left - Overall Rating */}
+            <div className="w-full lg:w-[414px] lg:max-w-[414px]" style={{ marginTop: '8px' }}>
+              <p 
+                className="text-black mb-2"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: 'clamp(24px, 3vw, 35px)',
+                  letterSpacing: '-1px',
+                  fontWeight: 500
+                }}
+              >
+                Tried our Products?
+              </p>
+              <p 
+                className="text-black mb-2"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: 'clamp(20px, 2.5vw, 31px)',
+                  fontWeight: 500
+                }}
+              >
+                4 out of 5
+              </p>
+              <div className="flex items-center mb-4 w-full md:w-[200px]" style={{ gap: '7px', height: '40px', marginTop: '4px' }}>
+                {[...Array(5)].map((_, i) => (
+                  <Star
+                    key={i}
+                    className="h-7 w-7"
+                    style={{
+                      fill: i < 4 ? '#c9ff4a' : 'transparent',
+                      stroke: '#000000',
+                      strokeWidth: 1.68
+                    }}
+                  />
+                ))}
+              </div>
+              <Button
+                className="bg-black text-white hover:bg-gray-800 w-full md:w-[388px] md:max-w-[388px] lg:w-[388px] xl:w-[388px]"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: '16px',
+                  fontWeight: 500,
+                  height: '67px',
+                  borderRadius: '20px',
+                  paddingLeft: '25px',
+                  paddingRight: '25px',
+                  marginTop: '56px'
+                }}
+              >
+                Write a Review
+              </Button>
+                    </div>
+
+            {/* Right - Individual Reviews */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 xl:gap-10 w-full overflow-visible">
+              {[1, 2].map((idx) => (
+                <div 
+                  key={idx}
+                  className="p-4 w-full"
+                  style={{
+                    minHeight: '298px',
+                    width: '100%',
+                    maxWidth: '100%',
+                    borderRadius: '32px',
+                    backgroundColor: '#EAEAEA'
+                  }}
+                >
+                  <h3 
+                    className="text-black mb-2"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(24px, 3vw, 35px)',
+                      letterSpacing: '-1px',
+                      fontWeight: 500
+                    }}
+                  >
+                    Awesome hoodie
+                  </h3>
+                    <div className="flex items-center mb-2" style={{ gap: '9px', height: '19px' }}>
                       {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          className={`h-3 w-3 ${i < (product.rating || 0) ? "text-yellow-400 fill-yellow-400" : "text-gray-400"}`} 
+                        <Star
+                          key={i}
+                          className="h-4 w-4"
+                          style={{
+                            fill: '#c9ff4a',
+                            stroke: '#000000',
+                            strokeWidth: 1
+                          }}
                         />
                       ))}
                     </div>
+                  <p 
+                    className="text-black mb-2"
+                    style={{
+                      fontFamily: "'Gilroy-Regular', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(14px, 1.5vw, 20px)',
+                      fontWeight: 400,
+                      letterSpacing: '0px'
+                    }}
+                  >
+                    This hoodie is stylish and comfortable. Can be work to/from gym, at gym for lifts with lots of room, or dressed up. Super soft and comfortable. Highly recommend.
+                  </p>
+                  <p 
+                    className="text-black"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(14px, 1.5vw, 20px)',
+                      fontWeight: 500
+                    }}
+                  >
+                    Jake. B
+                  </p>
                   </div>
-                  {openSections.reviews ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                </CollapsibleTrigger>
-                <CollapsibleContent className="py-6">
-                  <ProductReviews product={product} />
-                </CollapsibleContent>
-              </Collapsible>
-            </div>
-
-            {/* Right Side - Large Product Image */}
-             <div className="flex items-start justify-center lg:justify-end">
-               {product.images && product.images.length > 0 && (
-                 <div className="w-full max-w-md lg:max-w-lg">
-                   {/* Product Highlight Section - Show if current product has highlight image */}
-                    {console.log('Rendering highlight section:', { highlightedProduct })}
-                    {highlightedProduct && (
-                      <>
-                        {/* Product Highlight Heading */}
-                        <div className="mb-6">
-                          <h3 className="text-sm font-medium uppercase tracking-wide text-[#212121]">PRODUCT HIGHLIGHT</h3>
-                        </div>
-                        
-                        {/* Highlighted Product - Only Image */}
-                        <div className="mb-6">
-                          <div className="bg-gray-100 rounded-lg overflow-hidden hover:bg-gray-200 transition-colors">
-                            <div className="relative aspect-square">
-                              <Image
-                                src={getFullImageUrl(highlightedProduct.image)}
-                                alt={highlightedProduct.name}
-                                fill
-                                className="object-cover"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                 </div>
-               )}
-             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Shop the Look Section */}
-      <section className="bg-[#f5f5f5] py-12">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold text-[#212121] mb-8 uppercase tracking-wide">SHOP THE LOOK</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {loading ? (
-              // Loading skeleton
-              Array.from({ length: 5 }).map((_, index) => (
-                <div key={index} className="bg-white rounded-lg overflow-hidden shadow-sm">
-                  <div className="relative aspect-[4/5] overflow-hidden bg-gray-200 animate-pulse"></div>
-                  <div className="p-4 space-y-2">
-                    <div className="h-4 bg-gray-200 rounded animate-pulse"></div>
-                    <div className="h-4 bg-gray-200 rounded animate-pulse w-2/3"></div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              shopTheLookItems.map((item) => (
-                <Link key={item.id} href={`/product/${item.id}`} className="block">
-                  <div className="bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                <div className="relative aspect-[4/5] overflow-hidden rounded-lg">
-                  <Image
-                    src={getFullImageUrl(item.image)}
-                    alt={item.name}
-                    fill
-                    className="object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                  {item.isNew && <Badge className="absolute top-2 left-2 bg-black text-white text-xs">NEW</Badge>}
-                </div>
-                <div className="p-4">
-                  <h3 className="text-sm font-medium text-[#212121] mb-2 line-clamp-2">{item.name}</h3>
-                  <div className="flex items-center space-x-2">
-                    {item.originalPrice && (
-                      <span className="text-sm text-[#6e6e6e] line-through">{formatCurrency(parseFloat(item.originalPrice.replace(/[^0-9.]/g, '')))}</span>
-                    )}
-                    <span className="text-sm font-bold text-[#212121]">{formatCurrency(parseFloat(item.price.replace(/[^0-9.]/g, '')))}</span>
-                  </div>
-                </div>
-              </div>
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* You May Also Like Carousel Section */}
-      <section className="bg-[#e8e8e8] py-16">
-        <div className="container mx-auto px-4">
-          <div className="relative">
-            {/* Navigation Arrows */}
-            <button 
-              onClick={prevCarousel}
-              disabled={currentCarouselIndex === 0}
-              className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-md flex items-center justify-center hover:shadow-lg transition-shadow ${
-                currentCarouselIndex === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'
-              }`}
-            >
-              <ChevronLeft className="h-6 w-6 text-[#212121]" />
-            </button>
-            <button 
-              onClick={nextCarousel}
-              disabled={currentCarouselIndex >= carouselItems.length - 4}
-              className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-12 h-12 bg-white rounded-full shadow-md flex items-center justify-center hover:shadow-lg transition-shadow ${
-                currentCarouselIndex >= carouselItems.length - 4 ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-lg'
-              }`}
-            >
-              <ChevronRight className="h-6 w-6 text-[#212121]" />
-            </button>
-
-            {/* Product Carousel */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-16">
-              {loading ? (
-                // Loading skeleton
-                Array.from({ length: 4 }).map((_, index) => (
-                  <div key={index} className="group">
-                    <div className="relative bg-white rounded-lg overflow-hidden shadow-sm">
-                      <div className="aspect-square relative overflow-hidden bg-gray-200 animate-pulse"></div>
-                  </div>
-                  <div className="mt-4 text-center">
-                      <div className="h-6 bg-gray-200 rounded animate-pulse"></div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                carouselItems.slice(currentCarouselIndex, currentCarouselIndex + 4).map((item) => (
-                  <Link key={item.id} href={`/product/${item.id}`} className="group block">
-                    <div className="relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="aspect-square relative overflow-hidden rounded-lg">
-                    <Image
-                          src={getFullImageUrl(item.image)}
-                          alt={item.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-3 right-3 bg-black text-white text-xs font-bold px-2 py-1 rounded">
-                          -{item.discount}%
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 text-center">
-                      <p className="text-lg font-bold text-[#212121]">{formatCurrency(parseFloat(item.price.replace(/[^0-9.]/g, '')))}</p>
-                    </div>
+              ))}
+              <div className="w-full md:col-span-2 text-right mt-4">
+                <Link 
+                  href="#"
+                  className="uppercase text-black"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '14px',
+                    fontWeight: 600
+                  }}
+                >
+                  READ MORE
                   </Link>
-                ))
-              )}
+              </div>
             </div>
           </div>
         </div>
@@ -952,7 +1368,7 @@ export default function ProductDetail({ product }: { product: Product }) {
 
       {/* Join the Athlekt Family Section */}
       <section className="bg-white py-20">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             {/* Left Side - Form */}
             <div className="bg-gray-100 p-8 lg:p-12 rounded-lg">
@@ -1084,7 +1500,7 @@ export default function ProductDetail({ product }: { product: Product }) {
       )}
 
       {/* Size Guide Modal */}
-      {isSizeGuideOpen && product.sizeGuideImage && (
+      {isSizeGuideOpen && (product as any).sizeGuideImage && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setIsSizeGuideOpen(false)}>
           <div className="relative max-w-2xl max-h-[90vh] w-full bg-white rounded-lg p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <button
@@ -1096,7 +1512,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             <h2 className="text-xl font-bold text-center mb-4 text-gray-800">Size Guide</h2>
             <div className="relative rounded-lg overflow-auto max-h-[75vh]">
               <Image
-                src={getFullImageUrl(product.sizeGuideImage)}
+                src={getFullImageUrl((product as any).sizeGuideImage)}
                 alt="Product size guide"
                 width={800}
                 height={1200}
@@ -1105,7 +1521,7 @@ export default function ProductDetail({ product }: { product: Product }) {
             </div>
           </div>
         </div>
-      )}
+        )}
     </div>
   )
 }

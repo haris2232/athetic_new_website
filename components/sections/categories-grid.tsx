@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Grid3X3, SlidersHorizontal } from "lucide-react"
 import ProductCard from "@/components/ui/product-card"
@@ -137,6 +138,1173 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
 
   return (
     <div className="bg-white">
+      {/* New Design Section - Below Banner */}
+      <div className="bg-white text-[#212121] pt-0 pb-20">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          {/* Top Section - MEN heading and Lorem ipsum */}
+          <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between mb-8 gap-6">
+            {/* Left - MEN Heading */}
+            <div className="flex-1 flex flex-col">
+              <h1 
+                className="uppercase mb-6 text-black leading-none"
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontWeight: 400,
+                  fontSize: '90px',
+                  letterSpacing: '-3.37px'
+                }}
+              >
+                MEN
+              </h1>
+              
+              {/* Product Type Navigation */}
+              <div className="flex flex-wrap gap-6 mb-4">
+                <button 
+                  className="uppercase text-black text-left hover:text-gray-600 transition-colors"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22.18px',
+                    lineHeight: '31.1px',
+                    letterSpacing: '-0.8px',
+                    fontWeight: 500
+                  }}
+                >
+                  TEES
+                </button>
+                <button 
+                  className="uppercase text-black text-left hover:text-gray-600 transition-colors"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22.18px',
+                    lineHeight: '31.1px',
+                    letterSpacing: '-0.8px',
+                    fontWeight: 500
+                  }}
+                >
+                  TANK TOP
+                </button>
+                <button 
+                  className="uppercase text-black text-left hover:text-gray-600 transition-colors"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22.18px',
+                    lineHeight: '31.1px',
+                    letterSpacing: '-0.8px',
+                    fontWeight: 500
+                  }}
+                >
+                  SHORTS
+                </button>
+                <button 
+                  className="uppercase text-black text-left hover:text-gray-600 transition-colors"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22.18px',
+                    lineHeight: '31.1px',
+                    letterSpacing: '-0.8px',
+                    fontWeight: 500
+                  }}
+                >
+                  HOODIE
+                </button>
+              </div>
+              
+              {/* Filter Option */}
+              <div className="flex items-center gap-2 mt-auto">
+                <span className="uppercase text-black font-bold" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '14px', fontWeight: 600 }}>Filter</span>
+                <span className="text-base text-black font-bold">→</span>
+              </div>
+            </div>
+            
+            {/* Right - Lorem ipsum text and Sort By */}
+            <div className="flex-1 lg:max-w-[412px] flex flex-col">
+              <p 
+                className="text-black text-left leading-normal"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: '14px',
+                  letterSpacing: '0px',
+                  fontWeight: 500
+                }}
+              >
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+              </p>
+              
+              {/* Sort By - Exactly opposite to Filter */}
+              <div className="flex items-center gap-2 justify-end mt-auto">
+                <span className="uppercase text-black font-bold" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '14px', fontWeight: 600 }}>Sort By:</span>
+                <select className="uppercase text-black font-bold bg-transparent border-none outline-none cursor-pointer" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '14px', fontWeight: 600 }}>
+                  <option>Featured</option>
+                </select>
+                <span className="text-base text-black font-bold">↓</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Product Grid - 3 Rows × 4 Columns = 12 Products */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            {/* Product 1 */}
+            <Link href="/product/men-1" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/3.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Product 2 */}
+            <Link href="/product/men-2" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/4.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Product 3 */}
+            <Link href="/product/men-3" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/5.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Product 4 */}
+            <Link href="/product/men-4" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/6.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Row 2 - Same 4 Products */}
+            {/* Product 5 (Repeat Product 1) */}
+            <Link href="/product/men-5" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/3.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Product 6 (Repeat Product 2) */}
+            <Link href="/product/men-6" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/4.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Product 7 (Repeat Product 3) */}
+            <Link href="/product/men-7" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/5.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Product 8 (Repeat Product 4) */}
+            <Link href="/product/men-8" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/6.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Row 3 - Same 4 Products */}
+            {/* Product 9 (Repeat Product 1) */}
+            <Link href="/product/men-9" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/3.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Product 10 (Repeat Product 2) */}
+            <Link href="/product/men-10" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/4.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Product 11 (Repeat Product 3) */}
+            <Link href="/product/men-11" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/5.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+
+            {/* Product 12 (Repeat Product 4) */}
+            <Link href="/product/men-12" className="block cursor-pointer">
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/6.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* YOU MAY ALSO LIKE Section */}
+      <div className="bg-white text-[#212121] pt-0 pb-20">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          {/* Top Section - YOU MAY ALSO LIKE heading and Lorem ipsum */}
+          <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between mb-8 gap-6">
+            {/* Left - YOU MAY ALSO LIKE Heading */}
+            <div className="flex-1 flex flex-col">
+              <h1 
+                className="uppercase mb-6 text-black leading-none"
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontWeight: 400,
+                  fontSize: '90px',
+                  letterSpacing: '-3.37px'
+                }}
+              >
+                YOU MAY ALSO LIKE
+              </h1>
+            </div>
+            
+            {/* Right - Lorem ipsum text */}
+            <div className="flex-1 lg:max-w-[412px] flex flex-col">
+              <p 
+                className="text-black text-left leading-normal"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: '14px',
+                  letterSpacing: '0px',
+                  fontWeight: 500
+                }}
+              >
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+              </p>
+            </div>
+          </div>
+
+          {/* Product Grid - 4 Products */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            {/* Product 1 */}
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/3.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+
+            {/* Product 2 */}
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/4.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+
+            {/* Product 3 */}
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/5.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+
+            {/* Product 4 */}
+            <div 
+              className="bg-white relative overflow-hidden w-full"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
+                src="/6.png" 
+                alt="Product" 
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    LORIUM IPSUM DOLOR
+                  </span>
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
+                    SIT DE VENUM
+                  </span>
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
+                  AED 59
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Header Section - Dark Background */}
       <div className="bg-white text-[#212121] py-12">
         <div className="container mx-auto px-4">
