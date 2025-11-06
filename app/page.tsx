@@ -1,16 +1,70 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Star } from "lucide-react"
+import { useCurrency } from "@/lib/currency-context"
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew/api';
+
+interface HomepageSettings {
+  homepageImage1?: string;
+  homepageImage1Type?: 'image' | 'video';
+  homepageImage2?: string;
+  homepageImage3?: string;
+  homepageImage4?: string;
+  homepageImage5?: string;
+  homepageImage6?: string;
+  homepageImage7?: string;
+}
+
+interface Product {
+  _id: string;
+  id?: string;
+  name?: string;
+  title: string;
+  price?: string;
+  basePrice?: number;
+  originalPrice?: string;
+  image?: string;
+  images?: string[];
+  category?: string;
+  createdAt?: string;
+  isOnSale?: boolean;
+  discountPercentage?: number;
+}
+
+interface Bundle {
+  _id: string;
+  id?: string;
+  name: string;
+  description?: string;
+  products?: Product[];
+  originalPrice: number;
+  bundlePrice: number;
+  bundleType?: string;
+  category?: 'men' | 'women' | 'mixed';
+  startDate?: string;
+  endDate?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  image?: string;
+  images?: string[];
+}
 
 export default function HomePage() {
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
+  const [homepageSettings, setHomepageSettings] = useState<HomepageSettings>({})
+  const [recentProducts, setRecentProducts] = useState<Product[]>([])
+  const [loadingProducts, setLoadingProducts] = useState(true)
+  const [bundles, setBundles] = useState<Bundle[]>([])
+  const [loadingBundles, setLoadingBundles] = useState(true)
+  const { formatPrice } = useCurrency()
 
   const carouselImages = [
     "/10.png",
@@ -18,6 +72,212 @@ export default function HomePage() {
     "/12.png",
     "/13.png"
   ]
+
+  // Fetch homepage images from API
+  useEffect(() => {
+    const fetchHomepageImages = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/settings/public`);
+        if (response.ok) {
+          const settings = await response.json();
+          setHomepageSettings({
+            homepageImage1: settings.homepageImage1 || '',
+            homepageImage1Type: settings.homepageImage1Type || 'image',
+            homepageImage2: settings.homepageImage2 || '',
+            homepageImage3: settings.homepageImage3 || '',
+            homepageImage4: settings.homepageImage4 || '',
+            homepageImage5: settings.homepageImage5 || '',
+            homepageImage6: settings.homepageImage6 || '',
+            homepageImage7: settings.homepageImage7 || '',
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch homepage images:', error);
+      }
+    };
+    fetchHomepageImages();
+  }, []);
+
+  // Fetch recent products from API
+  useEffect(() => {
+    const fetchRecentProducts = async () => {
+      try {
+        setLoadingProducts(true);
+        const response = await fetch(`${API_BASE_URL}/products/public/all`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && Array.isArray(data.data)) {
+            // Sort products by createdAt (most recent first)
+            const sortedProducts = [...data.data].sort((a: Product, b: Product) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateB - dateA; // Most recent first
+            });
+            // Take first 4 products
+            setRecentProducts(sortedProducts.slice(0, 4));
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch recent products:', error);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+    fetchRecentProducts();
+  }, []);
+
+  // Fetch bundles from API
+  useEffect(() => {
+    const fetchBundles = async () => {
+      try {
+        setLoadingBundles(true);
+        const apiUrl = `${API_BASE_URL}/bundles/public/active`;
+        console.log('🔍 Fetching bundles from:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        console.log('📦 Bundle response status:', response.status);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('📦 Bundle response data:', data);
+          console.log('📦 Data keys:', Object.keys(data));
+          console.log('📦 data.data exists?', !!data.data);
+          console.log('📦 data.data is array?', Array.isArray(data.data));
+          console.log('📦 data.success?', data.success);
+          
+          // Handle both response formats: { data: [...] } or { success: true, data: [...] }
+          let bundlesArray: Bundle[] = [];
+          
+          if (data.success && Array.isArray(data.data)) {
+            bundlesArray = data.data;
+            console.log('✅ Using format: { success: true, data: [...] }');
+          } else if (Array.isArray(data.data)) {
+            bundlesArray = data.data;
+            console.log('✅ Using format: { data: [...] }');
+          } else if (Array.isArray(data)) {
+            bundlesArray = data;
+            console.log('✅ Using format: [...] (direct array)');
+          } else {
+            console.warn('⚠️ Unknown response format. Data:', data);
+          }
+          
+          console.log('📦 Total bundles received:', bundlesArray.length);
+          if (bundlesArray.length > 0) {
+            console.log('📦 First bundle:', {
+              name: bundlesArray[0].name,
+              isActive: bundlesArray[0].isActive,
+              bundlePrice: bundlesArray[0].bundlePrice,
+              products: bundlesArray[0].products?.length || 0
+            });
+          }
+          
+          // Filter only active bundles and take first 4
+          const activeBundles = bundlesArray
+            .filter((bundle: Bundle) => {
+              const isActive = bundle.isActive !== false;
+              if (!isActive) {
+                console.log(`⚠️ Bundle "${bundle.name}" is not active (isActive: ${bundle.isActive})`);
+              }
+              return isActive;
+            })
+            .slice(0, 4);
+          
+          console.log('✅ Active bundles after filtering:', activeBundles.length);
+          if (activeBundles.length > 0) {
+            console.log('✅ Bundles to display:', activeBundles.map(b => b.name));
+          } else {
+            console.warn('⚠️ No active bundles found to display');
+          }
+          
+          setBundles(activeBundles);
+        } else {
+          const errorText = await response.text();
+          console.error('❌ Bundle response not ok:', response.status, response.statusText);
+          console.error('❌ Error response body:', errorText);
+        }
+      } catch (error) {
+        console.error('❌ Failed to fetch bundles:', error);
+        if (error instanceof Error) {
+          console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack
+          });
+        }
+      } finally {
+        setLoadingBundles(false);
+      }
+    };
+    fetchBundles();
+  }, []);
+
+  // Helper function to get full image URL
+  const getImageUrl = (url: string | undefined): string => {
+    if (!url) return '';
+    if (url.startsWith('http') || url.startsWith('/')) {
+      return url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+    }
+    return `${API_BASE_URL}/${url}`;
+  };
+
+  // Helper function to get product image
+  const getProductImage = (product: Product): string => {
+    if (product.image) return getImageUrl(product.image);
+    if (product.images && product.images.length > 0) return getImageUrl(product.images[0]);
+    return '/placeholder.svg';
+  };
+
+  // Helper function to get product name
+  const getProductName = (product: Product): string => {
+    return product.name || product.title || 'Product';
+  };
+
+  // Helper function to get product price
+  const getProductPrice = (product: Product): number => {
+    if (product.price) {
+      const priceStr = product.price.replace(/[^0-9.]/g, '');
+      return parseFloat(priceStr) || 0;
+    }
+    if (product.basePrice) return product.basePrice;
+    return 0;
+  };
+
+  // Helper function to split product name into two lines
+  const splitProductName = (name: string): { line1: string; line2: string } => {
+    const words = name.split(' ');
+    const midPoint = Math.ceil(words.length / 2);
+    return {
+      line1: words.slice(0, midPoint).join(' '),
+      line2: words.slice(midPoint).join(' ') || ''
+    };
+  };
+
+  // Helper function to get bundle image
+  const getBundleImage = (bundle: Bundle): string => {
+    if (bundle.image) return getImageUrl(bundle.image);
+    if (bundle.images && bundle.images.length > 0) return getImageUrl(bundle.images[0]);
+    // If bundle has products, use first product's image
+    if (bundle.products && bundle.products.length > 0) {
+      const firstProduct = bundle.products[0];
+      return getProductImage(firstProduct);
+    }
+    return '/placeholder.svg';
+  };
+
+  // Content for the hero box - can be image or video
+  const heroContent = {
+    type: (homepageSettings.homepageImage1Type || 'image') as 'image' | 'video',
+    imageSrc: homepageSettings.homepageImage1 ? getImageUrl(homepageSettings.homepageImage1) : '/10.png',
+    videoSrc: homepageSettings.homepageImage1 && homepageSettings.homepageImage1Type === 'video' 
+      ? getImageUrl(homepageSettings.homepageImage1) 
+      : '',
+    alt: 'Hero content'
+  }
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
@@ -106,9 +366,9 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Empty Box - Below the text (Exact Figma Properties) */}
+        {/* Hero Box - Below the text (Exact Figma Properties) */}
         <div 
-          className="bg-white relative mx-auto"
+          className="bg-white relative mx-auto overflow-hidden"
           style={{
             // Position - Exact Figma Properties
             position: 'relative',
@@ -126,7 +386,7 @@ export default function HomePage() {
             opacity: 1,
             borderRadius: '0px',
             
-            // Fill Pattern - Exact Figma Properties
+            // Fill Pattern - Exact Figma Properties (will be behind image/video)
             backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)',
             backgroundSize: '24px 24px',
             backgroundPosition: '0 0',
@@ -136,7 +396,39 @@ export default function HomePage() {
             transform: 'rotate(0deg)'
           }}
         >
-          {/* Empty box - no content */}
+          {/* Image or Video Content */}
+          {heroContent.type === 'image' ? (
+            <Image
+              src={heroContent.imageSrc}
+              alt={heroContent.alt}
+              fill
+              className="object-cover"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center center',
+                width: '100%',
+                height: '100%'
+              }}
+              priority
+            />
+          ) : (
+            <video
+              src={heroContent.videoSrc}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center center',
+                width: '100%',
+                height: '100%'
+              }}
+            >
+              Your browser does not support the video tag.
+            </video>
+          )}
         </div>
       </section>
 
@@ -189,8 +481,10 @@ export default function HomePage() {
                 opacity: 1, // 100% opacity
                 borderRadius: 'clamp(16px, 2vw, 32px)', // Desktop: Corner radius: 32px, responsive
                 
-                // Fill - Background image from 6.png (Same for all) - Face visible
-                backgroundImage: 'url(/6.png)',
+                // Fill - Background image from homepageImage2 or fallback
+                backgroundImage: homepageSettings.homepageImage2 
+                  ? `url(${getImageUrl(homepageSettings.homepageImage2)})` 
+                  : 'url(/6.png)',
                 backgroundSize: 'cover', // Cover entire card - responsive, maintains aspect ratio during zoom
                 backgroundPosition: 'center top', // Face visible from top - center horizontally, top vertically to show full face
                 backgroundRepeat: 'no-repeat',
@@ -256,7 +550,9 @@ export default function HomePage() {
                 aspectRatio: '642/230', // Maintain aspect ratio - width aur height dono saath mein adjust (zoom out compatible)
                 opacity: 1,
                 borderRadius: 'clamp(16px, 2vw, 32px)', // Responsive corner radius
-                backgroundImage: 'url(/6.png)',
+                backgroundImage: homepageSettings.homepageImage3 
+                  ? `url(${getImageUrl(homepageSettings.homepageImage3)})` 
+                  : 'url(/6.png)',
                 backgroundSize: 'cover', // Cover entire card - responsive, maintains aspect ratio during zoom
                 backgroundPosition: 'center top', // Face visible from top - center horizontally, top vertically to show full face
                 backgroundRepeat: 'no-repeat',
@@ -304,7 +600,9 @@ export default function HomePage() {
                 aspectRatio: '642/230', // Maintain aspect ratio - width aur height dono saath mein adjust (zoom out compatible)
                 opacity: 1,
                 borderRadius: 'clamp(16px, 2vw, 32px)', // Responsive corner radius
-                backgroundImage: 'url(/6.png)',
+                backgroundImage: homepageSettings.homepageImage4 
+                  ? `url(${getImageUrl(homepageSettings.homepageImage4)})` 
+                  : 'url(/6.png)',
                 backgroundSize: 'cover', // Cover entire card - responsive, maintains aspect ratio during zoom
                 backgroundPosition: 'center top', // Face visible from top - center horizontally, top vertically to show full face
                 backgroundRepeat: 'no-repeat',
@@ -373,7 +671,9 @@ export default function HomePage() {
                 aspectRatio: '642/230', // Maintain aspect ratio - width aur height dono saath mein adjust (zoom out compatible)
                 opacity: 1,
                 borderRadius: 'clamp(16px, 2vw, 32px)', // Responsive corner radius
-                backgroundImage: 'url(/6.png)',
+                backgroundImage: homepageSettings.homepageImage5 
+                  ? `url(${getImageUrl(homepageSettings.homepageImage5)})` 
+                  : 'url(/6.png)',
                 backgroundSize: 'cover', // Cover entire card - responsive, maintains aspect ratio during zoom
                 backgroundPosition: 'center top', // Face visible from top - center horizontally, top vertically to show full face
                 backgroundRepeat: 'no-repeat',
@@ -439,256 +739,126 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Product Grid - 4 Products */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-            {/* Product 1 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/3.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
+          {/* Product Grid - 4 Recent Products */}
+          {loadingProducts ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+              {[1, 2, 3, 4].map((i) => (
+                <div 
+                  key={i}
+                  className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
+                  style={{
+                    aspectRatio: '307/450',
+                    borderRadius: '32px'
+                  }}
+                />
+              ))}
+            </div>
+          ) : recentProducts.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+              {recentProducts.map((product) => {
+                const productId = product.id || product._id;
+                const productName = getProductName(product);
+                const productImage = getProductImage(product);
+                const productPrice = getProductPrice(product);
+                const nameLines = splitProductName(productName.toUpperCase());
+                
+                return (
+                  <Link 
+                    key={productId}
+                    href={`/product/${productId}`}
+                    className="bg-white relative overflow-hidden w-full cursor-pointer hover:opacity-90 transition-opacity"
+                    style={{
+                      aspectRatio: '307/450'
+                    }}
+                  >
+                    <img 
+                      src={productImage} 
+                      alt={productName}
+                      className="w-full h-full object-cover"
+                      style={{
+                        borderRadius: '32px'
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder.svg';
+                      }}
+                    />
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                      style={{
+                        height: '60px'
+                      }}
+                    >
+                      <div className="flex flex-col text-left">
+                        <span 
+                          className="uppercase text-white"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '13.41px',
+                            lineHeight: '14.6px',
+                            letterSpacing: '0px',
+                            fontWeight: 500
+                          }}
+                        >
+                          {nameLines.line1}
+                        </span>
+                        {nameLines.line2 && (
+                          <span 
+                            className="uppercase text-white"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: '13.41px',
+                              lineHeight: '14.6px',
+                              letterSpacing: '0px',
+                              fontWeight: 500
+                            }}
+                          >
+                            {nameLines.line2}
+                          </span>
+                        )}
+                      </div>
+                      <p 
+                        className="text-white font-bold text-right"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: '22px',
+                          lineHeight: '26px',
+                          letterSpacing: '0px',
+                          fontWeight: 600
+                        }}
+                      >
+                        {formatPrice(productPrice)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12 mt-12">
+              <p className="text-gray-500">No recent products available</p>
+            </div>
+          )}
+          
+          {/* View All Button - Centered, Styled, and Positioned */}
+          {!loadingProducts && recentProducts.length > 0 && (
+            <div className="flex justify-center items-center mt-8">
+              <Link 
+                href="/collection"
+                className="bg-black text-white uppercase px-8 py-3 rounded-lg hover:opacity-90 transition-opacity font-medium inline-block"
                 style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: '14px',
+                  letterSpacing: '0.5px',
+                  fontWeight: 500,
+                  minWidth: '120px',
+                  textAlign: 'center'
                 }}
               >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
+                view all
+              </Link>
             </div>
-
-            {/* Product 2 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/4.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
-            </div>
-
-            {/* Product 3 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/5.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
-            </div>
-
-            {/* Product 4 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/6.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -709,7 +879,9 @@ export default function HomePage() {
               minHeight: 'clamp(400px, 50vw, 937px)', // Minimum height for very small screens
               
               backgroundColor: '#FFFFFF', // White background
-              backgroundImage: 'url(/8.png)', // 8.png from public folder
+              backgroundImage: homepageSettings.homepageImage6 
+                ? `url(${getImageUrl(homepageSettings.homepageImage6)})` 
+                : 'url(/8.png)', // Use homepageImage6 or fallback to 8.png
               backgroundSize: 'contain', // Contain - poora image complete dikhe (no cut off)
               backgroundPosition: 'center', // Center the image
               backgroundRepeat: 'no-repeat', // No repeat
@@ -718,7 +890,7 @@ export default function HomePage() {
               overflow: 'visible' // Visible - edges cut off nahi honge
             }}
           >
-            {/* Empty container - 8.png is the background - Fully responsive & complete */}
+            {/* Empty container - homepageImage6 is the background - Fully responsive & complete */}
           </div>
         </div>
       </section>
@@ -1087,19 +1259,35 @@ export default function HomePage() {
                   zIndex: 10 // Above background
                 }}
               >
-                <img 
-                  src="/9.png" 
-                  alt="Why Athlekt" 
-                  className="w-full h-full object-cover"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    objectPosition: 'center top', // Position image to show top portion
-                    borderRadius: 'clamp(24px, 3vw, 48px)', // Match container border radius
-                    display: 'block' // Prevent image bottom spacing issue
-                  }}
-                />
+                {homepageSettings.homepageImage7 ? (
+                  <img 
+                    src={getImageUrl(homepageSettings.homepageImage7)} 
+                    alt="Why Athlekt" 
+                    className="w-full h-full object-cover"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: 'center top', // Position image to show top portion
+                      borderRadius: 'clamp(24px, 3vw, 48px)', // Match container border radius
+                      display: 'block' // Prevent image bottom spacing issue
+                    }}
+                  />
+                ) : (
+                  <img 
+                    src="/9.png" 
+                    alt="Why Athlekt" 
+                    className="w-full h-full object-cover"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: 'center top', // Position image to show top portion
+                      borderRadius: 'clamp(24px, 3vw, 48px)', // Match container border radius
+                      display: 'block' // Prevent image bottom spacing issue
+                    }}
+                  />
+                )}
               </div>
 
               {/* Right Side - Text Content - Exact Figma Position - Fully Responsive - Moved right and up */}
@@ -1375,256 +1563,126 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Product Grid - 4 Products */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-            {/* Product 1 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/3.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
+          {/* Bundle Grid - 4 Bundles */}
+          {loadingBundles ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+              {[1, 2, 3, 4].map((i) => (
+                <div 
+                  key={i}
+                  className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
                   style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
+                    aspectRatio: '307/450',
+                    borderRadius: '32px'
                   }}
-                >
-                  AED 59
-                </p>
-              </div>
+                />
+              ))}
             </div>
+          ) : bundles.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+              {bundles.map((bundle) => {
+                const bundleId = bundle.id || bundle._id;
+                const bundleName = bundle.name || 'Bundle';
+                const bundleImage = getBundleImage(bundle);
+                const bundlePrice = bundle.bundlePrice || 0;
+                const nameLines = splitProductName(bundleName.toUpperCase());
+                
+                return (
+                  <Link 
+                    key={bundleId}
+                    href={`/bundles/${bundleId}`}
+                    className="bg-white relative overflow-hidden w-full cursor-pointer hover:opacity-90 transition-opacity"
+                    style={{
+                      aspectRatio: '307/450'
+                    }}
+                  >
+                    <img 
+                      src={bundleImage} 
+                      alt={bundleName}
+                      className="w-full h-full object-cover"
+                      style={{
+                        borderRadius: '32px'
+                      }}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = '/placeholder.svg';
+                      }}
+                    />
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                      style={{
+                        height: '60px'
+                      }}
+                    >
+                      <div className="flex flex-col text-left">
+                        <span 
+                          className="uppercase text-white"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '13.41px',
+                            lineHeight: '14.6px',
+                            letterSpacing: '0px',
+                            fontWeight: 500
+                          }}
+                        >
+                          {nameLines.line1}
+                        </span>
+                        {nameLines.line2 && (
+                          <span 
+                            className="uppercase text-white"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: '13.41px',
+                              lineHeight: '14.6px',
+                              letterSpacing: '0px',
+                              fontWeight: 500
+                            }}
+                          >
+                            {nameLines.line2}
+                          </span>
+                        )}
+                      </div>
+                      <p 
+                        className="text-white font-bold text-right"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: '22px',
+                          lineHeight: '26px',
+                          letterSpacing: '0px',
+                          fontWeight: 600
+                        }}
+                      >
+                        {formatPrice(bundlePrice)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-12 mt-12">
+              <p className="text-gray-500">No bundles available</p>
+            </div>
+          )}
 
-            {/* Product 2 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/4.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
+          {/* View All Bundles Button */}
+          {!loadingBundles && bundles.length > 0 && (
+            <div className="flex justify-center items-center mt-8">
+              <Link 
+                href="/bundles"
+                className="bg-black text-white uppercase px-8 py-3 rounded-lg hover:opacity-90 transition-opacity font-medium inline-block"
                 style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: '14px',
+                  letterSpacing: '0.5px',
+                  fontWeight: 500,
+                  minWidth: '120px',
+                  textAlign: 'center'
                 }}
               >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
+                view all bundles
+              </Link>
             </div>
-
-            {/* Product 3 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/5.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
-            </div>
-
-            {/* Product 4 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/6.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
