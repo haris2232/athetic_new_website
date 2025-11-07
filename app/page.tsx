@@ -16,10 +16,6 @@ interface HomepageSettings {
   homepageImage1Type?: 'image' | 'video';
   homepageImage2?: string;
   homepageImage3?: string;
-  homepageImage4?: string;
-  homepageImage5?: string;
-  homepageImage6?: string;
-  homepageImage7?: string;
 }
 
 interface Product {
@@ -56,6 +52,39 @@ interface Bundle {
   images?: string[];
 }
 
+interface Category {
+  _id: string;
+  name: string;
+  description?: string;
+  image?: string;
+  carouselImage?: string;
+  isActive: boolean;
+  displaySection?: string;
+  sectionOrder?: number;
+}
+
+interface Blog {
+  _id: string;
+  adminName: string;
+  url: string;
+  content: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const normalizeBlogHref = (blog: Blog): string => {
+  const rawUrl = blog.url?.trim()
+  if (rawUrl) {
+    if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://") || rawUrl.startsWith("/")) {
+      return rawUrl
+    }
+    return `/blog/${rawUrl}`
+  }
+  return `/blog/${blog._id}`
+}
+
+
 export default function HomePage() {
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -64,14 +93,13 @@ export default function HomePage() {
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [loadingBundles, setLoadingBundles] = useState(true)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(true)
+  const [blogs, setBlogs] = useState<Blog[]>([])
+  const [loadingBlogs, setLoadingBlogs] = useState(true)
+  const [carouselImages, setCarouselImages] = useState<string[]>([])
+  const [loadingCarouselImages, setLoadingCarouselImages] = useState(true)
   const { formatPrice } = useCurrency()
-
-  const carouselImages = [
-    "/10.png",
-    "/11.png", 
-    "/12.png",
-    "/13.png"
-  ]
 
   // Fetch homepage images from API
   useEffect(() => {
@@ -80,19 +108,19 @@ export default function HomePage() {
         const response = await fetch(`${API_BASE_URL}/settings/public`);
         if (response.ok) {
           const settings = await response.json();
+          console.log('🏠 Homepage settings received:', settings);
           setHomepageSettings({
             homepageImage1: settings.homepageImage1 || '',
             homepageImage1Type: settings.homepageImage1Type || 'image',
             homepageImage2: settings.homepageImage2 || '',
             homepageImage3: settings.homepageImage3 || '',
-            homepageImage4: settings.homepageImage4 || '',
-            homepageImage5: settings.homepageImage5 || '',
-            homepageImage6: settings.homepageImage6 || '',
-            homepageImage7: settings.homepageImage7 || '',
           });
+          console.log('🏠 Homepage settings state updated');
+        } else {
+          console.error('❌ Failed to fetch homepage images, status:', response.status);
         }
       } catch (error) {
-        console.error('Failed to fetch homepage images:', error);
+        console.error('❌ Failed to fetch homepage images:', error);
       }
     };
     fetchHomepageImages();
@@ -124,6 +152,61 @@ export default function HomePage() {
       }
     };
     fetchRecentProducts();
+  }, []);
+
+  // Fetch blogs from API for COMMUNITY FAVOURITES section
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      try {
+        setLoadingBlogs(true);
+        const response = await fetch(`${API_BASE_URL}/blogs/public/active`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && Array.isArray(data.data)) {
+            setBlogs(data.data.slice(0, 4)); // Limit to 4 blogs
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch blogs:', error);
+      } finally {
+        setLoadingBlogs(false);
+      }
+    };
+    fetchBlogs();
+  }, []);
+
+  // Fetch categories from API for DISCOVER YOUR FIT section
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setLoadingCategories(true);
+        const response = await fetch(`${API_BASE_URL}/categories`);
+        if (response.ok) {
+          const data = await response.json();
+          // Filter only active categories that match the 4 main categories
+          const mainCategoryNames = ['Men', 'Women', 'New Arrivals', 'Sets'];
+          if (data.data && Array.isArray(data.data)) {
+            const filteredCategories = data.data
+              .filter((cat: Category) => 
+                cat.isActive && mainCategoryNames.includes(cat.name)
+              )
+              .sort((a: Category, b: Category) => {
+                // Sort by predefined order
+                const orderA = mainCategoryNames.indexOf(a.name);
+                const orderB = mainCategoryNames.indexOf(b.name);
+                return orderA - orderB;
+              })
+              .slice(0, 4); // Limit to 4 categories
+            setCategories(filteredCategories);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch categories:', error);
+      } finally {
+        setLoadingCategories(false);
+      }
+    };
+    fetchCategories();
   }, []);
 
   // Fetch bundles from API
@@ -219,10 +302,15 @@ export default function HomePage() {
   // Helper function to get full image URL
   const getImageUrl = (url: string | undefined): string => {
     if (!url) return '';
-    if (url.startsWith('http') || url.startsWith('/')) {
-      return url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
+    if (url.startsWith('http')) {
+      return url;
     }
-    return `${API_BASE_URL}/${url}`;
+    // Remove /api from API_BASE_URL for image URLs
+    const baseUrl = API_BASE_URL.replace('/api', '');
+    if (url.startsWith('/')) {
+      return `${baseUrl}${url}`;
+    }
+    return `${baseUrl}/${url}`;
   };
 
   // Helper function to get product image
@@ -257,6 +345,24 @@ export default function HomePage() {
     };
   };
 
+  // Helper function to get category URL
+  const getCategoryUrl = (category: Category): string => {
+    const name = category.name.toLowerCase();
+    if (name === 'men') return '/categories?gender=men';
+    if (name === 'women') return '/categories?gender=women';
+    if (name === 'new arrivals') return '/categories/new-arrivals';
+    if (name === 'sets') return '/categories/sets';
+    return '/categories';
+  };
+
+  // Helper function to format category name for display
+  const formatCategoryName = (name: string): { line1: string; line2?: string } => {
+    if (name === 'New Arrivals') {
+      return { line1: 'NEW', line2: 'ARRIVALS' };
+    }
+    return { line1: name.toUpperCase() };
+  };
+
   // Helper function to get bundle image
   const getBundleImage = (bundle: Bundle): string => {
     if (bundle.image) return getImageUrl(bundle.image);
@@ -269,6 +375,17 @@ export default function HomePage() {
     return '/placeholder.svg';
   };
 
+const getBundleProductHref = (bundle: Bundle): string => {
+  if (bundle.products && bundle.products.length > 0) {
+    const firstProduct = bundle.products[0] as Product & { slug?: string };
+    const productSlugOrId = firstProduct.slug || firstProduct._id || firstProduct.id;
+    if (productSlugOrId) {
+      return `/product/${productSlugOrId}`;
+    }
+  }
+  return '/product';
+};
+
   // Content for the hero box - can be image or video
   const heroContent = {
     type: (homepageSettings.homepageImage1Type || 'image') as 'image' | 'video',
@@ -278,6 +395,36 @@ export default function HomePage() {
       : '',
     alt: 'Hero content'
   }
+
+  // Fetch carousel images from API for MOVE WITH US section
+  useEffect(() => {
+    const fetchCarouselImages = async () => {
+      try {
+        setLoadingCarouselImages(true);
+        const response = await fetch(`${API_BASE_URL}/carousel-images/public/active`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && Array.isArray(data.data)) {
+            // Sort by order and extract image URLs
+            const sortedImages = data.data
+              .sort((a: any, b: any) => a.order - b.order)
+              .map((img: any) => img.imageUrl);
+            setCarouselImages(sortedImages);
+          }
+        } else {
+          // Fallback to static images if API fails
+          setCarouselImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch carousel images:', error);
+        // Fallback to static images on error
+        setCarouselImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
+      } finally {
+        setLoadingCarouselImages(false);
+      }
+    };
+    fetchCarouselImages();
+  }, []);
 
   const scrollCarousel = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
@@ -460,254 +607,214 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* 2x2 Grid of Category Cards - Same structure as WHAT'S NEW product grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-            {/* MEN Card - Same properties as all cards */}
-            <Link 
-              href="/categories?gender=men" 
-              className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-              style={{
-                // Position - Same for all
-                position: 'relative',
-                left: '0',
-                marginTop: '0',
-                
-                // Dimensions - Same for all - Both width and height responsive (zoom out compatible)
-                width: '100%', // Full width of grid cell - equal size
-                maxWidth: '100%', // Prevent overflow - adjust based on grid
-                aspectRatio: '642/230', // Maintain aspect ratio - width aur height dono saath mein adjust
-                
-                // Appearance - Same for all (Exact from screenshot)
-                opacity: 1, // 100% opacity
-                borderRadius: 'clamp(16px, 2vw, 32px)', // Desktop: Corner radius: 32px, responsive
-                
-                // Fill - Background image from homepageImage2 or fallback
-                backgroundImage: homepageSettings.homepageImage2 
-                  ? `url(${getImageUrl(homepageSettings.homepageImage2)})` 
-                  : 'url(/6.png)',
-                backgroundSize: 'cover', // Cover entire card - responsive, maintains aspect ratio during zoom
-                backgroundPosition: 'center top', // Face visible from top - center horizontally, top vertically to show full face
-                backgroundRepeat: 'no-repeat',
-                backgroundColor: '#E0E0E0', // Fallback gray color
-                
-                // Rotation - Same for all
-                transform: 'rotate(0deg)',
-                
-                // Clip content
-                overflow: 'hidden'
-              }}
-            >
-              {/* MEN Text - Same properties as all text - Fully Responsive */}
-              <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
-                <h3 
-                  className="text-white uppercase z-10"
+          {/* 2x2 Grid of Category Cards - Dynamically loaded from database */}
+          {loadingCategories ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  className="relative overflow-hidden"
                   style={{
-                    // Typography - Same for all text - Fully Responsive
-                    fontFamily: "'Bebas Neue', sans-serif", // Bebas Neue
-                    fontSize: 'clamp(32px, 4.5vw, 65.01px)', // Desktop: 65.01px, fully responsive
-                    fontWeight: 400, // Regular
-                    lineHeight: 'clamp(28px, 4vw, 58px)', // Desktop: 58px, fully responsive
-                    letterSpacing: '0px',
-                    
-                    // Fill - Same for all
-                    color: '#FFFFFF', // White fill
-                    
-                    // Appearance
-                    opacity: 1,
-                    borderRadius: '0px',
-                    
-                    // Alignment - Same for all
-                    textAlign: 'left', // Left align
-                    
-                    // Position - Same for all
-                    position: 'relative',
-                    left: '0',
-                    top: '0',
-                    
-                    // Spacing - Responsive
-                    margin: '0',
-                    padding: '0',
-                    
-                    // Text shadow for better visibility on image
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+                    width: '100%',
+                    aspectRatio: '642/230',
+                    borderRadius: 'clamp(16px, 2vw, 32px)',
+                    backgroundColor: '#E0E0E0',
+                    opacity: 0.5
                   }}
                 >
-                  MEN
-                </h3>
-              </div>
-            </Link>
-
-            {/* WOMEN Card - Same properties as all cards */}
-            <Link 
-              href="/categories?gender=women" 
-              className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-              style={{
-                position: 'relative',
-                left: '0',
-                marginTop: '0',
-                width: '100%', // Equal size - full width of grid cell
-                maxWidth: '100%', // Prevent overflow - adjust based on grid
-                aspectRatio: '642/230', // Maintain aspect ratio - width aur height dono saath mein adjust (zoom out compatible)
-                opacity: 1,
-                borderRadius: 'clamp(16px, 2vw, 32px)', // Responsive corner radius
-                backgroundImage: homepageSettings.homepageImage3 
-                  ? `url(${getImageUrl(homepageSettings.homepageImage3)})` 
-                  : 'url(/6.png)',
-                backgroundSize: 'cover', // Cover entire card - responsive, maintains aspect ratio during zoom
-                backgroundPosition: 'center top', // Face visible from top - center horizontally, top vertically to show full face
-                backgroundRepeat: 'no-repeat',
-                backgroundColor: '#E0E0E0',
-                transform: 'rotate(0deg)',
-                overflow: 'hidden'
-              }}
-            >
-              <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
-                <h3 
-                  className="text-white uppercase z-10"
-                  style={{
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: 'clamp(32px, 4.5vw, 65.01px)', // Fully responsive
-                    fontWeight: 400,
-                    lineHeight: 'clamp(28px, 4vw, 58px)', // Fully responsive
-                    letterSpacing: '0px',
-                    color: '#FFFFFF',
-                    opacity: 1,
-                    borderRadius: '0px',
-                    textAlign: 'left',
-                    position: 'relative',
-                    left: '0',
-                    top: '0',
-                    margin: '0',
-                    padding: '0',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-                  }}
-                >
-                  WOMEN
-                </h3>
-              </div>
-            </Link>
-
-            {/* NEW ARRIVALS Card - Same properties as all cards */}
-            <Link 
-              href="/categories/new-arrivals" 
-              className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-              style={{
-                position: 'relative',
-                left: '0',
-                marginTop: '0',
-                width: '100%', // Equal size - full width of grid cell
-                maxWidth: '100%', // Prevent overflow - adjust based on grid
-                aspectRatio: '642/230', // Maintain aspect ratio - width aur height dono saath mein adjust (zoom out compatible)
-                opacity: 1,
-                borderRadius: 'clamp(16px, 2vw, 32px)', // Responsive corner radius
-                backgroundImage: homepageSettings.homepageImage4 
-                  ? `url(${getImageUrl(homepageSettings.homepageImage4)})` 
-                  : 'url(/6.png)',
-                backgroundSize: 'cover', // Cover entire card - responsive, maintains aspect ratio during zoom
-                backgroundPosition: 'center top', // Face visible from top - center horizontally, top vertically to show full face
-                backgroundRepeat: 'no-repeat',
-                backgroundColor: '#E0E0E0',
-                transform: 'rotate(0deg)',
-                overflow: 'hidden'
-              }}
-            >
-              <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
-                <div className="z-10">
-                  <h3 
-                    className="text-white uppercase"
-                    style={{
-                      fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: 'clamp(32px, 4.5vw, 65.01px)', // Fully responsive
-                      fontWeight: 400,
-                      lineHeight: 'clamp(28px, 4vw, 58px)', // Fully responsive
-                      letterSpacing: '0px',
-                      color: '#FFFFFF',
-                      opacity: 1,
-                      borderRadius: '0px',
-                      textAlign: 'left',
-                      position: 'relative',
-                      margin: '0',
-                      padding: '0',
-                      marginBottom: 'clamp(4px, 0.5vw, 8px)', // Gap between NEW and ARRIVALS
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-                    }}
-                  >
-                    NEW
-                  </h3>
-                  <h3 
-                    className="text-white uppercase"
-                    style={{
-                      fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: 'clamp(32px, 4.5vw, 65.01px)', // Fully responsive
-                      fontWeight: 400,
-                      lineHeight: 'clamp(28px, 4vw, 58px)', // Fully responsive
-                      letterSpacing: '0px',
-                      color: '#FFFFFF',
-                      opacity: 1,
-                      borderRadius: '0px',
-                      textAlign: 'left',
-                      position: 'relative',
-                      margin: '0',
-                      padding: '0',
-                      textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-                    }}
-                  >
-                    ARRIVALS
-                  </h3>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-gray-400">Loading...</div>
+                  </div>
                 </div>
-              </div>
-            </Link>
-
-            {/* SETS Card - Same properties as all cards */}
-            <Link 
-              href="/categories/sets" 
-              className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-              style={{
-                position: 'relative',
-                left: '0',
-                marginTop: '0',
-                width: '100%', // Equal size - full width of grid cell
-                maxWidth: '100%', // Prevent overflow - adjust based on grid
-                aspectRatio: '642/230', // Maintain aspect ratio - width aur height dono saath mein adjust (zoom out compatible)
-                opacity: 1,
-                borderRadius: 'clamp(16px, 2vw, 32px)', // Responsive corner radius
-                backgroundImage: homepageSettings.homepageImage5 
-                  ? `url(${getImageUrl(homepageSettings.homepageImage5)})` 
-                  : 'url(/6.png)',
-                backgroundSize: 'cover', // Cover entire card - responsive, maintains aspect ratio during zoom
-                backgroundPosition: 'center top', // Face visible from top - center horizontally, top vertically to show full face
-                backgroundRepeat: 'no-repeat',
-                backgroundColor: '#E0E0E0',
-                transform: 'rotate(0deg)',
-                overflow: 'hidden'
-              }}
-            >
-              <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
-                <h3 
-                  className="text-white uppercase z-10"
-                  style={{
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: 'clamp(32px, 4.5vw, 65.01px)', // Fully responsive
-                    fontWeight: 400,
-                    lineHeight: 'clamp(28px, 4vw, 58px)', // Fully responsive
-                    letterSpacing: '0px',
-                    color: '#FFFFFF',
-                    opacity: 1,
-                    borderRadius: '0px',
-                    textAlign: 'left',
-                    position: 'relative',
-                    left: '0',
-                    top: '0',
-                    margin: '0',
-                    padding: '0',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-                  }}
-                >
-                  SETS
-                </h3>
-              </div>
-            </Link>
-          </div>
+              ))}
+            </div>
+          ) : categories.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+              {categories.map((category) => {
+                const categoryName = formatCategoryName(category.name);
+                const categoryImage = getImageUrl(category.image || category.carouselImage || '/6.png');
+                
+                return (
+                  <Link
+                    key={category._id}
+                    href={getCategoryUrl(category)}
+                    className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    style={{
+                      position: 'relative',
+                      left: '0',
+                      marginTop: '0',
+                      width: '100%',
+                      maxWidth: '100%',
+                      aspectRatio: '642/230',
+                      opacity: 1,
+                      borderRadius: 'clamp(16px, 2vw, 32px)',
+                      backgroundImage: categoryImage ? `url(${categoryImage})` : 'url(/6.png)',
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center top',
+                      backgroundRepeat: 'no-repeat',
+                      backgroundColor: '#E0E0E0',
+                      transform: 'rotate(0deg)',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
+                      {categoryName.line2 ? (
+                        <div className="z-10">
+                          <h3
+                            className="text-white uppercase"
+                            style={{
+                              fontFamily: "'Bebas Neue', sans-serif",
+                              fontSize: 'clamp(32px, 4.5vw, 65.01px)',
+                              fontWeight: 400,
+                              lineHeight: 'clamp(28px, 4vw, 58px)',
+                              letterSpacing: '0px',
+                              color: '#FFFFFF',
+                              opacity: 1,
+                              borderRadius: '0px',
+                              textAlign: 'left',
+                              position: 'relative',
+                              margin: '0',
+                              padding: '0',
+                              marginBottom: 'clamp(4px, 0.5vw, 8px)',
+                              textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+                            }}
+                          >
+                            {categoryName.line1}
+                          </h3>
+                          <h3
+                            className="text-white uppercase"
+                            style={{
+                              fontFamily: "'Bebas Neue', sans-serif",
+                              fontSize: 'clamp(32px, 4.5vw, 65.01px)',
+                              fontWeight: 400,
+                              lineHeight: 'clamp(28px, 4vw, 58px)',
+                              letterSpacing: '0px',
+                              color: '#FFFFFF',
+                              opacity: 1,
+                              borderRadius: '0px',
+                              textAlign: 'left',
+                              position: 'relative',
+                              margin: '0',
+                              padding: '0',
+                              textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+                            }}
+                          >
+                            {categoryName.line2}
+                          </h3>
+                        </div>
+                      ) : (
+                        <h3
+                          className="text-white uppercase z-10"
+                          style={{
+                            fontFamily: "'Bebas Neue', sans-serif",
+                            fontSize: 'clamp(32px, 4.5vw, 65.01px)',
+                            fontWeight: 400,
+                            lineHeight: 'clamp(28px, 4vw, 58px)',
+                            letterSpacing: '0px',
+                            color: '#FFFFFF',
+                            opacity: 1,
+                            borderRadius: '0px',
+                            textAlign: 'left',
+                            position: 'relative',
+                            left: '0',
+                            top: '0',
+                            margin: '0',
+                            padding: '0',
+                            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+                          }}
+                        >
+                          {categoryName.line1}
+                        </h3>
+                      )}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+              {/* Fallback to hardcoded cards if no categories found */}
+              <Link 
+                href="/categories?gender=men" 
+                className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  aspectRatio: '642/230',
+                  borderRadius: 'clamp(16px, 2vw, 32px)',
+                  backgroundImage: 'url(/6.png)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center top',
+                  backgroundColor: '#E0E0E0',
+                  overflow: 'hidden'
+                }}
+              >
+                <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
+                  <h3 className="text-white uppercase z-10" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(32px, 4.5vw, 65.01px)', fontWeight: 400, lineHeight: 'clamp(28px, 4vw, 58px)', color: '#FFFFFF', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>MEN</h3>
+                </div>
+              </Link>
+              <Link 
+                href="/categories?gender=women" 
+                className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  aspectRatio: '642/230',
+                  borderRadius: 'clamp(16px, 2vw, 32px)',
+                  backgroundImage: 'url(/6.png)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center top',
+                  backgroundColor: '#E0E0E0',
+                  overflow: 'hidden'
+                }}
+              >
+                <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
+                  <h3 className="text-white uppercase z-10" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(32px, 4.5vw, 65.01px)', fontWeight: 400, lineHeight: 'clamp(28px, 4vw, 58px)', color: '#FFFFFF', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>WOMEN</h3>
+                </div>
+              </Link>
+              <Link 
+                href="/categories/new-arrivals" 
+                className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  aspectRatio: '642/230',
+                  borderRadius: 'clamp(16px, 2vw, 32px)',
+                  backgroundImage: 'url(/6.png)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center top',
+                  backgroundColor: '#E0E0E0',
+                  overflow: 'hidden'
+                }}
+              >
+                <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
+                  <div className="z-10">
+                    <h3 className="text-white uppercase" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(32px, 4.5vw, 65.01px)', fontWeight: 400, lineHeight: 'clamp(28px, 4vw, 58px)', color: '#FFFFFF', marginBottom: 'clamp(4px, 0.5vw, 8px)', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>NEW</h3>
+                    <h3 className="text-white uppercase" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(32px, 4.5vw, 65.01px)', fontWeight: 400, lineHeight: 'clamp(28px, 4vw, 58px)', color: '#FFFFFF', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>ARRIVALS</h3>
+                  </div>
+                </div>
+              </Link>
+              <Link 
+                href="/categories/sets" 
+                className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  aspectRatio: '642/230',
+                  borderRadius: 'clamp(16px, 2vw, 32px)',
+                  backgroundImage: 'url(/6.png)',
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center top',
+                  backgroundColor: '#E0E0E0',
+                  overflow: 'hidden'
+                }}
+              >
+                <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
+                  <h3 className="text-white uppercase z-10" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(32px, 4.5vw, 65.01px)', fontWeight: 400, lineHeight: 'clamp(28px, 4vw, 58px)', color: '#FFFFFF', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>SETS</h3>
+                </div>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -879,9 +986,9 @@ export default function HomePage() {
               minHeight: 'clamp(400px, 50vw, 937px)', // Minimum height for very small screens
               
               backgroundColor: '#FFFFFF', // White background
-              backgroundImage: homepageSettings.homepageImage6 
-                ? `url(${getImageUrl(homepageSettings.homepageImage6)})` 
-                : 'url(/8.png)', // Use homepageImage6 or fallback to 8.png
+              backgroundImage: homepageSettings.homepageImage2 
+                ? `url(${getImageUrl(homepageSettings.homepageImage2)})` 
+                : 'url(/8.png)', // Use homepageImage2 or fallback to 8.png
               backgroundSize: 'contain', // Contain - poora image complete dikhe (no cut off)
               backgroundPosition: 'center', // Center the image
               backgroundRepeat: 'no-repeat', // No repeat
@@ -890,7 +997,7 @@ export default function HomePage() {
               overflow: 'visible' // Visible - edges cut off nahi honge
             }}
           >
-            {/* Empty container - homepageImage6 is the background - Fully responsive & complete */}
+            {/* Empty container - background image - Fully responsive & complete */}
           </div>
         </div>
       </section>
@@ -926,256 +1033,78 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Product Grid - 4 Products */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-            {/* Product 1 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/3.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
+          {/* Blog Grid - 4 Blogs */}
+          {loadingBlogs ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-gray-200 animate-pulse rounded-[32px] w-full" style={{ aspectRatio: '307/450' }} />
+              ))}
+            </div>
+          ) : blogs.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+              {blogs.map((blog) => (
+                <Link 
+                  key={blog._id}
+                  href={normalizeBlogHref(blog)}
+                  className="bg-white relative overflow-hidden w-full block hover:opacity-90 transition-opacity"
                   style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
+                    aspectRatio: '307/450'
                   }}
                 >
-                  AED 59
-                </p>
-              </div>
+                  <div 
+                    className="bg-gradient-to-br from-gray-100 to-gray-200 w-full h-full flex items-center justify-center"
+                    style={{
+                      borderRadius: '32px'
+                    }}
+                  >
+                    <div className="text-center p-8">
+                      <div className="text-6xl mb-4">📝</div>
+                      <h3 className="text-lg font-semibold text-gray-800 mb-2">{blog.adminName}</h3>
+                    </div>
+                  </div>
+                  <div 
+                    className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                    style={{
+                      height: '60px'
+                    }}
+                  >
+                    <div className="flex flex-col text-left flex-1 min-w-0">
+                      <span 
+                        className="uppercase text-white truncate"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: '13.41px',
+                          lineHeight: '14.6px',
+                          letterSpacing: '0px',
+                          fontWeight: 500
+                        }}
+                        title={blog.adminName}
+                      >
+                        {blog.adminName.length > 20 ? blog.adminName.substring(0, 20) + '...' : blog.adminName}
+                      </span>
+                      <span 
+                        className="uppercase text-white text-xs truncate"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: '11px',
+                          lineHeight: '14.6px',
+                          letterSpacing: '0px',
+                          fontWeight: 400
+                        }}
+                        title={blog.url}
+                      >
+                        {blog.url.length > 25 ? blog.url.substring(0, 25) + '...' : blog.url}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
-
-            {/* Product 2 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/4.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
+          ) : (
+            <div className="text-center py-12 mt-12">
+              <p className="text-gray-500">No blogs available at the moment.</p>
             </div>
-
-            {/* Product 3 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/5.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
-            </div>
-
-            {/* Product 4 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/6.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
@@ -1259,35 +1188,19 @@ export default function HomePage() {
                   zIndex: 10 // Above background
                 }}
               >
-                {homepageSettings.homepageImage7 ? (
-                  <img 
-                    src={getImageUrl(homepageSettings.homepageImage7)} 
-                    alt="Why Athlekt" 
-                    className="w-full h-full object-cover"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: 'center top', // Position image to show top portion
-                      borderRadius: 'clamp(24px, 3vw, 48px)', // Match container border radius
-                      display: 'block' // Prevent image bottom spacing issue
-                    }}
-                  />
-                ) : (
-                  <img 
-                    src="/9.png" 
-                    alt="Why Athlekt" 
-                    className="w-full h-full object-cover"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      objectPosition: 'center top', // Position image to show top portion
-                      borderRadius: 'clamp(24px, 3vw, 48px)', // Match container border radius
-                      display: 'block' // Prevent image bottom spacing issue
-                    }}
-                  />
-                )}
+                <img 
+                  src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : '/9.png'} 
+                  alt="Why Athlekt" 
+                  className="w-full h-full object-cover"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center top', // Position image to show top portion
+                    borderRadius: 'clamp(24px, 3vw, 48px)', // Match container border radius
+                    display: 'block' // Prevent image bottom spacing issue
+                  }}
+                />
               </div>
 
               {/* Right Side - Text Content - Exact Figma Position - Fully Responsive - Moved right and up */}
@@ -1585,11 +1498,12 @@ export default function HomePage() {
                 const bundleImage = getBundleImage(bundle);
                 const bundlePrice = bundle.bundlePrice || 0;
                 const nameLines = splitProductName(bundleName.toUpperCase());
+                const bundleHref = getBundleProductHref(bundle);
                 
                 return (
                   <Link 
                     key={bundleId}
-                    href={`/bundles/${bundleId}`}
+                    href={bundleHref}
                     className="bg-white relative overflow-hidden w-full cursor-pointer hover:opacity-90 transition-opacity"
                     style={{
                       aspectRatio: '307/450'
@@ -1668,7 +1582,7 @@ export default function HomePage() {
           {!loadingBundles && bundles.length > 0 && (
             <div className="flex justify-center items-center mt-8">
               <Link 
-                href="/bundles"
+                href="/product"
                 className="bg-black text-white uppercase px-8 py-3 rounded-lg hover:opacity-90 transition-opacity font-medium inline-block"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
@@ -1749,22 +1663,36 @@ export default function HomePage() {
             </button>
 
             {/* Carousel Container - Shows multiple images - Centered between arrows */}
-            <div 
-              ref={carouselRef}
-              className="flex overflow-x-hidden scroll-smooth gap-4 md:gap-6"
-              style={{
-                scrollSnapType: 'x mandatory',
-                paddingLeft: 'clamp(48px, 5.5vw, 64px)', // Space for left arrow
-                paddingRight: 'clamp(48px, 5.5vw, 64px)', // Space for right arrow
-                margin: '0 auto',
-                width: '100%',
-                maxWidth: '100%',
-                display: 'flex',
-                justifyContent: 'center', // Center images between arrows
-                alignItems: 'center'
-              }}
-            >
-              {carouselImages.map((image, index) => (
+            {loadingCarouselImages ? (
+              <div className="flex justify-center items-center gap-4 md:gap-6" style={{
+                paddingLeft: 'clamp(48px, 5.5vw, 64px)',
+                paddingRight: 'clamp(48px, 5.5vw, 64px)',
+                minHeight: 'clamp(240px, 28vw, 380px)'
+              }}>
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="bg-gray-200 animate-pulse rounded-[40px] flex-shrink-0" style={{
+                    width: 'clamp(160px, 18vw, 240px)',
+                    height: 'clamp(240px, 28vw, 380px)'
+                  }} />
+                ))}
+              </div>
+            ) : carouselImages.length > 0 ? (
+              <div 
+                ref={carouselRef}
+                className="flex overflow-x-hidden scroll-smooth gap-4 md:gap-6"
+                style={{
+                  scrollSnapType: 'x mandatory',
+                  paddingLeft: 'clamp(48px, 5.5vw, 64px)', // Space for left arrow
+                  paddingRight: 'clamp(48px, 5.5vw, 64px)', // Space for right arrow
+                  margin: '0 auto',
+                  width: '100%',
+                  maxWidth: '100%',
+                  display: 'flex',
+                  justifyContent: 'center', // Center images between arrows
+                  alignItems: 'center'
+                }}
+              >
+                {carouselImages.map((image, index) => (
                 <div
                   key={index}
                   className="flex-shrink-0"
@@ -1810,12 +1738,21 @@ export default function HomePage() {
                   </div>
                 </div>
               ))}
-            </div>
+              </div>
+            ) : (
+              <div className="text-center py-12" style={{
+                paddingLeft: 'clamp(48px, 5.5vw, 64px)',
+                paddingRight: 'clamp(48px, 5.5vw, 64px)',
+              }}>
+                <p className="text-gray-500">No images available at the moment.</p>
+              </div>
+            )}
           </div>
 
           {/* Pagination Dots - Responsive */}
-          <div className="flex items-center justify-center gap-2 mt-6">
-            {carouselImages.map((_, index) => (
+          {!loadingCarouselImages && carouselImages.length > 0 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              {carouselImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => {
@@ -1839,8 +1776,9 @@ export default function HomePage() {
                 } rounded-full`}
                 aria-label={`Go to slide ${index + 1}`}
               />
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

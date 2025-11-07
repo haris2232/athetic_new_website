@@ -38,7 +38,6 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1)
   const [selectedColor, setSelectedColor] = useState<string>(product.colors && product.colors.length > 0 ? product.colors[0].name : "Coral")
   const [activeImageIndex, setActiveImageIndex] = useState(0)
-  
   // Color to image mapping - this will be populated from product data
   const [colorImageMapping, setColorImageMapping] = useState<Record<string, string[]>>({})
   const [loading, setLoading] = useState(true)
@@ -371,6 +370,57 @@ export default function ProductDetail({ product }: { product: Product }) {
     materials: false,
     reviews: false,
   })
+
+  const defaultDescription = "The Athlekt Classic Hybrid Tee is designed to move with you wherever the day takes you. Lightweight, breathable, and stretchable, it delivers all-day comfort whether you're training, on the move, or unwinding after a long day. Its adaptive fit complements every body type from athletes to dads with dad bods offering a clean, confident silhouette without compromising comfort. Perfect for both lifestyle and gym, this tee keeps you cool, sharp, and ready for anything from your morning session to your evening plans. One tee. Every moment. Athlekt."
+  const defaultFit = "Boxy, oversized look—size down if you prefer a closer fit."
+  const defaultPurpose = [
+    "Designed to support high-intensity training, everyday movement, and casual wear without sacrificing comfort.",
+  ]
+  const defaultMaterials = [
+    "This lightweight, drapey fabric is smooth on the outside and looped on the inside with a slightly faded, vintage-looking finish",
+    "65% Cotton, 35% Polyester",
+  ]
+  const defaultCare = ["Machine wash cold", "Tumble dry low"]
+
+  const getParagraphs = (value?: string, fallback?: string) => {
+    const text = value?.trim() ? value : fallback?.trim() ? fallback : ""
+    if (!text) return []
+
+    return text
+      .split(/\r?\n+/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean)
+  }
+
+  const getListItems = (value?: string, fallback: string[] = []) => {
+    const source = value?.trim()
+      ? value
+          .split(/\r?\n+/)
+          .map((item) => item.replace(/^[\s\u2022•\-]+/, '').trim())
+          .filter(Boolean)
+      : fallback
+
+    return source
+  }
+
+  const descriptionParagraphs = getParagraphs(product.fullDescription || product.description, defaultDescription)
+  const purposeParagraphs = getListItems(product.purpose, defaultPurpose)
+  const fitItems = getListItems(product.features, [defaultFit])
+  const materialsItems = getListItems(product.materials, defaultMaterials)
+  const careItems = getListItems(product.care, defaultCare)
+  const initialRating = Number(product.rating ?? (product as any).reviewRating ?? 0)
+  const initialCount = Number(product.reviewCount ?? (product as any).reviewCount ?? 0)
+  const [reviewStats, setReviewStats] = useState({
+    average: Number.isFinite(initialRating) ? initialRating : 0,
+    count: Number.isFinite(initialCount) ? initialCount : 0,
+  })
+
+  const roundedRating = Math.round(reviewStats.average)
+  const clampedRating = Math.min(5, Math.max(0, roundedRating))
+  const hasReviews = reviewStats.count > 0
+  const reviewSummary = hasReviews
+    ? `${reviewStats.average.toFixed(1)} out of 5 based on ${reviewStats.count} review${reviewStats.count === 1 ? '' : 's'}.`
+    : "No reviews yet. Be the first to review this product."
 
   const nextImage = () => {
     if (currentImages && currentImages.length > 1) {
@@ -866,33 +916,75 @@ export default function ProductDetail({ product }: { product: Product }) {
           {/* Three Column Layout (match Figma widths exactly on md+) - Responsive */}
           <div className="grid grid-cols-1 gap-4 md:gap-4 md:[grid-template-columns:clamp(400px,45vw,460px)_clamp(280px,32vw,340px)_clamp(240px,28vw,280px)]">
             {/* Column 1: DESCRIPTION */}
-            <div className="border-b border-black pb-8 md:border-b-0 md:pb-0 md:pr-8">
-              <h2 
-                className="uppercase text-black mb-3"
-                style={{
-                  fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(16px, 1.6vw, 18px)', // Responsive font size
-                  fontWeight: 700,
-                  letterSpacing: '0px'
-                }}
-              >
-                DESCRIPTION
-              </h2>
-              <p 
-                className="text-black"
-                style={{
-                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(13px, 1.3vw, 15px)', // Responsive font size
-                  fontWeight: 400,
-                  lineHeight: '1.4',
-                  letterSpacing: '0px',
-                  margin: 0,
-                  maxWidth: 'clamp(400px, 45vw, 460px)' // Responsive max width
-                }}
-              >
-                The Athlekt Classic Hybrid Tee is designed to move with you wherever the day takes you. Lightweight, breathable, and stretchable, it delivers all-day comfort whether you're training, on the move, or unwinding after a long day. Its adaptive fit complements every body type from athletes to dads with dad bods offering a clean, confident silhouette without compromising comfort. Perfect for both lifestyle and gym, this tee keeps you cool, sharp, and ready for anything from your morning session to your evening plans. One tee. Every moment. Athlekt.
-              </p>
+            <div className="border-b border-black pb-8 md:border-b-0 md:pb-0 md:pr-8 space-y-6">
+              <div>
+                <h2 
+                  className="uppercase text-black mb-3"
+                  style={{
+                    fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(16px, 1.6vw, 18px)',
+                    fontWeight: 700,
+                    letterSpacing: '0px'
+                  }}
+                >
+                  DESCRIPTION
+                </h2>
+                <div className="space-y-3">
+                  {descriptionParagraphs.map((paragraph, index) => (
+                    <p 
+                      key={`description-${index}`}
+                      className="text-black"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(13px, 1.3vw, 15px)',
+                        fontWeight: 400,
+                        lineHeight: '1.4',
+                        letterSpacing: '0px',
+                        margin: 0,
+                        maxWidth: 'clamp(400px, 45vw, 460px)'
+                      }}
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               </div>
+
+              {purposeParagraphs.length > 0 && (
+                <div>
+                  <h3
+                    className="uppercase text-black mb-3"
+                    style={{
+                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(16px, 1.6vw, 18px)',
+                      fontWeight: 700,
+                      letterSpacing: '0px'
+                    }}
+                  >
+                    PURPOSE
+                  </h3>
+                  <ul className="space-y-2">
+                    {purposeParagraphs.map((item, index) => (
+                      <li
+                        key={`purpose-${index}`}
+                        className="text-black"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(13px, 1.3vw, 15px)',
+                          fontWeight: 400,
+                          lineHeight: '1.4',
+                          letterSpacing: '0px',
+                          margin: 0,
+                          maxWidth: 'clamp(400px, 45vw, 460px)'
+                        }}
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
 
             {/* Column 2: FIT and MATERIAL & CARE */}
             <div className="space-y-1 border-b border-black pb-6 md:border-b-0 md:pb-0 md:pr-6">
@@ -902,28 +994,33 @@ export default function ProductDetail({ product }: { product: Product }) {
                   className="uppercase text-black mb-3"
                   style={{
                     fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                    fontSize: 'clamp(16px, 1.6vw, 18px)', // Responsive font size
+                    fontSize: 'clamp(16px, 1.6vw, 18px)',
                     fontWeight: 700,
                     letterSpacing: '0px'
                   }}
                 >
-                  FIT
+                  FEATURES & FIT
                 </h2>
-                <p 
-                  className="text-black"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: 'clamp(13px, 1.3vw, 15px)', // Responsive font size
-                    fontWeight: 400,
-                    lineHeight: '1.4',
-                    letterSpacing: '0px',
-                    margin: 0,
-                    maxWidth: 'clamp(280px, 32vw, 340px)' // Responsive max width
-                  }}
-                >
-                  Boxy, oversized look—size down if you prefer a closer fit.
-                </p>
-                  </div>
+                <ul className="space-y-2">
+                  {fitItems.map((item, index) => (
+                    <li
+                      key={`fit-${index}`}
+                      className="text-black"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(13px, 1.3vw, 15px)',
+                        fontWeight: 400,
+                        lineHeight: '1.4',
+                        letterSpacing: '0px',
+                        margin: 0,
+                        maxWidth: 'clamp(280px, 32vw, 340px)'
+                      }}
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
               {/* MATERIAL & CARE */}
               <div className="pt-6">
@@ -931,88 +1028,142 @@ export default function ProductDetail({ product }: { product: Product }) {
                   className="uppercase text-black mb-3"
                   style={{
                     fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                    fontSize: 'clamp(16px, 1.6vw, 18px)', // Responsive font size
+                    fontSize: 'clamp(16px, 1.6vw, 18px)',
                     fontWeight: 700,
                     letterSpacing: '0px'
                   }}
                 >
                   MATERIAL & CARE
                 </h2>
-                <div className="space-y-2">
-                  <p 
-                    className="text-black"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(13px, 1.3vw, 15px)', // Responsive font size
-                      fontWeight: 400,
-                      lineHeight: '1.4',
-                      letterSpacing: '0px',
-                      margin: 0,
-                      maxWidth: 'clamp(400px, 45vw, 460px)' // Responsive max width
-                    }}
-                  >
-                    This lightweight, drapey fabric is smooth on the outside and looped on the inside with a slightly faded, vintage-looking finish
-                  </p>
-                  <p 
-                    className="text-black"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(13px, 1.3vw, 15px)', // Responsive font size
-                      fontWeight: 400,
-                      lineHeight: '1.4',
-                      letterSpacing: '0px',
-                      margin: 0,
-                      maxWidth: 'clamp(400px, 45vw, 460px)' // Responsive max width
-                    }}
-                  >
-                    65% Cotton, 35% Polyester
-                  </p>
-                  </div>
+                <div className="space-y-4">
+                  {materialsItems.length > 0 && (
+                    <ul className="space-y-2">
+                      {materialsItems.map((item, index) => (
+                        <li
+                          key={`material-${index}`}
+                          className="text-black"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: 'clamp(13px, 1.3vw, 15px)',
+                            fontWeight: 400,
+                            lineHeight: '1.4',
+                            letterSpacing: '0px',
+                            margin: 0,
+                            maxWidth: 'clamp(400px, 45vw, 460px)'
+                          }}
+                        >
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {careItems.length > 0 && (
+                    <div>
+                      <h4
+                        className="uppercase text-black mb-2"
+                        style={{
+                          fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(13px, 1.3vw, 15px)',
+                          fontWeight: 700,
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        CARE
+                      </h4>
+                      <ul className="space-y-2">
+                        {careItems.map((item, index) => (
+                          <li
+                            key={`care-${index}`}
+                            className="text-black"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: 'clamp(13px, 1.3vw, 15px)',
+                              fontWeight: 400,
+                              lineHeight: '1.4',
+                              letterSpacing: '0px',
+                              margin: 0,
+                              maxWidth: 'clamp(400px, 45vw, 460px)'
+                            }}
+                          >
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
                       </div>
                       </div>
 
             {/* Column 3: REVIEWS */}
-            <div>
-              <h2 
-                className="uppercase text-black mb-3"
+            <div className="space-y-3">
+              <h2
+                className="uppercase text-black"
                 style={{
                   fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(16px, 1.6vw, 18px)', // Responsive font size
+                  fontSize: 'clamp(16px, 1.6vw, 18px)',
                   fontWeight: 700,
                   letterSpacing: '0px'
                 }}
               >
                 REVIEWS
               </h2>
-              <div className="flex items-center mb-3" style={{ gap: 'clamp(6px, 0.7vw, 8px)' }}>
-                {[...Array(5)].map((_, i) => (
+              <div className="flex items-center" style={{ gap: 'clamp(6px, 0.7vw, 8px)' }}>
+                {Array.from({ length: 5 }).map((_, i) => (
                   <Star
                     key={i}
                     className="h-3 w-3"
                     style={{
-                      fill: i < 4 ? '#c9ff4a' : 'transparent',
+                      fill: i < clampedRating ? '#c9ff4a' : 'transparent',
                       stroke: '#000000',
                       strokeWidth: 1
                     }}
                   />
                 ))}
               </div>
-              <p 
+              <p
                 className="text-black"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(13px, 1.3vw, 15px)', // Responsive font size
+                  fontSize: 'clamp(13px, 1.3vw, 15px)',
                   fontWeight: 400,
                   lineHeight: '1.4',
                   letterSpacing: '0px',
                   margin: 0,
-                  maxWidth: 'clamp(240px, 28vw, 280px)' // Responsive max width
+                  maxWidth: 'clamp(240px, 28vw, 280px)'
                 }}
               >
-                Boxy, oversized look—size down if you prefer a closer fit. Boxy, oversized look—size down if you prefer a closer fit.
+                {reviewSummary}
               </p>
-                  </div>
+              {hasReviews ? (
+                <Link
+                  href="#customer-reviews"
+                  className="uppercase text-black underline underline-offset-4"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(12px, 1.2vw, 14px)',
+                    fontWeight: 600
+                  }}
+                >
+                  Read all reviews
+                </Link>
+              ) : (
+                <Link
+                  href="#customer-reviews"
+                  className="uppercase text-black underline underline-offset-4"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(12px, 1.2vw, 14px)',
+                    fontWeight: 600
+                  }}
+                >
+                  Write the first review
+                </Link>
+              )}
             </div>
+
+          </div>
 
           {/* Bottom Horizontal Line */}
           <div className="border-t border-black mt-4"></div>
@@ -1663,153 +1814,12 @@ export default function ProductDetail({ product }: { product: Product }) {
         </div>
       </div>
 
-      {/* Customer Reviews Section - Figma Design */}
-      <section className="bg-white text-[#212121] py-8">
-        <div className="container mx-auto px-4 max-w-[1250px]">
-          <h1 
-            className="uppercase text-black mb-6"
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontWeight: 400,
-              fontSize: 'clamp(40px, 6.5vw, 70px)', // Reduced from 48px-90px to 40px-70px
-              letterSpacing: '-3.37px'
-            }}
-          >
-            CUSTOMER REVIEWS
-          </h1>
-            <div className="grid grid-cols-1 lg:grid-cols-[clamp(320px,38vw,380px)_1fr] gap-6 lg:gap-8 xl:gap-10">
-            {/* Left - Overall Rating */}
-            <div className="w-full lg:max-w-[clamp(320px,38vw,380px)]" style={{ marginTop: '8px' }}>
-              <p 
-                className="text-black mb-2"
-                style={{
-                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(20px, 2.4vw, 28px)', // Reduced from 24px-35px to 20px-28px
-                  letterSpacing: '-1px',
-                  fontWeight: 500
-                }}
-              >
-                Tried our Products?
-              </p>
-              <p 
-                className="text-black mb-2"
-                style={{
-                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(18px, 2vw, 25px)', // Reduced from 20px-31px to 18px-25px
-                  fontWeight: 500
-                }}
-              >
-                4 out of 5
-              </p>
-              <div className="flex items-center mb-4 w-full md:w-[clamp(160px,18vw,200px)]" style={{ gap: 'clamp(5px, 0.6vw, 7px)', height: 'clamp(32px, 3.5vw, 40px)', marginTop: '4px' }}>
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className="h-5 w-5"
-                    style={{
-                      fill: i < 4 ? '#c9ff4a' : 'transparent',
-                      stroke: '#000000',
-                      strokeWidth: 1.68
-                    }}
-                  />
-                ))}
-              </div>
-              <Button
-                className="bg-black text-white hover:bg-gray-800 w-full md:max-w-[clamp(300px,34vw,340px)]"
-                style={{
-                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(14px, 1.4vw, 16px)', // Responsive font size
-                  fontWeight: 500,
-                  height: 'clamp(50px, 5.5vw, 58px)', // Reduced from 67px to 50px-58px
-                  borderRadius: '20px',
-                  paddingLeft: 'clamp(20px, 2.2vw, 25px)',
-                  paddingRight: 'clamp(20px, 2.2vw, 25px)',
-                  marginTop: 'clamp(40px, 4.5vw, 48px)' // Reduced from 56px to 40px-48px
-                }}
-              >
-                Write a Review
-              </Button>
-                    </div>
-
-            {/* Right - Individual Reviews */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 xl:gap-8 w-full overflow-visible">
-              {[1, 2].map((idx) => (
-                <div 
-                  key={idx}
-                  className="p-3 w-full"
-                  style={{
-                    minHeight: 'clamp(240px, 28vw, 260px)', // Reduced from 298px to 240px-260px
-                    width: '100%',
-                    maxWidth: '100%',
-                    borderRadius: '32px',
-                    backgroundColor: '#EAEAEA'
-                  }}
-                >
-                  <h3 
-                    className="text-black mb-2"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(20px, 2.4vw, 28px)', // Reduced from 24px-35px to 20px-28px
-                      letterSpacing: '-1px',
-                      fontWeight: 500
-                    }}
-                  >
-                    Awesome hoodie
-                  </h3>
-                    <div className="flex items-center mb-2" style={{ gap: 'clamp(6px, 0.7vw, 8px)', height: 'clamp(16px, 1.8vw, 19px)' }}>
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className="h-3 w-3"
-                          style={{
-                            fill: '#c9ff4a',
-                            stroke: '#000000',
-                            strokeWidth: 1
-                          }}
-                        />
-                      ))}
-                    </div>
-                  <p 
-                    className="text-black mb-2"
-                    style={{
-                      fontFamily: "'Gilroy-Regular', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(12px, 1.3vw, 16px)', // Reduced from 14px-20px to 12px-16px
-                      fontWeight: 400,
-                      letterSpacing: '0px'
-                    }}
-                  >
-                    This hoodie is stylish and comfortable. Can be work to/from gym, at gym for lifts with lots of room, or dressed up. Super soft and comfortable. Highly recommend.
-                  </p>
-                  <p 
-                    className="text-black"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(12px, 1.3vw, 16px)', // Reduced from 14px-20px to 12px-16px
-                      fontWeight: 500
-                    }}
-                  >
-                    Jake. B
-                  </p>
-                  </div>
-              ))}
-              <div className="w-full md:col-span-2 text-right mt-4">
-                <Link 
-                  href="#"
-                  className="uppercase text-black"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '14px',
-                    fontWeight: 600
-                  }}
-                >
-                  READ MORE
-                  </Link>
-              </div>
-            </div>
-          </div>
+        <div id="customer-reviews">
+          <ProductReviews
+            product={product}
+            onStatsChange={(stats) => setReviewStats(stats)}
+          />
         </div>
-      </section>
-
 
       {/* Zoom Modal */}
       {zoomImage && (

@@ -1,19 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew/api'
+
 // Mock settings data - in a real app, this would come from a database
 let settings = {
-  currency: "USD"
+  currency: "USD",
+  homepageImage1: "",
+  homepageImage1Type: "image",
+  homepageImage2: "",
+  homepageImage3: "",
+  homepageImage4: "",
+  homepageImage5: "",
+  homepageImage6: "",
+  homepageImage7: ""
 }
 
 export async function GET() {
   // Try to get settings from backend first
   try {
-
-
-    const response = await fetch('https://athlekt.com/backendnew/api/settings/public')
+    const response = await fetch(`${API_BASE_URL}/settings/public`)
     if (response.ok) {
       const backendSettings = await response.json()
-      settings = { ...settings, ...backendSettings }
+      // Merge all settings including homepage images
+      settings = { 
+        ...settings, 
+        ...backendSettings,
+        // Ensure all homepage image fields are included
+        homepageImage1: backendSettings.homepageImage1 || '',
+        homepageImage1Type: backendSettings.homepageImage1Type || 'image',
+        homepageImage2: backendSettings.homepageImage2 || '',
+        homepageImage3: backendSettings.homepageImage3 || '',
+        homepageImage4: backendSettings.homepageImage4 || '',
+        homepageImage5: backendSettings.homepageImage5 || '',
+        homepageImage6: backendSettings.homepageImage6 || '',
+        homepageImage7: backendSettings.homepageImage7 || ''
+      }
     }
   } catch (error) {
     console.error('Failed to fetch from backend:', error)

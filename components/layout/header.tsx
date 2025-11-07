@@ -212,7 +212,7 @@ export default function Header() {
         <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
           <div className="bg-white shadow-lg rounded-md overflow-hidden z-50 min-w-[200px]">
             {categories.map(category => (
-              <Link key={category.id} href={`${category.href}?gender=${gender}`} className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors" onClick={onLinkClick}>
+              <Link key={category.id || `${gender}-${category.href}`} href={`${category.href}?gender=${gender}`} className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors" onClick={onLinkClick}>
                 {category.label}
               </Link>
             ))}
