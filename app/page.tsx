@@ -96,6 +96,9 @@ export default function HomePage() {
   const [homepageSettingsLoaded, setHomepageSettingsLoaded] = useState(false)
   const [recentProducts, setRecentProducts] = useState<Product[]>([])
   const [loadingProducts, setLoadingProducts] = useState(true)
+  const whatsNewCarouselRef = useRef<HTMLDivElement>(null)
+  const [currentWhatsNewIndex, setCurrentWhatsNewIndex] = useState(0)
+  const whatsNewVisibleCards = 4
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [loadingBundles, setLoadingBundles] = useState(true)
   const [categories, setCategories] = useState<Category[]>([])
@@ -148,8 +151,8 @@ export default function HomePage() {
               const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
               return dateB - dateA; // Most recent first
             });
-            // Take first 4 products
-            setRecentProducts(sortedProducts.slice(0, 4));
+            // Keep up to 20 most recent products for the slider
+            setRecentProducts(sortedProducts.slice(0, 20));
           }
         }
       } catch (error) {
@@ -381,6 +384,35 @@ export default function HomePage() {
     }
     return '/placeholder.svg';
   };
+
+  const scrollWhatsNewCarousel = (direction: 'left' | 'right') => {
+    if (!whatsNewCarouselRef.current) return;
+
+    const gap = 24; // matches tailwind gap-6
+    const cardWidth = 307; // matches aspect ratio width used in styles
+    const scrollAmount = cardWidth + gap;
+    const newScroll =
+      direction === 'left'
+        ? Math.max(0, whatsNewCarouselRef.current.scrollLeft - scrollAmount)
+        : whatsNewCarouselRef.current.scrollLeft + scrollAmount;
+
+    whatsNewCarouselRef.current.scrollTo({
+      left: newScroll,
+      behavior: 'smooth',
+    });
+
+    setCurrentWhatsNewIndex((prev) => {
+      const maxIndex = Math.max(0, recentProducts.length - whatsNewVisibleCards);
+      if (direction === 'left') {
+        return Math.max(0, prev - 1);
+      }
+      return Math.min(maxIndex, prev + 1);
+    });
+  };
+
+  const canScrollWhatsNewLeft = currentWhatsNewIndex > 0;
+  const canScrollWhatsNewRight =
+    currentWhatsNewIndex < Math.max(0, recentProducts.length - whatsNewVisibleCards);
 
 const getBundleProductHref = (bundle: Bundle): string => {
   if (bundle.products && bundle.products.length > 0) {
@@ -862,111 +894,145 @@ const getBundleProductHref = (bundle: Bundle): string => {
             </p>
           </div>
 
-          {/* Product Grid - 4 Recent Products */}
+          {/* Product Slider - Recent Products */}
           {loadingProducts ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
               {[1, 2, 3, 4].map((i) => (
-                <div 
+                <div
                   key={i}
                   className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
                   style={{
                     aspectRatio: '307/450',
-                    borderRadius: '32px'
+                    borderRadius: '32px',
                   }}
                 />
               ))}
             </div>
           ) : recentProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-              {recentProducts.map((product) => {
-                const productId = product.id || product._id;
-                const productName = getProductName(product);
-                const productImage = getProductImage(product);
-                const productPrice = getProductPrice(product);
-                const nameLines = splitProductName(productName.toUpperCase());
-                
-                return (
-                  <Link 
-                    key={productId}
-                    href={`/product/${productId}`}
-                    className="bg-white relative overflow-hidden w-full cursor-pointer hover:opacity-90 transition-opacity"
-                    style={{
-                      aspectRatio: '307/450'
-                    }}
-                  >
-                    <img 
-                      src={productImage} 
-                      alt={productName}
-                      className="w-full h-full object-cover"
+            <div className="relative mt-12">
+              <button
+                onClick={() => scrollWhatsNewCarousel('left')}
+                disabled={!canScrollWhatsNewLeft}
+                className={`absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-opacity ${canScrollWhatsNewLeft ? 'opacity-100' : 'opacity-30 cursor-not-allowed'}`}
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  transform: 'translate(-75%, -50%)',
+                }}
+                aria-label="Previous product"
+              >
+                <ChevronLeft className="text-black" style={{ width: '24px', height: '24px' }} />
+              </button>
+
+              <button
+                onClick={() => scrollWhatsNewCarousel('right')}
+                disabled={!canScrollWhatsNewRight}
+                className={`absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-opacity ${canScrollWhatsNewRight ? 'opacity-100' : 'opacity-30 cursor-not-allowed'}`}
+                style={{
+                  width: '48px',
+                  height: '48px',
+                  transform: 'translate(75%, -50%)',
+                }}
+                aria-label="Next product"
+              >
+                <ChevronRight className="text-black" style={{ width: '24px', height: '24px' }} />
+              </button>
+
+              <div
+                ref={whatsNewCarouselRef}
+                className="flex gap-6 overflow-x-hidden scroll-smooth pb-2"
+              >
+                {recentProducts.map((product, index) => {
+                  const productId = product.id || product._id || `product-${index}`;
+                  const productName = getProductName(product);
+                  const productImage = getProductImage(product);
+                  const productPrice = getProductPrice(product);
+                  const nameLines = splitProductName(productName.toUpperCase());
+
+                  return (
+                    <Link
+                      key={productId}
+                      href={`/product/${productId}`}
+                      className="flex-shrink-0 bg-white relative overflow-hidden hover:opacity-90 transition-opacity"
                       style={{
-                        borderRadius: '32px'
-                      }}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                      }}
-                    />
-                    <div 
-                      className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                      style={{
-                        height: '60px'
+                        width: 'min(280px, 80vw)',
+                        aspectRatio: '307/450',
                       }}
                     >
-                      <div className="flex flex-col text-left">
-                        <span 
-                          className="uppercase text-white"
-                          style={{
-                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: '13.41px',
-                            lineHeight: '14.6px',
-                            letterSpacing: '0px',
-                            fontWeight: 500
-                          }}
-                        >
-                          {nameLines.line1}
-                        </span>
-                        {nameLines.line2 && (
-                          <span 
+                      <img
+                        src={productImage}
+                        alt={productName}
+                        className="w-full h-full object-cover"
+                        style={{
+                          borderRadius: '32px',
+                        }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                      <div
+                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                        style={{
+                          height: '60px',
+                        }}
+                      >
+                        <div className="flex flex-col text-left">
+                          <span
                             className="uppercase text-white"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                               fontSize: '13.41px',
                               lineHeight: '14.6px',
                               letterSpacing: '0px',
-                              fontWeight: 500
+                              fontWeight: 500,
                             }}
                           >
-                            {nameLines.line2}
+                            {nameLines.line1}
                           </span>
-                        )}
+                          {nameLines.line2 && (
+                            <span
+                              className="uppercase text-white"
+                              style={{
+                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                                fontSize: '13.41px',
+                                lineHeight: '14.6px',
+                                letterSpacing: '0px',
+                                fontWeight: 500,
+                              }}
+                            >
+                              {nameLines.line2}
+                            </span>
+                          )}
+                        </div>
+                        <p
+                          className="text-white font-bold text-right"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '22px',
+                            lineHeight: '26px',
+                            letterSpacing: '0px',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {formatPrice(productPrice)}
+                        </p>
                       </div>
-                      <p 
-                        className="text-white font-bold text-right"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: '22px',
-                          lineHeight: '26px',
-                          letterSpacing: '0px',
-                          fontWeight: 600
-                        }}
-                      >
-                        {formatPrice(productPrice)}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
           ) : (
             <div className="text-center py-12 mt-12">
               <p className="text-gray-500">No recent products available</p>
             </div>
           )}
-          
+
           {/* View All Button - Centered, Styled, and Positioned */}
           {!loadingProducts && recentProducts.length > 0 && (
             <div className="flex justify-center items-center mt-8">
-              <Link 
+              <Link
                 href="/collection"
                 className="bg-black text-white uppercase px-8 py-3 rounded-lg hover:opacity-90 transition-opacity font-medium inline-block"
                 style={{
@@ -975,7 +1041,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
                   letterSpacing: '0.5px',
                   fontWeight: 500,
                   minWidth: '120px',
-                  textAlign: 'center'
+                  textAlign: 'center',
                 }}
               >
                 view all
