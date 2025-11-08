@@ -73,6 +73,10 @@ interface Blog {
   updatedAt: string;
 }
 
+type HeroContent =
+  | { type: 'image'; src: string; alt: string }
+  | { type: 'video'; src: string; alt: string };
+
 const normalizeBlogHref = (blog: Blog): string => {
   const rawUrl = blog.url?.trim()
   if (rawUrl) {
@@ -89,6 +93,7 @@ export default function HomePage() {
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
   const [homepageSettings, setHomepageSettings] = useState<HomepageSettings>({})
+  const [homepageSettingsLoaded, setHomepageSettingsLoaded] = useState(false)
   const [recentProducts, setRecentProducts] = useState<Product[]>([])
   const [loadingProducts, setLoadingProducts] = useState(true)
   const [bundles, setBundles] = useState<Bundle[]>([])
@@ -121,6 +126,8 @@ export default function HomePage() {
         }
       } catch (error) {
         console.error('❌ Failed to fetch homepage images:', error);
+      } finally {
+        setHomepageSettingsLoaded(true);
       }
     };
     fetchHomepageImages();
@@ -387,14 +394,19 @@ const getBundleProductHref = (bundle: Bundle): string => {
 };
 
   // Content for the hero box - can be image or video
-  const heroContent = {
-    type: (homepageSettings.homepageImage1Type || 'image') as 'image' | 'video',
-    imageSrc: homepageSettings.homepageImage1 ? getImageUrl(homepageSettings.homepageImage1) : '/10.png',
-    videoSrc: homepageSettings.homepageImage1 && homepageSettings.homepageImage1Type === 'video' 
-      ? getImageUrl(homepageSettings.homepageImage1) 
-      : '',
-    alt: 'Hero content'
-  }
+  const heroContent: HeroContent | null = homepageSettings.homepageImage1
+    ? {
+        type: homepageSettings.homepageImage1Type === 'video' ? 'video' : 'image',
+        src: getImageUrl(homepageSettings.homepageImage1),
+        alt: 'Hero content'
+      }
+    : homepageSettingsLoaded
+      ? {
+          type: 'image',
+          src: '/10.png',
+          alt: 'Hero content'
+        }
+      : null
 
   // Fetch carousel images from API for MOVE WITH US section
   useEffect(() => {
@@ -544,37 +556,41 @@ const getBundleProductHref = (bundle: Bundle): string => {
           }}
         >
           {/* Image or Video Content */}
-          {heroContent.type === 'image' ? (
-            <Image
-              src={heroContent.imageSrc}
-              alt={heroContent.alt}
-              fill
-              className="object-cover"
-              style={{
-                objectFit: 'cover',
-                objectPosition: 'center center',
-                width: '100%',
-                height: '100%'
-              }}
-              priority
-            />
+          {heroContent ? (
+            heroContent.type === 'image' ? (
+              <Image
+                src={heroContent.src}
+                alt={heroContent.alt}
+                fill
+                className="object-cover"
+                style={{
+                  objectFit: 'cover',
+                  objectPosition: 'center center',
+                  width: '100%',
+                  height: '100%'
+                }}
+                priority
+              />
+            ) : (
+              <video
+                src={heroContent.src}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+                style={{
+                  objectFit: 'cover',
+                  objectPosition: 'center center',
+                  width: '100%',
+                  height: '100%'
+                }}
+              >
+                Your browser does not support the video tag.
+              </video>
+            )
           ) : (
-            <video
-              src={heroContent.videoSrc}
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="w-full h-full object-cover"
-              style={{
-                objectFit: 'cover',
-                objectPosition: 'center center',
-                width: '100%',
-                height: '100%'
-              }}
-            >
-              Your browser does not support the video tag.
-            </video>
+            <div className="w-full h-full bg-gray-100 animate-pulse" />
           )}
         </div>
       </section>
@@ -1492,7 +1508,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
             </div>
           ) : bundles.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-              {bundles.map((bundle) => {
+              {bundles.slice(0, 4).map((bundle) => {
                 const bundleId = bundle.id || bundle._id;
                 const bundleName = bundle.name || 'Bundle';
                 const bundleImage = getBundleImage(bundle);
@@ -1575,26 +1591,6 @@ const getBundleProductHref = (bundle: Bundle): string => {
           ) : (
             <div className="text-center py-12 mt-12">
               <p className="text-gray-500">No bundles available</p>
-            </div>
-          )}
-
-          {/* View All Bundles Button */}
-          {!loadingBundles && bundles.length > 0 && (
-            <div className="flex justify-center items-center mt-8">
-              <Link 
-                href="/product"
-                className="bg-black text-white uppercase px-8 py-3 rounded-lg hover:opacity-90 transition-opacity font-medium inline-block"
-                style={{
-                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: '14px',
-                  letterSpacing: '0.5px',
-                  fontWeight: 500,
-                  minWidth: '120px',
-                  textAlign: 'center'
-                }}
-              >
-                view all bundles
-              </Link>
             </div>
           )}
         </div>

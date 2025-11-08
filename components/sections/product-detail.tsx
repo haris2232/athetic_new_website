@@ -17,6 +17,39 @@ import { submitForm } from "@/lib/api"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew';
 
+interface BundleProduct {
+  _id?: string;
+  id?: string;
+  name?: string;
+  title?: string;
+  price?: string | number;
+  basePrice?: number;
+  image?: string;
+  images?: string[];
+  slug?: string;
+}
+
+interface Bundle {
+  _id?: string;
+  id?: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  products?: BundleProduct[];
+  originalPrice?: number | string;
+  bundlePrice?: number | string;
+  bundleType?: string;
+  category?: 'men' | 'women' | 'mixed';
+  startDate?: string;
+  endDate?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  image?: string;
+  images?: string[];
+}
+
+type ProductCardItem = BundleProduct;
+
 const getFullImageUrl = (url: string | undefined): string => {
   if (!url) {
       return "/placeholder.svg";
@@ -55,6 +88,10 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [submitMessage, setSubmitMessage] = useState('')
   const [zoomImage, setZoomImage] = useState<string | null>(null)
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false)
+  const [bundles, setBundles] = useState<Bundle[]>([])
+  const [loadingBundles, setLoadingBundles] = useState(true)
+  const [recommendedProducts, setRecommendedProducts] = useState<ProductCardItem[]>([])
+  const [loadingRecommended, setLoadingRecommended] = useState(true)
 
   // Use dynamic color options from product
   const colorOptions = product.colors || [
@@ -139,6 +176,130 @@ export default function ProductDetail({ product }: { product: Product }) {
   const discountAmount = (currentPrice * (product.discountPercentage || 0)) / 100;
   const finalPrice = currentPrice - discountAmount;
 
+  const remainingBundles = bundles.slice(4);
+
+  const splitBundleName = (name: string): { line1: string; line2?: string } => {
+    const words = name?.trim().split(/\s+/) ?? [];
+    if (words.length === 0) {
+      return { line1: '' };
+    }
+    const midpoint = Math.ceil(words.length / 2);
+    return {
+      line1: words.slice(0, midpoint).join(' '),
+      line2: words.slice(midpoint).join(' ') || undefined,
+    };
+  };
+
+  const getBundlePriceValue = (bundle: Bundle): number => {
+    const price = bundle.bundlePrice ?? bundle.originalPrice ?? 0;
+    if (typeof price === 'number') return price;
+    if (typeof price === 'string') {
+      const numeric = parseFloat(price.replace(/[^0-9.]/g, ''));
+      return Number.isFinite(numeric) ? numeric : 0;
+    }
+    return 0;
+  };
+
+  const getBundleImage = (bundle: Bundle): string => {
+    if (bundle.image) return getFullImageUrl(bundle.image);
+    if (bundle.images && bundle.images.length > 0) return getFullImageUrl(bundle.images[0]);
+    const firstProduct = bundle.products && bundle.products.length > 0 ? bundle.products[0] : undefined;
+    if (firstProduct) {
+      if (firstProduct.image) return getFullImageUrl(firstProduct.image);
+      if (firstProduct.images && firstProduct.images.length > 0) return getFullImageUrl(firstProduct.images[0]);
+    }
+    return "/placeholder.svg";
+  };
+
+  const getBundleProductHref = (bundle: Bundle): string => {
+    if (bundle.products && bundle.products.length > 0) {
+      const firstProduct = bundle.products[0];
+      const slugOrId = firstProduct.slug || firstProduct._id || firstProduct.id;
+      if (slugOrId) {
+        return `/product/${slugOrId}`;
+      }
+    }
+    const slugOrId = bundle.id || bundle._id;
+    if (slugOrId) {
+      return `/product/${slugOrId}`;
+    }
+    return '/product';
+  };
+
+const parsePriceToNumber = (price: string | number | undefined, fallback?: number): number => {
+  if (typeof price === 'number' && Number.isFinite(price)) {
+    return price;
+  }
+  if (typeof price === 'string') {
+    const numeric = parseFloat(price.replace(/[^0-9.]/g, ''));
+    if (Number.isFinite(numeric)) {
+      return numeric;
+    }
+  }
+  if (typeof fallback === 'number' && Number.isFinite(fallback)) {
+    return fallback;
+  }
+  return 0;
+};
+
+const getProductCardPrice = (item: ProductCardItem): number => {
+  return parsePriceToNumber(item.price, item.basePrice);
+};
+
+const getProductCardImage = (item: ProductCardItem): string => {
+  if (item.image) return getFullImageUrl(item.image);
+  if (item.images && item.images.length > 0) return getFullImageUrl(item.images[0]);
+  return "/placeholder.svg";
+};
+
+const getProductCardHref = (item: ProductCardItem): string => {
+  const slugOrId = (item as any).slug || item.id || item._id;
+  if (slugOrId) {
+    return `/product/${slugOrId}`;
+  }
+  return '/product';
+};
+
+const getProductCardId = (item: ProductCardItem): string | undefined => {
+  return (item.id || item._id) ?? undefined;
+};
+
+const getProductCardKey = (item: ProductCardItem): string => {
+  const id = getProductCardId(item);
+  if (id) {
+    return id;
+  }
+  const name = (item.name || item.title || 'product').toLowerCase();
+  return `${name}-${getProductCardImage(item)}`;
+};
+
+const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/products/public${queryString}`);
+    if (!response.ok) {
+      console.error('Error fetching products list:', response.status, response.statusText);
+      return [];
+    }
+
+    const data = await response.json();
+    if (data?.success && Array.isArray(data.data)) {
+      return data.data;
+    }
+    if (Array.isArray(data?.data)) {
+      return data.data;
+    }
+    if (Array.isArray(data)) {
+      return data;
+    }
+
+    console.warn('Unexpected products response format', data);
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch products list:', error);
+    return [];
+  }
+};
+
   // Set highlighted product for current product (if it has highlight image)
   useEffect(() => {
     console.log('Product highlight check:', {
@@ -156,6 +317,91 @@ export default function ProductDetail({ product }: { product: Product }) {
       })
     }
   }, [product.highlightImage, product.id, product.name])
+
+  useEffect(() => {
+    const fetchBundles = async () => {
+      try {
+        setLoadingBundles(true)
+        const response = await fetch(`${API_BASE_URL}/api/bundles/public/active`)
+        if (!response.ok) {
+          console.error('Error fetching bundles:', response.status, response.statusText)
+          return
+        }
+
+        const data = await response.json()
+        let bundlesArray: Bundle[] = []
+
+        if (data?.success && Array.isArray(data.data)) {
+          bundlesArray = data.data
+        } else if (Array.isArray(data?.data)) {
+          bundlesArray = data.data
+        } else if (Array.isArray(data)) {
+          bundlesArray = data
+        } else {
+          console.warn('Unexpected bundles response format', data)
+        }
+
+        const activeBundles = bundlesArray.filter((bundle) => bundle.isActive !== false)
+        setBundles(activeBundles)
+      } catch (error) {
+        console.error('Failed to fetch bundles:', error)
+      } finally {
+        setLoadingBundles(false)
+      }
+    }
+
+    fetchBundles()
+  }, [])
+
+  useEffect(() => {
+    const fetchRecommended = async () => {
+      try {
+        setLoadingRecommended(true)
+
+        const currentProductId = product.id || (product as any)._id
+        const seenKeys = new Set<string>()
+
+        const primaryQuery = product.category ? `?category=${encodeURIComponent(product.category)}` : ''
+        const primaryProducts = await fetchProductList(primaryQuery)
+        const recommendations: ProductCardItem[] = []
+
+        const addUniqueProducts = (items: ProductCardItem[]) => {
+          items.forEach((item) => {
+            const candidateId = getProductCardId(item)
+            if (candidateId && candidateId === currentProductId) {
+              return
+            }
+
+            const key = getProductCardKey(item)
+            if (!seenKeys.has(key)) {
+              seenKeys.add(key)
+              recommendations.push(item)
+            }
+          })
+        }
+
+        addUniqueProducts(primaryProducts)
+
+        if (recommendations.length < 4) {
+          const fallbackProducts = await fetchProductList()
+          addUniqueProducts(fallbackProducts)
+        }
+
+        if (recommendations.length < 4 && primaryProducts.length > 0) {
+          addUniqueProducts(primaryProducts)
+        }
+
+        setRecommendedProducts(recommendations.slice(0, 4))
+      } catch (error) {
+        console.error('Failed to fetch recommended products:', error)
+        setRecommendedProducts([])
+      } finally {
+        setLoadingRecommended(false)
+      }
+    }
+
+    fetchRecommended()
+  }, [product.category, product.id, (product as any)._id])
 
   // Fetch dynamic products for Shop the Look, Carousel, and Highlighted Products
   useEffect(() => {
@@ -1057,7 +1303,6 @@ export default function ProductDetail({ product }: { product: Product }) {
                       ))}
                     </ul>
                   )}
-
                   {careItems.length > 0 && (
                     <div>
                       <h4
@@ -1095,7 +1340,6 @@ export default function ProductDetail({ product }: { product: Product }) {
                 </div>
                       </div>
                       </div>
-
             {/* Column 3: REVIEWS */}
             <div className="space-y-3">
               <h2
@@ -1162,14 +1406,11 @@ export default function ProductDetail({ product }: { product: Product }) {
                 </Link>
               )}
             </div>
-
           </div>
-
           {/* Bottom Horizontal Line */}
           <div className="border-t border-black mt-4"></div>
                         </div>
       </section>
-
       {/* Bundles Section - Figma Design */}
       <section className="bg-white text-[#212121] py-8">
         <div className="container mx-auto px-4 max-w-[1250px]">
@@ -1202,69 +1443,101 @@ export default function ProductDetail({ product }: { product: Product }) {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-            {[1, 2, 3, 4].map((idx) => (
-              <div 
-                key={idx}
-                className="bg-white relative overflow-hidden w-full"
-                style={{
-                  aspectRatio: '307/450'
-                }}
-              >
-                <img 
-                  src={`/${idx + 2}.png`} 
-                  alt="Bundle Product" 
-                  className="w-full h-full object-cover"
+            {loadingBundles ? (
+              [1, 2, 3, 4].map((idx) => (
+                <div
+                  key={`bundle-skeleton-${idx}`}
+                  className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
                   style={{
+                    aspectRatio: '307/450',
                     borderRadius: '32px'
                   }}
                 />
-                <div 
-                  className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                  style={{
-                    height: '60px'
-                  }}
-                >
-                  <div className="flex flex-col text-left">
-                    <span 
-                      className="uppercase text-white"
-                      style={{
-                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                        fontSize: '13.41px',
-                        lineHeight: '14.6px',
-                        letterSpacing: '0px',
-                        fontWeight: 500
-                      }}
-                    >
-                      LORIUM IPSUM DOLOR
-                    </span>
-                    <span 
-                      className="uppercase text-white"
-                      style={{
-                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                        fontSize: '13.41px',
-                        lineHeight: '14.6px',
-                        letterSpacing: '0px',
-                        fontWeight: 500
-                      }}
-                    >
-                      SIT DE VENUM
-                    </span>
-                            </div>
-                  <p 
-                    className="text-white font-bold text-right"
+              ))
+            ) : remainingBundles.length > 0 ? (
+              remainingBundles.map((bundle) => {
+                const bundleName = (bundle.name || bundle.title || 'Bundle').toUpperCase();
+                const nameLines = splitBundleName(bundleName);
+                const bundlePrice = getBundlePriceValue(bundle);
+                const bundleImage = getBundleImage(bundle);
+                const bundleHref = getBundleProductHref(bundle);
+
+                return (
+                  <Link
+                    key={bundle._id || bundle.id || bundle.name}
+                    href={bundleHref}
+                    className="bg-white relative overflow-hidden w-full"
                     style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '22px',
-                      lineHeight: '26px',
-                      letterSpacing: '0px',
-                      fontWeight: 600
+                      aspectRatio: '307/450'
                     }}
                   >
-                    AED 59
-                  </p>
-                          </div>
-                        </div>
-            ))}
+                    <img
+                      src={bundleImage}
+                      alt={bundle.name || 'Bundle Product'}
+                      className="w-full h-full object-cover"
+                      style={{
+                        borderRadius: '32px'
+                      }}
+                      onError={(event) => {
+                        const target = event.target as HTMLImageElement;
+                        target.src = '/placeholder.svg';
+                      }}
+                    />
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                      style={{
+                        height: '60px'
+                      }}
+                    >
+                      <div className="flex flex-col text-left">
+                        <span 
+                          className="uppercase text-white"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '13.41px',
+                            lineHeight: '14.6px',
+                            letterSpacing: '0px',
+                            fontWeight: 500
+                          }}
+                        >
+                          {nameLines.line1}
+                        </span>
+                        {nameLines.line2 && (
+                          <span 
+                            className="uppercase text-white"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: '13.41px',
+                              lineHeight: '14.6px',
+                              letterSpacing: '0px',
+                              fontWeight: 500
+                            }}
+                          >
+                            {nameLines.line2}
+                          </span>
+                        )}
+                      </div>
+                      <p 
+                        className="text-white font-bold text-right"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: '22px',
+                          lineHeight: '26px',
+                          letterSpacing: '0px',
+                          fontWeight: 600
+                        }}
+                      >
+                        {formatCurrency(bundlePrice)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">No additional bundles available right now.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -1563,253 +1836,102 @@ export default function ProductDetail({ product }: { product: Product }) {
 
           {/* Product Grid - 4 Products */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-            {/* Product 1 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/3.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                  <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                  </div>
-                <p 
-                  className="text-white font-bold text-right"
+            {loadingRecommended ? (
+              [1, 2, 3, 4].map((idx) => (
+                <div
+                  key={`recommended-skeleton-${idx}`}
+                  className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
                   style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
+                    aspectRatio: '307/450',
+                    borderRadius: '32px'
                   }}
-                >
-                  AED 59
-                </p>
-                </div>
-              </div>
+                />
+              ))
+            ) : recommendedProducts.length > 0 ? (
+              recommendedProducts.map((item) => {
+                const productName = (item.name || item.title || 'Product').toUpperCase()
+                const nameLines = splitBundleName(productName)
+                const priceValue = getProductCardPrice(item)
+                const productHref = getProductCardHref(item)
+                const productImage = getProductCardImage(item)
+                const productId = getProductCardId(item) || productName
 
-            {/* Product 2 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/4.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
+                return (
+                  <Link
+                    key={productId}
+                    href={productHref}
+                    className="bg-white relative overflow-hidden w-full"
                     style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
+                      aspectRatio: '307/450'
                     }}
                   >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-          </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-        </div>
-            </div>
-
-            {/* Product 3 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/5.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
+                    <img
+                      src={productImage}
+                      alt={item.name || item.title || 'Product'}
+                      className="w-full h-full object-cover"
+                      style={{
+                        borderRadius: '32px'
+                      }}
+                      onError={(event) => {
+                        const target = event.target as HTMLImageElement;
+                        target.src = '/placeholder.svg';
+                      }}
+                    />
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                      style={{
+                        height: '60px'
+                      }}
+                    >
+                      <div className="flex flex-col text-left">
+                        <span 
+                          className="uppercase text-white"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '13.41px',
+                            lineHeight: '14.6px',
+                            letterSpacing: '0px',
+                            fontWeight: 500
+                          }}
+                        >
+                          {nameLines.line1}
+                        </span>
+                        {nameLines.line2 && (
+                          <span 
+                            className="uppercase text-white"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: '13.41px',
+                              lineHeight: '14.6px',
+                              letterSpacing: '0px',
+                              fontWeight: 500
+                            }}
+                          >
+                            {nameLines.line2}
+                          </span>
+                        )}
+                      </div>
+                      <p 
+                        className="text-white font-bold text-right"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: '22px',
+                          lineHeight: '26px',
+                          letterSpacing: '0px',
+                          fontWeight: 600
+                        }}
+                      >
+                        {formatCurrency(priceValue)}
+                      </p>
+                    </div>
+                  </Link>
+                )
+              })
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">No recommendations available right now.</p>
               </div>
-            </div>
-
-            {/* Product 4 */}
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
-                src="/6.png" 
-                alt="Product" 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    LORIUM IPSUM DOLOR
-                  </span>
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                    SIT DE VENUM
-                  </span>
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                  AED 59
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
