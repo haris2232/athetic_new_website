@@ -17,6 +17,7 @@ export interface Product {
   isOnSale?: boolean
   isProductHighlight?: boolean
   highlightImage?: string
+  sizeGuideImage?: string
   colors?: Array<{
     name: string;
     hex?: string;

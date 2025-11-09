@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -64,6 +64,18 @@ const getFullImageUrl = (url: string | undefined): string => {
   return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
 };
 
+const DEFAULT_COMMUNITY_HIGHLIGHTS = [
+  "/10.png",
+  "/11.png",
+  "/12.png",
+  "/13.png",
+  "/10.png",
+  "/11.png",
+  "/12.png",
+  "/13.png",
+  "/10.png",
+];
+
 export default function ProductDetail({ product }: { product: Product }) {
   const { addToCart, showNotification, cartItems } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
@@ -92,6 +104,9 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [loadingBundles, setLoadingBundles] = useState(true)
   const [recommendedProducts, setRecommendedProducts] = useState<ProductCardItem[]>([])
   const [loadingRecommended, setLoadingRecommended] = useState(true)
+  const [communityHighlights, setCommunityHighlights] = useState<string[]>(DEFAULT_COMMUNITY_HIGHLIGHTS)
+  const hasSizeGuideImage = Boolean(product.sizeGuideImage)
+  const sizeGuideImagePath = hasSizeGuideImage ? product.sizeGuideImage! : ""
 
   // Use dynamic color options from product
   const colorOptions = product.colors || [
@@ -275,7 +290,7 @@ const getProductCardKey = (item: ProductCardItem): string => {
 
 const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/products/public${queryString}`);
+    const response = await fetch(`${API_BASE_URL}/products/public/all${queryString}`);
     if (!response.ok) {
       console.error('Error fetching products list:', response.status, response.statusText);
       return [];
@@ -516,6 +531,28 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
 
     fetchDynamicProducts()
   }, [product.id])
+
+  useEffect(() => {
+    const fetchCommunityHighlights = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/settings/public`)
+        if (response.ok) {
+          const data = await response.json()
+          const settingsData = data?.data && typeof data.data === "object" ? data.data : data
+          const images = DEFAULT_COMMUNITY_HIGHLIGHTS.map((fallback, index) => {
+            const field = `communityHighlight${index + 1}` as const
+            const value = settingsData?.[field]
+            return value ? getFullImageUrl(value) : fallback
+          })
+          setCommunityHighlights(images)
+        }
+      } catch (error) {
+        console.error("Failed to fetch community highlights:", error)
+      }
+    }
+
+    fetchCommunityHighlights()
+  }, [])
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) => ({
@@ -953,20 +990,34 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   </button>
                     ))}
                 </div>
-                  <div className="flex items-center gap-2 cursor-pointer" style={{ flexWrap: 'nowrap' }}>
-                    <span 
-                      className="uppercase text-black whitespace-nowrap"
-                      style={{
-                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                        fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
-                        fontWeight: 600,
-                        lineHeight: '1'
+                  {hasSizeGuideImage && (
+                    <div
+                      className="flex items-center gap-2 cursor-pointer"
+                      style={{ flexWrap: 'nowrap' }}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setIsSizeGuideOpen(true)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          setIsSizeGuideOpen(true)
+                        }
                       }}
                     >
-                      SIZE CHART
-                    </span>
-                    <Package className="h-4 w-4 text-black flex-shrink-0" />
-              </div>
+                      <span
+                        className="uppercase text-black whitespace-nowrap"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(12px, 1.2vw, 14px)',
+                          fontWeight: 600,
+                          lineHeight: '1'
+                        }}
+                      >
+                        SIZE CHART
+                      </span>
+                      <Package className="h-4 w-4 text-black flex-shrink-0" />
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1594,7 +1645,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               }}
             >
               <Image
-                src="/10.png"
+                src={communityHighlights[0] || DEFAULT_COMMUNITY_HIGHLIGHTS[0]}
                 alt="Community Highlight"
                 fill
                 className="object-cover rounded-[24px]"
@@ -1615,7 +1666,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               }}
             >
               <Image
-                src="/11.png"
+                src={communityHighlights[1] || DEFAULT_COMMUNITY_HIGHLIGHTS[1]}
                 alt="Community Highlight"
                 fill
                 className="object-cover rounded-[24px]"
@@ -1636,7 +1687,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               }}
             >
               <Image
-                src="/12.png"
+                src={communityHighlights[2] || DEFAULT_COMMUNITY_HIGHLIGHTS[2]}
                 alt="Community Highlight"
                 fill
                 className="object-cover rounded-[24px]"
@@ -1657,7 +1708,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               }}
             >
               <Image
-                src="/13.png"
+                src={communityHighlights[3] || DEFAULT_COMMUNITY_HIGHLIGHTS[3]}
                 alt="Community Highlight"
                 fill
                 className="object-cover rounded-[24px]"
@@ -1679,7 +1730,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               }}
             >
               <Image
-                src="/10.png"
+                src={communityHighlights[4] || DEFAULT_COMMUNITY_HIGHLIGHTS[4]}
                 alt="Community Highlight"
                 fill
                 className="object-cover rounded-[24px]"
@@ -1702,7 +1753,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               }}
             >
               <Image
-                src="/11.png"
+                src={communityHighlights[5] || DEFAULT_COMMUNITY_HIGHLIGHTS[5]}
                 alt="Community Highlight"
                 fill
                 className="object-cover rounded-[24px]"
@@ -1723,7 +1774,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               }}
             >
               <Image
-                src="/12.png"
+                src={communityHighlights[6] || DEFAULT_COMMUNITY_HIGHLIGHTS[6]}
                 alt="Community Highlight"
                 fill
                 className="object-cover rounded-[24px]"
@@ -1744,7 +1795,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               }}
             >
               <Image
-                src="/13.png"
+                src={communityHighlights[7] || DEFAULT_COMMUNITY_HIGHLIGHTS[7]}
                 alt="Community Highlight"
                 fill
                 className="object-cover rounded-[24px]"
@@ -1765,7 +1816,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               }}
             >
               <Image
-                src="/10.png"
+                src={communityHighlights[8] || DEFAULT_COMMUNITY_HIGHLIGHTS[8]}
                 alt="Community Highlight"
                 fill
                 className="object-cover rounded-[24px]"
@@ -1778,22 +1829,25 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
 
           {/* Mobile simple grid */}
           <div className="grid md:hidden grid-cols-2 gap-4">
-            {[10, 11, 12, 13, 10, 11, 12, 13].map((imgIdx, i) => (
-              <div
-                key={i}
-                className="rounded-[24px] aspect-square relative overflow-hidden bg-gray-300"
-              >
-                <Image
-                  src={`/${imgIdx}.png`}
-                  alt="Community Highlight"
-                  fill
-                  className="object-cover rounded-[24px]"
-                  style={{
-                    objectPosition: 'center top' // Face fully visible from top
-                  }}
-                />
-              </div>
-            ))}
+            {communityHighlights
+              .concat(communityHighlights)
+              .slice(0, 8)
+              .map((imgUrl, i) => (
+                <div
+                  key={i}
+                  className="rounded-[24px] aspect-square relative overflow-hidden bg-gray-300"
+                >
+                  <Image
+                    src={imgUrl || DEFAULT_COMMUNITY_HIGHLIGHTS[i % DEFAULT_COMMUNITY_HIGHLIGHTS.length]}
+                    alt="Community Highlight"
+                    fill
+                    className="object-cover rounded-[24px]"
+                    style={{
+                      objectPosition: 'center top' // Face fully visible from top
+                    }}
+                  />
+                </div>
+              ))}
           </div>
         </div>
       </section>
@@ -1967,7 +2021,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
       )}
 
       {/* Size Guide Modal */}
-      {isSizeGuideOpen && (product as any).sizeGuideImage && (
+      {isSizeGuideOpen && hasSizeGuideImage && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setIsSizeGuideOpen(false)}>
           <div className="relative max-w-2xl max-h-[90vh] w-full bg-white rounded-lg p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
             <button
@@ -1979,7 +2033,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             <h2 className="text-xl font-bold text-center mb-4 text-gray-800">Size Guide</h2>
             <div className="relative rounded-lg overflow-auto max-h-[75vh]">
               <Image
-                src={getFullImageUrl((product as any).sizeGuideImage)}
+                src={getFullImageUrl(sizeGuideImagePath)}
                 alt="Product size guide"
                 width={800}
                 height={1200}

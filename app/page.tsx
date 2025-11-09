@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, type WheelEvent } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import Header from "@/components/layout/header"
@@ -61,6 +61,7 @@ interface Category {
   isActive: boolean;
   displaySection?: string;
   sectionOrder?: number;
+  createdAt?: string;
 }
 
 interface Blog {
@@ -68,6 +69,7 @@ interface Blog {
   adminName: string;
   url: string;
   content: string;
+  coverImage?: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -97,8 +99,6 @@ export default function HomePage() {
   const [recentProducts, setRecentProducts] = useState<Product[]>([])
   const [loadingProducts, setLoadingProducts] = useState(true)
   const whatsNewCarouselRef = useRef<HTMLDivElement>(null)
-  const [currentWhatsNewIndex, setCurrentWhatsNewIndex] = useState(0)
-  const whatsNewVisibleCards = 4
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [loadingBundles, setLoadingBundles] = useState(true)
   const [categories, setCategories] = useState<Category[]>([])
@@ -193,21 +193,19 @@ export default function HomePage() {
         const response = await fetch(`${API_BASE_URL}/categories`);
         if (response.ok) {
           const data = await response.json();
-          // Filter only active categories that match the 4 main categories
-          const mainCategoryNames = ['Men', 'Women', 'New Arrivals', 'Sets'];
           if (data.data && Array.isArray(data.data)) {
-            const filteredCategories = data.data
-              .filter((cat: Category) => 
-                cat.isActive && mainCategoryNames.includes(cat.name)
-              )
+            const activeCategories = data.data
+              .filter((cat: Category) => cat.isActive)
               .sort((a: Category, b: Category) => {
-                // Sort by predefined order
-                const orderA = mainCategoryNames.indexOf(a.name);
-                const orderB = mainCategoryNames.indexOf(b.name);
-                return orderA - orderB;
+                const orderA = typeof a.sectionOrder === 'number' ? a.sectionOrder : Number.MAX_SAFE_INTEGER;
+                const orderB = typeof b.sectionOrder === 'number' ? b.sectionOrder : Number.MAX_SAFE_INTEGER;
+                if (orderA !== orderB) return orderA - orderB;
+                const createdA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                const createdB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                return createdB - createdA;
               })
-              .slice(0, 4); // Limit to 4 categories
-            setCategories(filteredCategories);
+              .slice(0, 4);
+            setCategories(activeCategories);
           }
         }
       } catch (error) {
@@ -362,15 +360,23 @@ export default function HomePage() {
     if (name === 'women') return '/categories?gender=women';
     if (name === 'new arrivals') return '/categories/new-arrivals';
     if (name === 'sets') return '/categories/sets';
-    return '/categories';
+    const slug = name.trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || category._id;
+    return `/categories/${slug}`;
   };
 
   // Helper function to format category name for display
   const formatCategoryName = (name: string): { line1: string; line2?: string } => {
-    if (name === 'New Arrivals') {
-      return { line1: 'NEW', line2: 'ARRIVALS' };
+    const words = name.trim().toUpperCase().split(/\s+/);
+    if (words.length === 1) {
+      return { line1: words[0] };
     }
-    return { line1: name.toUpperCase() };
+    if (words.length === 2) {
+      return { line1: words[0], line2: words[1] };
+    }
+    return {
+      line1: words.slice(0, 2).join(' '),
+      line2: words.slice(2).join(' ')
+    };
   };
 
   // Helper function to get bundle image
@@ -385,34 +391,15 @@ export default function HomePage() {
     return '/placeholder.svg';
   };
 
-  const scrollWhatsNewCarousel = (direction: 'left' | 'right') => {
+  const handleWhatsNewWheel = (event: WheelEvent<HTMLDivElement>) => {
     if (!whatsNewCarouselRef.current) return;
 
-    const gap = 24; // matches tailwind gap-6
-    const cardWidth = 307; // matches aspect ratio width used in styles
-    const scrollAmount = cardWidth + gap;
-    const newScroll =
-      direction === 'left'
-        ? Math.max(0, whatsNewCarouselRef.current.scrollLeft - scrollAmount)
-        : whatsNewCarouselRef.current.scrollLeft + scrollAmount;
-
-    whatsNewCarouselRef.current.scrollTo({
-      left: newScroll,
+    event.preventDefault();
+    whatsNewCarouselRef.current.scrollBy({
+      left: event.deltaY + event.deltaX,
       behavior: 'smooth',
     });
-
-    setCurrentWhatsNewIndex((prev) => {
-      const maxIndex = Math.max(0, recentProducts.length - whatsNewVisibleCards);
-      if (direction === 'left') {
-        return Math.max(0, prev - 1);
-      }
-      return Math.min(maxIndex, prev + 1);
-    });
   };
-
-  const canScrollWhatsNewLeft = currentWhatsNewIndex > 0;
-  const canScrollWhatsNewRight =
-    currentWhatsNewIndex < Math.max(0, recentProducts.length - whatsNewVisibleCards);
 
 const getBundleProductHref = (bundle: Bundle): string => {
   if (bundle.products && bundle.products.length > 0) {
@@ -430,8 +417,8 @@ const getBundleProductHref = (bundle: Bundle): string => {
     ? {
         type: homepageSettings.homepageImage1Type === 'video' ? 'video' : 'image',
         src: getImageUrl(homepageSettings.homepageImage1),
-        alt: 'Hero content'
-      }
+    alt: 'Hero content'
+  }
     : homepageSettingsLoaded
       ? {
           type: 'image',
@@ -559,72 +546,76 @@ const getBundleProductHref = (bundle: Bundle): string => {
 
         {/* Hero Box - Below the text (Exact Figma Properties) */}
         <div 
-          className="bg-white relative mx-auto overflow-hidden"
-          style={{
-            // Position - Exact Figma Properties
-            position: 'relative',
-            marginLeft: 'clamp(20px, 2.8vw, 55px)', // Desktop: X: 55
-            marginTop: 'clamp(20px, 4vw, 40px)', // Spacing after text
-            marginRight: 'clamp(20px, 2.8vw, 55px)', // Ensure right margin
-            
-            // Dimensions - Exact Figma Properties - Adjusted to prevent overflow
-            width: 'clamp(90vw, calc(100vw - 110px), 1311px)', // Desktop: 1311px, max width with margins
-            maxWidth: '1311px', // Prevent overflow
-            height: 'clamp(300px, 50vw, 645px)', // Desktop: 645px
-            minHeight: 'clamp(300px, 50vw, 645px)',
-            
-            // Appearance - Exact Figma Properties
-            opacity: 1,
-            borderRadius: '0px',
-            
-            // Fill Pattern - Exact Figma Properties (will be behind image/video)
-            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-            backgroundPosition: '0 0',
-            backgroundColor: '#FFFFFF',
-            
-            // Rotation
-            transform: 'rotate(0deg)'
-          }}
-        >
-          {/* Image or Video Content */}
-          {heroContent ? (
-            heroContent.type === 'image' ? (
-              <Image
-                src={heroContent.src}
-                alt={heroContent.alt}
-                fill
-                className="object-cover"
-                style={{
-                  objectFit: 'cover',
-                  objectPosition: 'center center',
-                  width: '100%',
-                  height: '100%'
-                }}
-                priority
-              />
-            ) : (
-              <video
-                src={heroContent.src}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="w-full h-full object-cover"
-                style={{
-                  objectFit: 'cover',
-                  objectPosition: 'center center',
-                  width: '100%',
-                  height: '100%'
-                }}
-              >
-                Your browser does not support the video tag.
-              </video>
-            )
-          ) : (
-            <div className="w-full h-full bg-gray-100 animate-pulse" />
-          )}
-        </div>
+           className="bg-white relative mx-auto overflow-hidden"
+           style={{
+             // Position - Exact Figma Properties
+             position: 'relative',
+             marginTop: 'clamp(20px, 4vw, 40px)', // Spacing after text
+             marginLeft: 'auto',
+             marginRight: 'auto',
+ 
+             // Dimensions - Exact Figma Properties - Adjusted to prevent overflow
+             width: 'clamp(90vw, calc(100vw - 110px), 1311px)', // Desktop: 1311px, max width with margins
+             maxWidth: '1311px', // Prevent overflow
+             height: 'clamp(300px, 50vw, 645px)', // Desktop: 645px
+             minHeight: 'clamp(300px, 50vw, 645px)',
+ 
+             // Appearance - Exact Figma Properties
+             opacity: 1,
+             borderRadius: '0px',
+ 
+             // Fill Pattern - Exact Figma Properties (will be behind image/video)
+             backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)',
+             backgroundSize: '24px 24px',
+             backgroundPosition: '0 0',
+             backgroundColor: '#FFFFFF',
+ 
+             // Rotation
+             transform: 'rotate(0deg)'
+           }}
+         >
+           {/* Image or Video Content */}
+           {heroContent ? (
+             heroContent.type === 'image' ? (
+               <div className="relative w-full h-full">
+                 <Image
+                   src={heroContent.src}
+                   alt={heroContent.alt}
+                   fill
+                   className="object-cover"
+                   style={{
+                     objectFit: 'cover',
+                     objectPosition: 'center center',
+                     width: '100%',
+                     height: '100%'
+                   }}
+                   priority
+                 />
+               </div>
+             ) : (
+               <div className="relative w-full h-full">
+                 <video
+                   src={heroContent.src}
+                   autoPlay
+                   loop
+                   muted
+                   playsInline
+                   className="w-full h-full object-cover"
+                   style={{
+                     objectFit: 'cover',
+                     objectPosition: 'center center',
+                     width: '100%',
+                     height: '100%'
+                   }}
+                 >
+                   Your browser does not support the video tag.
+                 </video>
+               </div>
+             )
+           ) : (
+             <div className="w-full h-full bg-gray-100 animate-pulse" />
+           )}
+         </div>
       </section>
 
       {/* Section 2: DISCOVER YOUR FIT - Subtitle below heading */}
@@ -677,192 +668,151 @@ const getBundleProductHref = (bundle: Bundle): string => {
               ))}
             </div>
           ) : categories.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-              {categories.map((category) => {
-                const categoryName = formatCategoryName(category.name);
-                const categoryImage = getImageUrl(category.image || category.carouselImage || '/6.png');
-                
-                return (
-                  <Link
-                    key={category._id}
-                    href={getCategoryUrl(category)}
-                    className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                    style={{
-                      position: 'relative',
-                      left: '0',
-                      marginTop: '0',
-                      width: '100%',
-                      maxWidth: '100%',
-                      aspectRatio: '642/230',
-                      opacity: 1,
-                      borderRadius: 'clamp(16px, 2vw, 32px)',
-                      backgroundImage: categoryImage ? `url(${categoryImage})` : 'url(/6.png)',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center top',
-                      backgroundRepeat: 'no-repeat',
-                      backgroundColor: '#E0E0E0',
-                      transform: 'rotate(0deg)',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
-                      {categoryName.line2 ? (
-                        <div className="z-10">
-                          <h3
-                            className="text-white uppercase"
-                            style={{
-                              fontFamily: "'Bebas Neue', sans-serif",
-                              fontSize: 'clamp(32px, 4.5vw, 65.01px)',
-                              fontWeight: 400,
-                              lineHeight: 'clamp(28px, 4vw, 58px)',
-                              letterSpacing: '0px',
-                              color: '#FFFFFF',
-                              opacity: 1,
-                              borderRadius: '0px',
-                              textAlign: 'left',
-                              position: 'relative',
-                              margin: '0',
-                              padding: '0',
-                              marginBottom: 'clamp(4px, 0.5vw, 8px)',
-                              textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-                            }}
-                          >
-                            {categoryName.line1}
-                          </h3>
-                          <h3
-                            className="text-white uppercase"
-                            style={{
-                              fontFamily: "'Bebas Neue', sans-serif",
-                              fontSize: 'clamp(32px, 4.5vw, 65.01px)',
-                              fontWeight: 400,
-                              lineHeight: 'clamp(28px, 4vw, 58px)',
-                              letterSpacing: '0px',
-                              color: '#FFFFFF',
-                              opacity: 1,
-                              borderRadius: '0px',
-                              textAlign: 'left',
-                              position: 'relative',
-                              margin: '0',
-                              padding: '0',
-                              textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-                            }}
-                          >
-                            {categoryName.line2}
-                          </h3>
-                        </div>
-                      ) : (
-                        <h3
-                          className="text-white uppercase z-10"
-                          style={{
-                            fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 'clamp(32px, 4.5vw, 65.01px)',
-                            fontWeight: 400,
-                            lineHeight: 'clamp(28px, 4vw, 58px)',
-                            letterSpacing: '0px',
-                            color: '#FFFFFF',
-                            opacity: 1,
-                            borderRadius: '0px',
-                            textAlign: 'left',
-                            position: 'relative',
-                            left: '0',
-                            top: '0',
-                            margin: '0',
-                            padding: '0',
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-                          }}
-                        >
-                          {categoryName.line1}
-                        </h3>
-                      )}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+               {categories.map((category) => {
+                 const categoryName = formatCategoryName(category.name);
+                 const categoryImage = getImageUrl(category.image || category.carouselImage || '/6.png');
+                 
+                 return (
+               <Link 
+                       key={category._id}
+                       href={getCategoryUrl(category)}
+               className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+               style={{
+                 position: 'relative',
+                 left: '0',
+                 marginTop: '0',
+                       width: '100%',
+                       maxWidth: '100%',
+                       aspectRatio: '642/230',
+                 opacity: 1,
+                       borderRadius: 'clamp(16px, 2vw, 32px)',
+                       backgroundImage: categoryImage ? `url(${categoryImage})` : 'url(/6.png)',
+                       backgroundSize: 'cover',
+                       backgroundPosition: 'center',
+                 backgroundRepeat: 'no-repeat',
+                 backgroundColor: '#E0E0E0',
+                 transform: 'rotate(0deg)',
+                 overflow: 'hidden'
+               }}
+             >
+               <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/10 to-transparent" />
+               <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
+                       <div className="z-10">
+                 <h3 
+                           className="text-white uppercase"
+                 style={{
+                   fontFamily: "'Bebas Neue', sans-serif",
+                             fontSize: 'clamp(32px, 4.5vw, 65.01px)',
+                   fontWeight: 400,
+                             lineHeight: 'clamp(28px, 4vw, 58px)',
+                   letterSpacing: '0px',
+                   color: '#FFFFFF',
+                   opacity: 1,
+                   borderRadius: '0px',
+                   textAlign: 'left',
+                   position: 'relative',
+                   margin: '0',
+                   padding: '0',
+                             marginBottom: categoryName.line2 ? 'clamp(4px, 0.5vw, 8px)' : '0',
+                   textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
+                 }}
+               >
+                         {categoryName.line1}
+                 </h3>
+                         {categoryName.line2 && (
+                   <h3 
+                             className="text-white uppercase"
+                     style={{
+                       fontFamily: "'Bebas Neue', sans-serif",
+                               fontSize: 'clamp(32px, 4.5vw, 65.01px)',
+                       fontWeight: 400,
+                               lineHeight: 'clamp(28px, 4vw, 58px)',
+                       letterSpacing: '0px',
+                       color: '#FFFFFF',
+                       opacity: 1,
+                       borderRadius: '0px',
+                       textAlign: 'left',
+                       position: 'relative',
+                       margin: '0',
+                       padding: '0',
+                       textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
+                     }}
+                   >
+                             {categoryName.line2}
+                   </h3>
+                         )}
+                       </div>
+               </div>
+                 </Link>
+               );
+             })}
+           </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
-              {/* Fallback to hardcoded cards if no categories found */}
-              <Link 
-                href="/categories?gender=men" 
-                className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  aspectRatio: '642/230',
-                  borderRadius: 'clamp(16px, 2vw, 32px)',
-                  backgroundImage: 'url(/6.png)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center top',
-                  backgroundColor: '#E0E0E0',
-                  overflow: 'hidden'
-                }}
-              >
-                <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
-                  <h3 className="text-white uppercase z-10" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(32px, 4.5vw, 65.01px)', fontWeight: 400, lineHeight: 'clamp(28px, 4vw, 58px)', color: '#FFFFFF', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>MEN</h3>
-                </div>
-              </Link>
-              <Link 
-                href="/categories?gender=women" 
-                className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  aspectRatio: '642/230',
-                  borderRadius: 'clamp(16px, 2vw, 32px)',
-                  backgroundImage: 'url(/6.png)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center top',
-                  backgroundColor: '#E0E0E0',
-                  overflow: 'hidden'
-                }}
-              >
-                <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
-                  <h3 className="text-white uppercase z-10" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(32px, 4.5vw, 65.01px)', fontWeight: 400, lineHeight: 'clamp(28px, 4vw, 58px)', color: '#FFFFFF', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>WOMEN</h3>
-                </div>
-              </Link>
-              <Link 
-                href="/categories/new-arrivals" 
-                className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  aspectRatio: '642/230',
-                  borderRadius: 'clamp(16px, 2vw, 32px)',
-                  backgroundImage: 'url(/6.png)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center top',
-                  backgroundColor: '#E0E0E0',
-                  overflow: 'hidden'
-                }}
-              >
-                <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
-                  <div className="z-10">
-                    <h3 className="text-white uppercase" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(32px, 4.5vw, 65.01px)', fontWeight: 400, lineHeight: 'clamp(28px, 4vw, 58px)', color: '#FFFFFF', marginBottom: 'clamp(4px, 0.5vw, 8px)', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>NEW</h3>
-                    <h3 className="text-white uppercase" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(32px, 4.5vw, 65.01px)', fontWeight: 400, lineHeight: 'clamp(28px, 4vw, 58px)', color: '#FFFFFF', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>ARRIVALS</h3>
-                  </div>
-                </div>
-              </Link>
-              <Link 
-                href="/categories/sets" 
-                className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                style={{
-                  position: 'relative',
-                  width: '100%',
-                  aspectRatio: '642/230',
-                  borderRadius: 'clamp(16px, 2vw, 32px)',
-                  backgroundImage: 'url(/6.png)',
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center top',
-                  backgroundColor: '#E0E0E0',
-                  overflow: 'hidden'
-                }}
-              >
-                <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
-                  <h3 className="text-white uppercase z-10" style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: 'clamp(32px, 4.5vw, 65.01px)', fontWeight: 400, lineHeight: 'clamp(28px, 4vw, 58px)', color: '#FFFFFF', textShadow: '2px 2px 4px rgba(0,0,0,0.3)' }}>SETS</h3>
-                </div>
-              </Link>
-            </div>
-          )}
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+               {["Men", "Women", "New Arrivals", "Sets"].map((label) => {
+                 const formatted = formatCategoryName(label)
+                 return (
+                   <Link 
+                     key={label}
+                     href={getCategoryUrl({ _id: label, name: label, isActive: true } as Category)}
+                     className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                     style={{
+                       position: 'relative',
+                       width: '100%',
+                       aspectRatio: '642/230',
+                       borderRadius: 'clamp(16px, 2vw, 32px)',
+                       backgroundImage: 'url(/6.png)',
+                       backgroundSize: 'cover',
+                       backgroundPosition: 'center',
+                       backgroundColor: '#E0E0E0',
+                       overflow: 'hidden'
+                     }}
+                   >
+                     <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/10 to-transparent" />
+                     <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
+                       <div className="z-10">
+                         <h3
+                           className="text-white uppercase"
+                           style={{
+                             fontFamily: "'Bebas Neue', sans-serif",
+                             fontSize: 'clamp(32px, 4.5vw, 65.01px)',
+                             fontWeight: 400,
+                             lineHeight: 'clamp(28px, 4vw, 58px)',
+                             letterSpacing: '0px',
+                             color: '#FFFFFF',
+                             margin: '0',
+                             padding: '0',
+                             textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
+                           }}
+                         >
+                           {formatted.line1}
+                         </h3>
+                         {formatted.line2 && (
+                           <h3
+                             className="text-white uppercase"
+                             style={{
+                               fontFamily: "'Bebas Neue', sans-serif",
+                               fontSize: 'clamp(32px, 4.5vw, 65.01px)',
+                               fontWeight: 400,
+                               lineHeight: 'clamp(28px, 4vw, 58px)',
+                               letterSpacing: '0px',
+                               color: '#FFFFFF',
+                               margin: '0',
+                               padding: '0',
+                               textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
+                             }}
+                           >
+                             {formatted.line2}
+                           </h3>
+                         )}
+                       </div>
+                     </div>
+                   </Link>
+                 )
+               })}
+             </div>
+           )}
         </div>
       </section>
 
@@ -896,12 +846,12 @@ const getBundleProductHref = (bundle: Bundle): string => {
 
           {/* Product Slider - Recent Products */}
           {loadingProducts ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
               {[1, 2, 3, 4].map((i) => (
-                <div
+            <div 
                   key={i}
                   className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
-                  style={{
+              style={{
                     aspectRatio: '307/450',
                     borderRadius: '32px',
                   }}
@@ -910,37 +860,10 @@ const getBundleProductHref = (bundle: Bundle): string => {
             </div>
           ) : recentProducts.length > 0 ? (
             <div className="relative mt-12">
-              <button
-                onClick={() => scrollWhatsNewCarousel('left')}
-                disabled={!canScrollWhatsNewLeft}
-                className={`absolute top-1/2 -translate-y-1/2 left-0 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-opacity ${canScrollWhatsNewLeft ? 'opacity-100' : 'opacity-30 cursor-not-allowed'}`}
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  transform: 'translate(-75%, -50%)',
-                }}
-                aria-label="Previous product"
-              >
-                <ChevronLeft className="text-black" style={{ width: '24px', height: '24px' }} />
-              </button>
-
-              <button
-                onClick={() => scrollWhatsNewCarousel('right')}
-                disabled={!canScrollWhatsNewRight}
-                className={`absolute top-1/2 -translate-y-1/2 right-0 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-opacity ${canScrollWhatsNewRight ? 'opacity-100' : 'opacity-30 cursor-not-allowed'}`}
-                style={{
-                  width: '48px',
-                  height: '48px',
-                  transform: 'translate(75%, -50%)',
-                }}
-                aria-label="Next product"
-              >
-                <ChevronRight className="text-black" style={{ width: '24px', height: '24px' }} />
-              </button>
-
               <div
                 ref={whatsNewCarouselRef}
-                className="flex gap-6 overflow-x-hidden scroll-smooth pb-2"
+                onWheel={handleWhatsNewWheel}
+                className="whats-new-scroll flex gap-6 overflow-x-auto scroll-smooth pb-2"
               >
                 {recentProducts.map((product, index) => {
                   const productId = product.id || product._id || `product-${index}`;
@@ -954,79 +877,79 @@ const getBundleProductHref = (bundle: Bundle): string => {
                       key={productId}
                       href={`/product/${productId}`}
                       className="flex-shrink-0 bg-white relative overflow-hidden hover:opacity-90 transition-opacity"
-                      style={{
+              style={{
                         width: 'min(280px, 80vw)',
                         aspectRatio: '307/450',
-                      }}
-                    >
-                      <img
+              }}
+            >
+              <img 
                         src={productImage}
                         alt={productName}
-                        className="w-full h-full object-cover"
-                        style={{
+                className="w-full h-full object-cover"
+                style={{
                           borderRadius: '32px',
                         }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.src = '/placeholder.svg';
-                        }}
-                      />
-                      <div
-                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                        style={{
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
                           height: '60px',
-                        }}
-                      >
-                        <div className="flex flex-col text-left">
-                          <span
-                            className="uppercase text-white"
-                            style={{
-                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: '13.41px',
-                              lineHeight: '14.6px',
-                              letterSpacing: '0px',
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
                               fontWeight: 500,
-                            }}
-                          >
+                    }}
+                  >
                             {nameLines.line1}
-                          </span>
+                  </span>
                           {nameLines.line2 && (
-                            <span
-                              className="uppercase text-white"
-                              style={{
-                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: '13.41px',
-                                lineHeight: '14.6px',
-                                letterSpacing: '0px',
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
                                 fontWeight: 500,
-                              }}
-                            >
+                    }}
+                  >
                               {nameLines.line2}
-                            </span>
+                  </span>
                           )}
-                        </div>
-                        <p
-                          className="text-white font-bold text-right"
-                          style={{
-                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: '22px',
-                            lineHeight: '26px',
-                            letterSpacing: '0px',
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
                             fontWeight: 600,
-                          }}
-                        >
+                  }}
+                >
                           {formatPrice(productPrice)}
-                        </p>
-                      </div>
+                </p>
+              </div>
                     </Link>
                   );
                 })}
-              </div>
             </div>
+                </div>
           ) : (
             <div className="text-center py-12 mt-12">
               <p className="text-gray-500">No recent products available</p>
-            </div>
+              </div>
           )}
 
           {/* View All Button - Centered, Styled, and Positioned */}
@@ -1035,8 +958,8 @@ const getBundleProductHref = (bundle: Bundle): string => {
               <Link
                 href="/collection"
                 className="bg-black text-white uppercase px-8 py-3 rounded-lg hover:opacity-90 transition-opacity font-medium inline-block"
-                style={{
-                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                   fontSize: '14px',
                   letterSpacing: '0.5px',
                   fontWeight: 500,
@@ -1046,7 +969,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
               >
                 view all
               </Link>
-            </div>
+                </div>
           )}
         </div>
       </section>
@@ -1117,75 +1040,88 @@ const getBundleProductHref = (bundle: Bundle): string => {
 
           {/* Blog Grid - 4 Blogs */}
           {loadingBlogs ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="bg-gray-200 animate-pulse rounded-[32px] w-full" style={{ aspectRatio: '307/450' }} />
               ))}
-            </div>
+                </div>
           ) : blogs.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-              {blogs.map((blog) => (
-                <Link 
-                  key={blog._id}
-                  href={normalizeBlogHref(blog)}
-                  className="bg-white relative overflow-hidden w-full block hover:opacity-90 transition-opacity"
-                  style={{
-                    aspectRatio: '307/450'
-                  }}
-                >
-                  <div 
-                    className="bg-gradient-to-br from-gray-100 to-gray-200 w-full h-full flex items-center justify-center"
+              {blogs.map((blog) => {
+                const blogImage = blog.coverImage ? getImageUrl(blog.coverImage) : ""
+                return (
+                  <Link 
+                    key={blog._id}
+                    href={normalizeBlogHref(blog)}
+                    className="bg-white relative overflow-hidden w-full block hover:opacity-90 transition-opacity"
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+                    <div className="relative w-full h-full rounded-[32px] overflow-hidden">
+                      {blogImage ? (
+                        <Image
+                          src={blogImage}
+                          alt={blog.adminName || "Blog cover"}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 25vw"
+                        />
+                      ) : (
+                        <div 
+                          className="bg-gradient-to-br from-gray-100 to-gray-200 w-full h-full flex items-center justify-center"
+                        >
+                          <div className="text-center p-8">
+                            <div className="text-6xl mb-4">📝</div>
+                            <h3 className="text-lg font-semibold text-gray-800 mb-2">{blog.adminName}</h3>
+                </div>
+              </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70" />
+                      <div 
+                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                        <div className="flex flex-col text-left flex-1 min-w-0">
+                  <span 
+                            className="uppercase text-white truncate"
                     style={{
-                      borderRadius: '32px'
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
                     }}
+                            title={blog.adminName}
                   >
-                    <div className="text-center p-8">
-                      <div className="text-6xl mb-4">📝</div>
-                      <h3 className="text-lg font-semibold text-gray-800 mb-2">{blog.adminName}</h3>
-                    </div>
-                  </div>
-                  <div 
-                    className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                            {blog.adminName.length > 20 ? blog.adminName.substring(0, 20) + '...' : blog.adminName}
+                  </span>
+                  <span 
+                            className="uppercase text-white text-xs truncate"
                     style={{
-                      height: '60px'
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: '11px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                              fontWeight: 400
                     }}
+                            title={blog.url}
                   >
-                    <div className="flex flex-col text-left flex-1 min-w-0">
-                      <span 
-                        className="uppercase text-white truncate"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: '13.41px',
-                          lineHeight: '14.6px',
-                          letterSpacing: '0px',
-                          fontWeight: 500
-                        }}
-                        title={blog.adminName}
-                      >
-                        {blog.adminName.length > 20 ? blog.adminName.substring(0, 20) + '...' : blog.adminName}
-                      </span>
-                      <span 
-                        className="uppercase text-white text-xs truncate"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: '11px',
-                          lineHeight: '14.6px',
-                          letterSpacing: '0px',
-                          fontWeight: 400
-                        }}
-                        title={blog.url}
-                      >
-                        {blog.url.length > 25 ? blog.url.substring(0, 25) + '...' : blog.url}
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                            {blog.url.length > 25 ? blog.url.substring(0, 25) + '...' : blog.url}
+                  </span>
+                </div>
+              </div>
             </div>
+                  </Link>
+                )
+              })}
+                </div>
           ) : (
             <div className="text-center py-12 mt-12">
               <p className="text-gray-500">No blogs available at the moment.</p>
-            </div>
+              </div>
           )}
         </div>
       </section>
@@ -1560,18 +1496,18 @@ const getBundleProductHref = (bundle: Bundle): string => {
 
           {/* Bundle Grid - 4 Bundles */}
           {loadingBundles ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
               {[1, 2, 3, 4].map((i) => (
-                <div 
+            <div 
                   key={i}
                   className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
-                  style={{
+              style={{
                     aspectRatio: '307/450',
-                    borderRadius: '32px'
-                  }}
-                />
+                  borderRadius: '32px'
+                }}
+              />
               ))}
-            </div>
+                </div>
           ) : bundles.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
               {bundles.slice(0, 4).map((bundle) => {
@@ -1587,69 +1523,69 @@ const getBundleProductHref = (bundle: Bundle): string => {
                     key={bundleId}
                     href={bundleHref}
                     className="bg-white relative overflow-hidden w-full cursor-pointer hover:opacity-90 transition-opacity"
-                    style={{
-                      aspectRatio: '307/450'
-                    }}
-                  >
-                    <img 
+              style={{
+                aspectRatio: '307/450'
+              }}
+            >
+              <img 
                       src={bundleImage} 
                       alt={bundleName}
-                      className="w-full h-full object-cover"
-                      style={{
-                        borderRadius: '32px'
-                      }}
+                className="w-full h-full object-cover"
+                style={{
+                  borderRadius: '32px'
+                }}
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
                         target.src = '/placeholder.svg';
-                      }}
-                    />
-                    <div 
-                      className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                      style={{
-                        height: '60px'
-                      }}
-                    >
-                      <div className="flex flex-col text-left">
-                        <span 
-                          className="uppercase text-white"
-                          style={{
-                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: '13.41px',
-                            lineHeight: '14.6px',
-                            letterSpacing: '0px',
-                            fontWeight: 500
-                          }}
-                        >
+                }}
+              />
+              <div 
+                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                style={{
+                  height: '60px'
+                }}
+              >
+                <div className="flex flex-col text-left">
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
                           {nameLines.line1}
-                        </span>
+                  </span>
                         {nameLines.line2 && (
-                          <span 
-                            className="uppercase text-white"
-                            style={{
-                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: '13.41px',
-                              lineHeight: '14.6px',
-                              letterSpacing: '0px',
-                              fontWeight: 500
-                            }}
-                          >
+                  <span 
+                    className="uppercase text-white"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '13.41px',
+                      lineHeight: '14.6px',
+                      letterSpacing: '0px',
+                      fontWeight: 500
+                    }}
+                  >
                             {nameLines.line2}
-                          </span>
+                  </span>
                         )}
-                      </div>
-                      <p 
-                        className="text-white font-bold text-right"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: '22px',
-                          lineHeight: '26px',
-                          letterSpacing: '0px',
-                          fontWeight: 600
-                        }}
-                      >
+                </div>
+                <p 
+                  className="text-white font-bold text-right"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: '22px',
+                    lineHeight: '26px',
+                    letterSpacing: '0px',
+                    fontWeight: 600
+                  }}
+                >
                         {formatPrice(bundlePrice)}
-                      </p>
-                    </div>
+                </p>
+              </div>
                   </Link>
                 );
               })}
@@ -1657,7 +1593,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
           ) : (
             <div className="text-center py-12 mt-12">
               <p className="text-gray-500">No bundles available</p>
-            </div>
+                </div>
           )}
         </div>
       </section>
@@ -1739,22 +1675,22 @@ const getBundleProductHref = (bundle: Bundle): string => {
                 ))}
               </div>
             ) : carouselImages.length > 0 ? (
-              <div 
-                ref={carouselRef}
-                className="flex overflow-x-hidden scroll-smooth gap-4 md:gap-6"
-                style={{
-                  scrollSnapType: 'x mandatory',
-                  paddingLeft: 'clamp(48px, 5.5vw, 64px)', // Space for left arrow
-                  paddingRight: 'clamp(48px, 5.5vw, 64px)', // Space for right arrow
-                  margin: '0 auto',
-                  width: '100%',
-                  maxWidth: '100%',
-                  display: 'flex',
-                  justifyContent: 'center', // Center images between arrows
-                  alignItems: 'center'
-                }}
-              >
-                {carouselImages.map((image, index) => (
+            <div 
+              ref={carouselRef}
+              className="flex overflow-x-hidden scroll-smooth gap-4 md:gap-6"
+              style={{
+                scrollSnapType: 'x mandatory',
+                paddingLeft: 'clamp(48px, 5.5vw, 64px)', // Space for left arrow
+                paddingRight: 'clamp(48px, 5.5vw, 64px)', // Space for right arrow
+                margin: '0 auto',
+                width: '100%',
+                maxWidth: '100%',
+                display: 'flex',
+                justifyContent: 'center', // Center images between arrows
+                alignItems: 'center'
+              }}
+            >
+              {carouselImages.map((image, index) => (
                 <div
                   key={index}
                   className="flex-shrink-0"
@@ -1800,7 +1736,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
                   </div>
                 </div>
               ))}
-              </div>
+            </div>
             ) : (
               <div className="text-center py-12" style={{
                 paddingLeft: 'clamp(48px, 5.5vw, 64px)',
@@ -1813,8 +1749,8 @@ const getBundleProductHref = (bundle: Bundle): string => {
 
           {/* Pagination Dots - Responsive */}
           {!loadingCarouselImages && carouselImages.length > 0 && (
-            <div className="flex items-center justify-center gap-2 mt-6">
-              {carouselImages.map((_, index) => (
+          <div className="flex items-center justify-center gap-2 mt-6">
+            {carouselImages.map((_, index) => (
               <button
                 key={index}
                 onClick={() => {
@@ -1838,13 +1774,25 @@ const getBundleProductHref = (bundle: Bundle): string => {
                 } rounded-full`}
                 aria-label={`Go to slide ${index + 1}`}
               />
-              ))}
-            </div>
+            ))}
+          </div>
           )}
         </div>
       </section>
 
       <Footer />
+
+      <style jsx>{`
+        .whats-new-scroll {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        .whats-new-scroll::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+        }
+      `}</style>
     </div>
   )
 }
