@@ -224,7 +224,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-[#0f1013] text-white sticky top-0 z-50">
+    <header className="bg-[#0f1013] text-white sticky top-0 z-[100]">
       {/* Top Utility Bar */}
       <div className="border-b border-[#141619]">
         <div className="container mx-auto px-4">
@@ -390,29 +390,31 @@ export default function Header() {
                   onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)} // Delay to allow click
                   onFocus={() => searchQuery && setSearchResults.length > 0 && setIsSearchDropdownOpen(true)}
                 />
-                {/* Search Suggestions Dropdown */}
-                {isSearchDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden z-50">
-                    {isSearchLoading ? (
-                      <div className="p-4 text-center text-gray-500">Loading...</div>
-                    ) : searchResults.length > 0 ? (
-                      searchResults.map((product) => (
-                        <Link key={product._id} href={`/product/${product.slug}`} onClick={handleSuggestionClick} className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0">
-                          <Image 
-                            src={product.images[0]?.url || '/placeholder.png'} 
-                            alt={product.name} 
-                            width={40} 
-                            height={40} 
-                            className="w-10 h-10 object-cover rounded-md mr-3"
-                          />
-                          <span className="text-[#212121] text-sm">{product.name}</span>
-                        </Link>
-                      ))
-                    ) : (
-                      <div className="p-4 text-center text-gray-500">No products found.</div>
-                    )}
-                  </div>
-                )}
+                {/* Search Suggestions Dropdown - Conditionally rendered */}
+                {isSearchDropdownOpen &&
+                  (isSearchLoading || searchResults.length > 0) && (
+                    <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden z-50">
+                      {isSearchLoading ? (
+                        <div className="p-4 text-center text-gray-500">Loading...</div>
+                      ) : searchResults.length > 0 ? (
+                        searchResults.map((product) => (
+                          <Link key={product._id} href={`/product/${product.slug}`} onClick={handleSuggestionClick} className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0">
+                            <Image 
+                              src={product.images[0]?.url || '/placeholder.png'} 
+                              alt={product.name} 
+                              width={40} 
+                              height={40} 
+                              className="w-10 h-10 object-cover rounded-md mr-3"
+                            />
+                            <span className="text-[#212121] text-sm">{product.name}</span>
+                          </Link>
+                        ))
+                      ) : (
+                        <div className="p-4 text-center text-gray-500">No products found.</div>
+                      )}
+                    </div>
+                  )
+                }
               </div>
             </div>
 
@@ -573,27 +575,29 @@ export default function Header() {
                     onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)}
                     onFocus={() => searchQuery && setSearchResults.length > 0 && setIsSearchDropdownOpen(true)}
                   />
-                  {/* Mobile Search Suggestions Dropdown */}
-                  {isSearchDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden z-50">
-                      {isSearchLoading ? (
-                        <div className="p-4 text-center text-gray-500">Loading...</div>
-                      ) : searchResults.length > 0 ? (
-                        searchResults.map((product) => (
-                          <Link key={product._id} href={`/product/${product.slug}`} onClick={handleSuggestionClick} className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0">
-                            <Image 
-                              src={product.images[0]?.url || '/placeholder.png'} 
-                              alt={product.name} 
-                              width={40} 
-                              height={40} 
-                              className="w-10 h-10 object-cover rounded-md mr-3"
-                            />
-                            <span className="text-[#212121] text-sm">{product.name}</span>
-                          </Link>
-                        ))
-                      ) : <div className="p-4 text-center text-gray-500">No products found.</div>}
-                    </div>
-                  )}
+                  {/* Mobile Search Suggestions Dropdown - Conditionally rendered */}
+                  {isSearchDropdownOpen &&
+                    (isSearchLoading || searchResults.length > 0) && (
+                      <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden z-50">
+                        {isSearchLoading ? (
+                          <div className="p-4 text-center text-gray-500">Loading...</div>
+                        ) : searchResults.length > 0 ? (
+                          searchResults.map((product) => (
+                            <Link key={product._id} href={`/product/${product.slug}`} onClick={handleSuggestionClick} className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0">
+                              <Image 
+                                src={product.images[0]?.url || '/placeholder.png'} 
+                                alt={product.name} 
+                                width={40} 
+                                height={40} 
+                                className="w-10 h-10 object-cover rounded-md mr-3"
+                              />
+                              <span className="text-[#212121] text-sm">{product.name}</span>
+                            </Link>
+                          ))
+                        ) : <div className="p-4 text-center text-gray-500">No products found.</div>}
+                      </div>
+                    )
+                  }
                 </div>
               </div>
 

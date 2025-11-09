@@ -1,5 +1,6 @@
 "use client"
 
+import { usePathname, useSearchParams } from 'next/navigation'
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
 export interface CartItem {
@@ -38,6 +39,10 @@ interface CartContextType {
   cartTotal: number
   showNotification: (message: string) => void
   isBundleInCart: (bundleId: string) => boolean
+  shippingInfo: any
+  isCartSidebarOpen: boolean
+  openCartSidebar: () => void
+  closeCartSidebar: () => void
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
@@ -45,6 +50,10 @@ const CartContext = createContext<CartContextType | undefined>(undefined)
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [notification, setNotification] = useState<string | null>(null)
+  const [isCartSidebarOpen, setIsCartSidebarOpen] = useState(false)
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const [shippingInfo, setShippingInfo] = useState<any>(null)
 
   // Load cart from localStorage on mount
   useEffect(() => {
@@ -62,6 +71,39 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem('cart', JSON.stringify(cartItems))
   }, [cartItems])
+
+  // Close sidebar on route change
+  useEffect(() => {
+    closeCartSidebar()
+  }, [pathname, searchParams])
+
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+
+  useEffect(() => {
+    const calculateShipping = async () => {
+      if (cartItems.length === 0) {
+        setShippingInfo(null)
+        return
+      }
+      try {
+        const response = await fetch('/api/shipping/calculate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subtotal: subtotal, region: 'US', weight: 0 }),
+        })
+        if (response.ok) {
+          const data = await response.json()
+          setShippingInfo(data)
+        } else {
+          setShippingInfo(null)
+        }
+      } catch (error) {
+        console.error('Error calculating shipping in context:', error)
+        setShippingInfo(null)
+      }
+    }
+    calculateShipping()
+  }, [cartItems, subtotal])
 
   const showNotification = (message: string) => {
     setNotification(message)
@@ -163,7 +205,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   // Count unique products (not total quantity)
   const cartCount = cartItems.length
-  const cartTotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0)
+
+  const openCartSidebar = () => setIsCartSidebarOpen(true)
+  const closeCartSidebar = () => setIsCartSidebarOpen(false)
 
   return (
     <CartContext.Provider value={{
@@ -174,9 +218,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       updateQuantity,
       clearCart,
       cartCount,
-      cartTotal,
+      cartTotal: subtotal,
       showNotification,
-      isBundleInCart
+      isBundleInCart,
+      shippingInfo,
+      isCartSidebarOpen,
+      openCartSidebar,
+      closeCartSidebar,
     }}>
       {children}
       

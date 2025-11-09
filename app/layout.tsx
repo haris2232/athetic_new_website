@@ -4,6 +4,7 @@ import { Inter } from "next/font/google"
 import Script from "next/script"
 import "./globals.css"
 import FloatingCartButton from "@/components/ui/floating-cart-button"
+import CartSidebar from "@/components/ui/cart-sidebar"
 import { CartProvider } from "@/lib/cart-context"
 import { CurrencyProvider } from "@/lib/currency-context"
 import { WishlistProvider } from "@/lib/wishlist-context"
@@ -56,6 +57,7 @@ export default function RootLayout({
         <CartProvider>
           <WishlistProvider>
             <OrderCompletionChecker />
+            <CartSidebar />
             {children}
             <FloatingCartButton />
           </WishlistProvider>

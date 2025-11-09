@@ -38,17 +38,17 @@ const Banner = ({ imageUrl, altText }: { imageUrl: string; altText: string }) =>
 const ProductGrid = ({ products, categoryName, loading }: { products: Product[]; categoryName: string; loading: boolean }) => {
   if (loading) {
     return (
-      <div className="text-center py-16">
-        <p className="text-white text-lg">Loading {categoryName} products...</p>
+      <div className="text-center py-16 text-gray-500">
+        <p className="text-lg">Loading {categoryName} products...</p>
       </div>
     )
   }
 
   if (products.length === 0) {
     return (
-      <div className="text-center py-16">
-        <h3 className="text-white text-xl font-semibold mb-2">No Sale Products Found</h3>
-        <p className="text-gray-300">There are currently no {categoryName} products on sale.</p>
+      <div className="text-center py-16 text-gray-800">
+        <h3 className="text-xl font-semibold mb-2">No Sale Products Found</h3>
+        <p className="text-gray-500">There are currently no {categoryName} products on sale.</p>
       </div>
     )
   }
@@ -64,7 +64,7 @@ const ProductGrid = ({ products, categoryName, loading }: { products: Product[];
           originalPrice={product.originalPrice}
           discount={product.isOnSale ? product.discountPercentage : undefined}
           image={product.image}
-          
+          slug={product.slug}
         />
       ))}
     </div>
@@ -149,7 +149,7 @@ export default function CombinedSalePage() {
   const womenBannerImage = salesImages.image2 || "/images/woman.png"
 
   return (
-    <div className="min-h-screen bg-[#212121]">
+    <div className="min-h-screen bg-white">
       <Header />
 
       <section id="men-collection" className="py-12">
@@ -158,7 +158,7 @@ export default function CombinedSalePage() {
           imageUrl={menBannerImage}
         />
         <div className="mt-12">
-          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-white text-center mb-10">
+          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-10">
             Men's Sale
           </h2>
           <ProductGrid products={menProducts} categoryName="men's" loading={loading} />
@@ -173,7 +173,7 @@ export default function CombinedSalePage() {
           imageUrl={womenBannerImage}
         />
         <div className="mt-12">
-          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-white text-center mb-10">
+          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-10">
             Women's Sale
           </h2>
           <ProductGrid products={womenProducts} categoryName="women's" loading={loading} />

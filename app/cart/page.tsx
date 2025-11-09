@@ -25,14 +25,13 @@ const paymentMethods = [
 ];
 
 export default function CartPage() {
-  const { cartItems, removeFromCart, updateQuantity, showNotification } = useCart()
+  const { cartItems, removeFromCart, updateQuantity, showNotification, shippingInfo } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
   const { getCurrencySymbol, formatPrice, currency } = useCurrency()
   const [promoCode, setPromoCode] = useState("")
   const [promoApplied, setPromoApplied] = useState(false)
   const [bundleDiscount, setBundleDiscount] = useState<any>(null)
-  const [shippingInfo, setShippingInfo] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
+  const [bundleLoading, setBundleLoading] = useState(false)
 
   const [suggestedProducts, setSuggestedProducts] = useState<Product[]>([])
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
@@ -46,7 +45,7 @@ export default function CartPage() {
         setBundleDiscount(null)
         return
       }
-      setLoading(true)
+      setBundleLoading(true)
       try {
         const response = await fetch('/api/bundles/calculate-discount', {
           method: 'POST',
@@ -66,39 +65,10 @@ export default function CartPage() {
       } catch (error) {
         console.error('Error calculating bundle discount:', error)
       } finally {
-        setLoading(false)
+        setBundleLoading(false)
       }
     }
     calculateBundleDiscount()
-  }, [cartItems])
-
-  useEffect(() => {
-    const calculateShipping = async () => {
-      if (cartItems.length === 0) {
-        setShippingInfo(null)
-        return
-      }
-      setLoading(true)
-      try {
-        const response = await fetch('/api/shipping/calculate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subtotal: subtotal, region: 'US', weight: 0 })
-        })
-        if (response.ok) {
-          const data = await response.json()
-          setShippingInfo(data)
-        } else {
-          setShippingInfo(null)
-        }
-      } catch (error) {
-        console.error('Error calculating shipping:', error)
-        setShippingInfo(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-    calculateShipping()
   }, [cartItems, subtotal])
 
   useEffect(() => {
