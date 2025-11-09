@@ -100,6 +100,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [submitMessage, setSubmitMessage] = useState('')
   const [zoomImage, setZoomImage] = useState<string | null>(null)
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false)
+  const [showReviewForm, setShowReviewForm] = useState(false)
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [loadingBundles, setLoadingBundles] = useState(true)
   const [recommendedProducts, setRecommendedProducts] = useState<ProductCardItem[]>([])
@@ -438,6 +439,16 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             image: product.image,
             isNew: Math.random() > 0.7 // Randomly mark some as new
           })))
+          if (typeof window !== 'undefined') {
+            setShopTheLookItems(products.slice(0, 5).map((product: any) => ({
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              originalPrice: product.originalPrice,
+              image: product.image,
+              isNew: Math.random() > 0.7 // Randomly mark some as new
+            })))
+          }
           
           // Set Carousel items (next 4 products)
           setCarouselItems(products.slice(5, 9).map((product: any) => ({
@@ -447,6 +458,15 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             image: product.image,
             discount: Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
           })))
+          if (typeof window !== 'undefined') {
+            setCarouselItems(products.slice(5, 9).map((product: any) => ({
+              id: product.id,
+              name: product.name,
+              price: product.price,
+              image: product.image,
+              discount: Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
+            })))
+          }
         }
       } catch (error) {
         console.error('Error fetching dynamic products:', error)
@@ -1999,6 +2019,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
           <ProductReviews
             product={product}
             onStatsChange={(stats) => setReviewStats(stats)}
+            showReviewForm={showReviewForm}
+            setShowReviewForm={setShowReviewForm}
           />
         </div>
 

@@ -115,12 +115,13 @@ interface ReviewStats {
 interface ProductReviewsProps {
   product: Product
   onStatsChange?: (stats: ReviewStats) => void
+  showReviewForm: boolean
+  setShowReviewForm: (show: boolean | ((prev: boolean) => boolean)) => void
 }
 
-export default function ProductReviews({ product, onStatsChange }: ProductReviewsProps) {
+export default function ProductReviews({ product, onStatsChange, showReviewForm, setShowReviewForm }: ProductReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
-  const [showReviewForm, setShowReviewForm] = useState(false)
   const [newReview, setNewReview] = useState({
     rating: 5,
     comment: "",
@@ -168,11 +169,11 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
     } finally {
       setLoading(false)
     }
-  }, [productId, onStatsChange])
+  }, [productId])
 
   useEffect(() => {
     loadReviews()
-  }, [loadReviews])
+  }, [productId])
 
   useEffect(() => {
     if (showReviewForm) {
@@ -279,13 +280,11 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
     : 0
 
   useEffect(() => {
-    if (onStatsChange) {
-      onStatsChange({
-        average: averageRating,
-        count: reviews.length
-      })
-    }
-  }, [averageRating, reviews.length, onStatsChange])
+    onStatsChange?.({
+      average: averageRating,
+      count: reviews.length
+    })
+  }, [averageRating, reviews.length])
 
   const { topReview, otherReviews } = useMemo(() => {
     if (reviews.length === 0) {
