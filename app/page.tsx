@@ -82,10 +82,14 @@ type HeroContent =
 const normalizeBlogHref = (blog: Blog): string => {
   const rawUrl = blog.url?.trim()
   if (rawUrl) {
-    if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://") || rawUrl.startsWith("/")) {
+    if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
       return rawUrl
     }
-    return `/blog/${rawUrl}`
+    if (rawUrl.startsWith("/")) {
+      return rawUrl
+    }
+    const sanitized = rawUrl.replace(/^\/+/, "").trim()
+    return `/blog/${encodeURIComponent(sanitized)}`
   }
   return `/blog/${blog._id}`
 }

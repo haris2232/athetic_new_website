@@ -703,7 +703,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
   const hasReviews = reviewStats.count > 0
   const reviewSummary = hasReviews
     ? `${reviewStats.average.toFixed(1)} out of 5 based on ${reviewStats.count} review${reviewStats.count === 1 ? '' : 's'}.`
-    : "No reviews yet. Be the first to review this product."
+    : "No reviews yet. Be the first to share your experience with this product."
 
   const nextImage = () => {
     if (currentImages && currentImages.length > 1) {
@@ -1453,7 +1453,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     fontWeight: 600
                   }}
                 >
-                  Write the first review
+                  Write a Review
                 </Link>
               )}
             </div>

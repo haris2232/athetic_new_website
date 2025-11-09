@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import type { ReactNode, ReactElement } from "react"
 import { Star, MessageSquare, Send, Crown } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
 import type { Product } from "@/lib/types"
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://athlekt.com/backendnew/api"
 
 const getReviewerInitials = (name: string) => {
   return name
@@ -129,31 +131,48 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
   const [showAllReviews, setShowAllReviews] = useState(false)
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchReviews()
-  }, [product.id])
+  const productId = useMemo(() => {
+    return product?.id || (product as any)?._id || (product as any)?.id || ""
+  }, [product])
 
-  const fetchReviews = async () => {
+  const loadReviews = useCallback(async () => {
+    if (!productId) {
+      setReviews([])
+      setLoading(false)
+      onStatsChange?.({ average: 0, count: 0 })
+      return
+    }
+
+    setLoading(true)
     try {
-      const response = await fetch(`https://athlekt.com/backendnew/api/reviews/public/${product.id}`)
+      const response = await fetch(`${API_BASE_URL}/reviews/public/${productId}`)
       if (response.ok) {
         const data = await response.json()
-        const fetchedReviews: Review[] = Array.isArray(data.data) ? data.data : []
+        const fetchedReviews: Review[] = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : []
         setReviews(fetchedReviews)
         if (fetchedReviews.length > 0) {
-          const ratingSum = fetchedReviews.reduce((sum, review) => sum + review.rating, 0)
+          const ratingSum = fetchedReviews.reduce((sum, review) => sum + (review.rating || 0), 0)
           const average = ratingSum / fetchedReviews.length
           onStatsChange?.({ average, count: fetchedReviews.length })
         } else {
           onStatsChange?.({ average: 0, count: 0 })
         }
+      } else {
+        setReviews([])
+        onStatsChange?.({ average: 0, count: 0 })
       }
     } catch (error) {
       console.error('Error fetching reviews:', error)
+      setReviews([])
+      onStatsChange?.({ average: 0, count: 0 })
     } finally {
       setLoading(false)
     }
-  }
+  }, [productId, onStatsChange])
+
+  useEffect(() => {
+    loadReviews()
+  }, [loadReviews])
 
   const submitReview = async () => {
     if (!newReview.comment.trim() || !newReview.customerName.trim() || !newReview.customerEmail.trim()) {
@@ -165,15 +184,24 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
       return
     }
 
+    if (!productId) {
+      toast({
+        title: "Error",
+        description: "Unable to determine product. Please refresh the page and try again.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setSubmitting(true)
     try {
-      const response = await fetch('https://athlekt.com/backendnew/api/reviews/public/create', {
+      const response = await fetch(`${API_BASE_URL}/reviews/public/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          productId: product.id,
+          productId,
           rating: newReview.rating,
           comment: newReview.comment,
           customerName: newReview.customerName,
@@ -193,7 +221,7 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
           customerName: "",
           customerEmail: ""
         })
-        await fetchReviews()
+        await loadReviews()
       } else {
         const error = await response.json()
         toast({
