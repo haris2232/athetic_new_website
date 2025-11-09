@@ -174,6 +174,17 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
     loadReviews()
   }, [loadReviews])
 
+  useEffect(() => {
+    if (showReviewForm) {
+      requestAnimationFrame(() => {
+        const section = document.getElementById("customer-reviews")
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
+      })
+    }
+  }, [showReviewForm])
+
   const submitReview = async () => {
     if (!newReview.comment.trim() || !newReview.customerName.trim() || !newReview.customerEmail.trim()) {
       toast({
@@ -304,7 +315,7 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
   const hasMoreReviews = otherReviews.length > 2
 
   return (
-    <section className="bg-white text-[#212121] py-8">
+    <section id="customer-reviews" className="bg-white text-[#212121] py-8">
       <div className="container mx-auto px-4 max-w-[1250px] space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <h1 
@@ -379,7 +390,7 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
                   Based on {reviews.length} {reviews.length === 1 ? 'review' : 'reviews'}
                 </p>
                 <Button
-                  onClick={() => setShowReviewForm(!showReviewForm)}
+                  onClick={() => setShowReviewForm(prev => !prev)}
                   className="bg-black text-white hover:bg-gray-800 w-full mt-6"
                   style={{
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",

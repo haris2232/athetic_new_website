@@ -42,6 +42,36 @@ export default function Header() {
   const { cartCount } = useCart()
   const { wishlistCount } = useWishlist()
 
+  const normalizeHref = (href: string) => {
+    if (!href) return "/";
+    if (href.startsWith("http")) return href;
+    if (href.startsWith("/")) return href;
+    return `/${href}`;
+  };
+
+  const navigateTo = (href: string) => {
+    setIsMenuOpen(false)
+    setIsMenMenuOpen(false)
+    setIsWomenMenuOpen(false)
+    setIsTopSellerOpen(false)
+    const target = normalizeHref(href)
+    router.push(target)
+
+    if (typeof window !== "undefined") {
+      const targetUrl = new URL(target, window.location.origin)
+      const checkNavigation = () => {
+        const currentUrl = new URL(window.location.href)
+        if (
+          currentUrl.pathname !== targetUrl.pathname ||
+          currentUrl.search !== targetUrl.search
+        ) {
+          window.location.href = targetUrl.toString()
+        }
+      }
+      setTimeout(checkNavigation, 250)
+    }
+  }
+
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
       setIsSearchDropdownOpen(false)
@@ -202,17 +232,42 @@ export default function Header() {
   }
 
   // Reusable component for category dropdowns
-  const CategoryDropdown = ({ gender, isOpen, onMouseEnter, onMouseLeave, onLinkClick }: { gender: 'men' | 'women', isOpen: boolean, onMouseEnter: () => void, onMouseLeave: () => void, onLinkClick: () => void }) => {
+  const CategoryDropdown = ({
+    gender,
+    isOpen,
+    onMouseEnter,
+    onMouseLeave,
+  }: {
+    gender: "men" | "women"
+    isOpen: boolean
+    onMouseEnter: () => void
+    onMouseLeave: () => void
+  }) => {
     const categories = getSubCategories(gender);
     return (
       <div className="relative group" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-        <Link href={`/categories?gender=${gender}`} className={`transition-colors font-medium tracking-wide uppercase text-sm ${isActivePath(`/${gender}`) ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"}`}>
+        <Link
+          href={`/categories?gender=${gender}`}
+          className={`transition-colors font-medium tracking-wide uppercase text-sm ${isActivePath(`/${gender}`) ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"}`}
+          onClick={(event) => {
+            event.preventDefault()
+            navigateTo(`/categories?gender=${gender}`)
+          }}
+        >
           {gender}
         </Link>
         <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
           <div className="bg-white shadow-lg rounded-md overflow-hidden z-50 min-w-[200px]">
             {categories.map(category => (
-              <Link key={category.id || `${gender}-${category.href}`} href={`${category.href}?gender=${gender}`} className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors" onClick={onLinkClick}>
+              <Link
+                key={category.id || `${gender}-${category.href}`}
+                href={`${category.href}?gender=${gender}`}
+                className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors"
+                onClick={(event) => {
+                  event.preventDefault()
+                  navigateTo(`${category.href}?gender=${gender}`)
+                }}
+              >
                 {category.label}
               </Link>
             ))}
@@ -285,6 +340,10 @@ export default function Header() {
               className={`transition-colors font-medium tracking-wide uppercase text-sm ${
                 isActivePath("/") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
               }`}
+              onClick={(event) => {
+                event.preventDefault()
+                navigateTo("/")
+              }}
             >
               HOME
             </Link>
@@ -293,6 +352,10 @@ export default function Header() {
               className={`transition-colors font-medium tracking-wide uppercase text-sm ${
                 isActivePath("/collection") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
               }`}
+              onClick={(event) => {
+                event.preventDefault()
+                navigateTo("/collection")
+              }}
             >
               COLLECTION
             </Link>
@@ -303,7 +366,6 @@ export default function Header() {
               isOpen={isMenMenuOpen}
               onMouseEnter={() => setIsMenMenuOpen(true)}
               onMouseLeave={() => setIsMenMenuOpen(false)}
-              onLinkClick={() => setIsMenMenuOpen(false)}
             />
 
             {/* Women's Category Dropdown */}
@@ -312,16 +374,18 @@ export default function Header() {
               isOpen={isWomenMenuOpen}
               onMouseEnter={() => setIsWomenMenuOpen(true)}
               onMouseLeave={() => setIsWomenMenuOpen(false)}
-              onLinkClick={() => setIsWomenMenuOpen(false)}
             />
 
             {/* Sale Link */}
-            <Link href="/sale">
-              <button
-                className="transition-colors font-medium tracking-wide uppercase text-sm text-white hover:text-[#cbf26c]"
-              >
-                SALE
-              </button>
+            <Link
+              href="/sale"
+              className="transition-colors font-medium tracking-wide uppercase text-sm text-white hover:text-[#cbf26c]"
+              onClick={(event) => {
+                event.preventDefault()
+                navigateTo("/sale")
+              }}
+            >
+              SALE
             </Link>
             
             {/* ADDED: Top Sellers with Dropdown */}
@@ -348,14 +412,20 @@ export default function Header() {
                       <Link
                         href="/sale/men"
                         className="block w-full text-left px-6 py-3 transition-colors font-medium text-[#212121] hover:bg-gray-50 border-b border-gray-100"
-                        onClick={() => setIsTopSellerOpen(false)}
+                        onClick={(event) => {
+                          event.preventDefault()
+                          navigateTo("/sale/men")
+                        }}
                       >
                         Men Top Seller
                       </Link>
                       <Link
                         href="/sale/women"
                         className="block w-full text-left px-6 py-3 transition-colors font-medium text-[#212121] hover:bg-gray-50"
-                        onClick={() => setIsTopSellerOpen(false)}
+                        onClick={(event) => {
+                          event.preventDefault()
+                          navigateTo("/sale/women")
+                        }}
                       >
                         Women Top Seller
                       </Link>
@@ -477,7 +547,10 @@ export default function Header() {
                 className={`transition-colors font-medium tracking-wide uppercase text-sm ${
                   isActivePath("/") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
                 }`}
-                onClick={() => setIsMenuOpen(false)}
+              onClick={(event) => {
+                event.preventDefault()
+                navigateTo("/")
+              }}
               >
                 HOME
               </Link>
@@ -486,14 +559,23 @@ export default function Header() {
                 className={`transition-colors font-medium tracking-wide uppercase text-sm ${
                   isActivePath("/collection") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
                 }`}
-                onClick={() => setIsMenuOpen(false)}
+              onClick={(event) => {
+                event.preventDefault()
+                navigateTo("/collection")
+              }}
               >
                 COLLECTION
               </Link>
 
               {/* Mobile Categories */}
               <div className="space-y-3">
-                <Link href="/categories" onClick={() => setIsMenuOpen(false)}>
+                <Link
+                  href="/categories"
+                  onClick={(event) => {
+                    event.preventDefault()
+                    navigateTo("/categories")
+                  }}
+                >
                   <span className={`font-medium tracking-wide uppercase text-sm ${isActivePath("/categories") ? "text-[#cbf26c]" : "text-white"}`}>
                     CATEGORIES
                   </span>
@@ -502,14 +584,20 @@ export default function Header() {
                   <Link
                     href="/categories?gender=men"
                     className="block text-white hover:text-[#cbf26c] transition-colors text-sm"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      navigateTo("/categories?gender=men")
+                    }}
                   >
                     Men
                   </Link>
                   <Link
                     href="/categories?gender=women"
                     className="block text-white hover:text-[#cbf26c] transition-colors text-sm"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      navigateTo("/categories?gender=women")
+                    }}
                   >
                     Women
                   </Link>
@@ -522,7 +610,10 @@ export default function Header() {
                 className={`transition-colors font-medium tracking-wide uppercase text-sm ${
                   isActivePath("/sale") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
                 }`}
-                onClick={() => setIsMenuOpen(false)}
+              onClick={(event) => {
+                event.preventDefault()
+                navigateTo("/sale")
+              }}
               >
                 SALE
               </Link>
@@ -538,14 +629,20 @@ export default function Header() {
                   <Link
                     href="/sale/men"
                     className="block text-white hover:text-[#cbf26c] transition-colors text-sm"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      navigateTo("/sale/men")
+                    }}
                   >
                     Men Top Seller
                   </Link>
                   <Link
                     href="/sale/women"
                     className="block text-white hover:text-[#cbf26c] transition-colors text-sm"
-                    onClick={() => setIsMenuOpen(false)}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      navigateTo("/sale/women")
+                    }}
                   >
                     Women Top Seller
                   </Link>

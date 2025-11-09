@@ -24,6 +24,14 @@ const DEFAULT_HERO: Record<"men" | "women", HeroImages> = {
   },
 }
 
+const getFullImageUrl = (url?: string) => {
+  if (!url) return ""
+  if (url.startsWith("http")) return url
+  const baseUrl = API_BASE_URL.replace("/api", "")
+  if (url.startsWith("/")) return `${baseUrl}${url}`
+  return `${baseUrl}/${url}`
+}
+
 function CategoriesContent() {
   const searchParams = useSearchParams()
   const gender = searchParams.get("gender")
@@ -38,40 +46,42 @@ export default function CategoriesPage() {
     return genderParam?.toLowerCase() === "women" ? "women" : "men"
   }, [genderParam])
 
-  const [heroImages, setHeroImages] = useState<HeroImages>(DEFAULT_HERO[normalizedGender])
+  const [heroSettings, setHeroSettings] = useState<Record<"men" | "women", HeroImages>>(DEFAULT_HERO)
 
   useEffect(() => {
     let isMounted = true
 
     const fetchHeroImages = async () => {
       try {
-        if (isMounted) {
-          setHeroImages(DEFAULT_HERO[normalizedGender])
-        }
-        const response = await fetch(`${API_BASE_URL}/categories/public/dashboard`)
+        const response = await fetch(`${API_BASE_URL}/settings/public`)
         if (!response.ok) {
-          if (isMounted) setHeroImages(DEFAULT_HERO[normalizedGender])
+          if (isMounted) {
+            setHeroSettings(DEFAULT_HERO)
+          }
           return
         }
 
-        const payload = await response.json()
-        const data = payload?.data ?? payload
-        const genderCategories = Array.isArray(data?.[normalizedGender]) ? data[normalizedGender] : []
+        const settings = await response.json()
+        if (!settings || typeof settings !== "object") {
+          if (isMounted) setHeroSettings(DEFAULT_HERO)
+          return
+        }
+
+        const menBackground = getFullImageUrl(settings.categoriesMenBackground) || DEFAULT_HERO.men.background
+        const menOverlay = getFullImageUrl(settings.categoriesMenForeground) || DEFAULT_HERO.men.overlay
+        const womenBackground = getFullImageUrl(settings.categoriesWomenBackground) || DEFAULT_HERO.women.background
+        const womenOverlay = getFullImageUrl(settings.categoriesWomenForeground) || DEFAULT_HERO.women.overlay
 
         if (isMounted) {
-          if (genderCategories.length > 0) {
-            const category = genderCategories[0] || {}
-            const background = category.carouselImage || category.image || DEFAULT_HERO[normalizedGender].background
-            const overlay = category.image || category.carouselImage || DEFAULT_HERO[normalizedGender].overlay
-            setHeroImages({ background, overlay })
-          } else {
-            setHeroImages(DEFAULT_HERO[normalizedGender])
-          }
+          setHeroSettings({
+            men: { background: menBackground, overlay: menOverlay },
+            women: { background: womenBackground, overlay: womenOverlay },
+          })
         }
       } catch (error) {
         console.error("Failed to fetch category hero images:", error)
         if (isMounted) {
-          setHeroImages(DEFAULT_HERO[normalizedGender])
+          setHeroSettings(DEFAULT_HERO)
         }
       }
     }
@@ -81,31 +91,49 @@ export default function CategoriesPage() {
     return () => {
       isMounted = false
     }
+  }, [])
+
+  useEffect(() => {
+    // Ensure fallback to defaults if current gender missing
+    setHeroSettings((prev) => ({
+      men: {
+        background: prev.men?.background || DEFAULT_HERO.men.background,
+        overlay: prev.men?.overlay || DEFAULT_HERO.men.overlay,
+      },
+      women: {
+        background: prev.women?.background || DEFAULT_HERO.women.background,
+        overlay: prev.women?.overlay || DEFAULT_HERO.women.overlay,
+      },
+    }))
   }, [normalizedGender])
+
+  const heroImages = heroSettings[normalizedGender] || DEFAULT_HERO[normalizedGender]
 
   return (
     <div className="min-h-screen bg-white">
       <Header />
       {/* Banner Image Section */}
-      <div className="mt-32 mb-20 container mx-auto px-4 flex justify-center overflow-visible">
-        <div className="relative w-full max-w-[1250px] h-[235px] overflow-visible">
+      <div className="mt-32 mb-16 w-full px-4 sm:px-6 lg:px-10 flex justify-center">
+        <div className="relative w-full max-w-[1400px]">
+          <div className="relative w-full overflow-hidden rounded-[80px] bg-[#f2f2f2]">
+            <div className="relative w-full" style={{ paddingTop: "18%" }}>
+              <img 
+                src={heroImages.background} 
+                alt={`${normalizedGender === "women" ? "Women" : "Men"} banner`} 
+                className="absolute inset-0 h-full w-full object-cover"
+                onError={(event) => {
+                  const target = event.target as HTMLImageElement
+                  target.src = DEFAULT_HERO[normalizedGender].background
+                }}
+              />
+            </div>
+          </div>
           {/* Background Banner */}
-          <img 
-            src={heroImages.background} 
-            alt={`${normalizedGender === "women" ? "Women" : "Men"} banner`} 
-            className="w-full h-full object-cover rounded-[74px]"
-            onError={(event) => {
-              const target = event.target as HTMLImageElement
-              target.src = DEFAULT_HERO[normalizedGender].background
-            }}
-          />
-          {/* Center Image Overlay - Upper body above banner, lower body inside banner only */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 overflow-visible flex items-end justify-center">
+          <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
             <img 
               src={heroImages.overlay} 
               alt={`${normalizedGender === "women" ? "Women" : "Men"} feature`} 
-              className="w-[321px] h-[347px] object-contain z-10"
-              style={{ maxHeight: 'none' }}
+              className="w-[320px] md:w-[360px] lg:w-[400px] object-contain"
               onError={(event) => {
                 const target = event.target as HTMLImageElement
                 target.src = DEFAULT_HERO[normalizedGender].overlay

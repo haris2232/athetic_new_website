@@ -16,6 +16,10 @@ interface HomepageSettings {
   homepageImage1Type?: 'image' | 'video';
   homepageImage2?: string;
   homepageImage3?: string;
+  discoverYourFitMen?: string;
+  discoverYourFitWomen?: string;
+  discoverYourFitNewArrivals?: string;
+  discoverYourFitSets?: string;
 }
 
 interface Product {
@@ -86,7 +90,11 @@ const normalizeBlogHref = (blog: Blog): string => {
       return rawUrl
     }
     if (rawUrl.startsWith("/")) {
-      return rawUrl
+      const cleaned = rawUrl.replace(/\/{2,}/g, "/")
+      if (cleaned.toLowerCase().startsWith("/blog/")) {
+        return cleaned
+      }
+      return `/blog${cleaned}`
     }
     const sanitized = rawUrl.replace(/^\/+/, "").trim()
     return `/blog/${encodeURIComponent(sanitized)}`
@@ -126,6 +134,10 @@ export default function HomePage() {
             homepageImage1Type: settings.homepageImage1Type || 'image',
             homepageImage2: settings.homepageImage2 || '',
             homepageImage3: settings.homepageImage3 || '',
+            discoverYourFitMen: settings.discoverYourFitMen || '',
+            discoverYourFitWomen: settings.discoverYourFitWomen || '',
+            discoverYourFitNewArrivals: settings.discoverYourFitNewArrivals || '',
+            discoverYourFitSets: settings.discoverYourFitSets || '',
           });
           console.log('🏠 Homepage settings state updated');
         } else {
@@ -191,6 +203,14 @@ export default function HomePage() {
 
   // Fetch categories from API for DISCOVER YOUR FIT section
   useEffect(() => {
+    const mainCategoryNames = ["Men", "Women", "New Arrivals", "Sets"];
+    const placeholderCategories: Category[] = mainCategoryNames.map((name, index) => ({
+      _id: `placeholder-${name.toLowerCase().replace(/\s+/g, "-")}`,
+      name,
+      isActive: true,
+      sectionOrder: index,
+    }));
+
     const fetchCategories = async () => {
       try {
         setLoadingCategories(true);
@@ -198,22 +218,30 @@ export default function HomePage() {
         if (response.ok) {
           const data = await response.json();
           if (data.data && Array.isArray(data.data)) {
-            const activeCategories = data.data
-              .filter((cat: Category) => cat.isActive)
-              .sort((a: Category, b: Category) => {
-                const orderA = typeof a.sectionOrder === 'number' ? a.sectionOrder : Number.MAX_SAFE_INTEGER;
-                const orderB = typeof b.sectionOrder === 'number' ? b.sectionOrder : Number.MAX_SAFE_INTEGER;
-                if (orderA !== orderB) return orderA - orderB;
-                const createdA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-                const createdB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-                return createdB - createdA;
-              })
-              .slice(0, 4);
-            setCategories(activeCategories);
+            const normalizedMap = new Map<string, Category>();
+            data.data.forEach((cat: Category) => {
+              if (!cat?.name) return;
+              const key = cat.name.trim().toLowerCase();
+              if (cat.isActive) {
+                normalizedMap.set(key, cat);
+              }
+            });
+
+            const orderedCategories = mainCategoryNames.map((name, index) => {
+              const key = name.toLowerCase();
+              return normalizedMap.get(key) || placeholderCategories[index];
+            });
+
+            setCategories(orderedCategories);
+          } else {
+            setCategories(placeholderCategories);
           }
+        } else {
+          setCategories(placeholderCategories);
         }
       } catch (error) {
         console.error('Failed to fetch categories:', error);
+        setCategories(placeholderCategories);
       } finally {
         setLoadingCategories(false);
       }
@@ -366,6 +394,41 @@ export default function HomePage() {
     if (name === 'sets') return '/categories/sets';
     const slug = name.trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || category._id;
     return `/categories/${slug}`;
+  };
+
+  const discoverImageOverrides: Record<string, string> = {
+    men: homepageSettings.discoverYourFitMen || '',
+    women: homepageSettings.discoverYourFitWomen || '',
+    "new arrivals": homepageSettings.discoverYourFitNewArrivals || '',
+    sets: homepageSettings.discoverYourFitSets || '',
+  };
+
+  const getDiscoverBackgroundImage = (name: string, category?: Category): string => {
+    const normalized = name.trim().toLowerCase();
+    const override = discoverImageOverrides[normalized];
+
+    if (override) {
+      const overrideUrl = getImageUrl(override);
+      if (overrideUrl) {
+        return overrideUrl;
+      }
+    }
+
+    if (category?.image) {
+      const imageUrl = getImageUrl(category.image);
+      if (imageUrl) {
+        return imageUrl;
+      }
+    }
+
+    if (category?.carouselImage) {
+      const imageUrl = getImageUrl(category.carouselImage);
+      if (imageUrl) {
+        return imageUrl;
+      }
+    }
+
+    return '/6.png';
   };
 
   // Helper function to format category name for display
@@ -550,76 +613,76 @@ const getBundleProductHref = (bundle: Bundle): string => {
 
         {/* Hero Box - Below the text (Exact Figma Properties) */}
         <div 
-           className="bg-white relative mx-auto overflow-hidden"
-           style={{
-             // Position - Exact Figma Properties
-             position: 'relative',
-             marginTop: 'clamp(20px, 4vw, 40px)', // Spacing after text
+          className="bg-white relative mx-auto overflow-hidden"
+          style={{
+            // Position - Exact Figma Properties
+            position: 'relative',
+            marginTop: 'clamp(20px, 4vw, 40px)', // Spacing after text
              marginLeft: 'auto',
              marginRight: 'auto',
- 
-             // Dimensions - Exact Figma Properties - Adjusted to prevent overflow
-             width: 'clamp(90vw, calc(100vw - 110px), 1311px)', // Desktop: 1311px, max width with margins
-             maxWidth: '1311px', // Prevent overflow
-             height: 'clamp(300px, 50vw, 645px)', // Desktop: 645px
-             minHeight: 'clamp(300px, 50vw, 645px)',
- 
-             // Appearance - Exact Figma Properties
-             opacity: 1,
-             borderRadius: '0px',
- 
-             // Fill Pattern - Exact Figma Properties (will be behind image/video)
-             backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)',
-             backgroundSize: '24px 24px',
-             backgroundPosition: '0 0',
-             backgroundColor: '#FFFFFF',
- 
-             // Rotation
-             transform: 'rotate(0deg)'
-           }}
-         >
-           {/* Image or Video Content */}
+            
+            // Dimensions - Exact Figma Properties - Adjusted to prevent overflow
+            width: 'clamp(90vw, calc(100vw - 110px), 1311px)', // Desktop: 1311px, max width with margins
+            maxWidth: '1311px', // Prevent overflow
+            height: 'clamp(300px, 50vw, 645px)', // Desktop: 645px
+            minHeight: 'clamp(300px, 50vw, 645px)',
+            
+            // Appearance - Exact Figma Properties
+            opacity: 1,
+            borderRadius: '0px',
+            
+            // Fill Pattern - Exact Figma Properties (will be behind image/video)
+            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)',
+            backgroundSize: '24px 24px',
+            backgroundPosition: '0 0',
+            backgroundColor: '#FFFFFF',
+            
+            // Rotation
+            transform: 'rotate(0deg)'
+          }}
+        >
+          {/* Image or Video Content */}
            {heroContent ? (
              heroContent.type === 'image' ? (
                <div className="relative w-full h-full">
-                 <Image
+            <Image
                    src={heroContent.src}
-                   alt={heroContent.alt}
-                   fill
-                   className="object-cover"
-                   style={{
-                     objectFit: 'cover',
-                     objectPosition: 'center center',
-                     width: '100%',
-                     height: '100%'
-                   }}
-                   priority
-                 />
+              alt={heroContent.alt}
+              fill
+              className="object-cover"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center center',
+                width: '100%',
+                height: '100%'
+              }}
+              priority
+            />
                </div>
-             ) : (
+          ) : (
                <div className="relative w-full h-full">
-                 <video
+            <video
                    src={heroContent.src}
-                   autoPlay
-                   loop
-                   muted
-                   playsInline
-                   className="w-full h-full object-cover"
-                   style={{
-                     objectFit: 'cover',
-                     objectPosition: 'center center',
-                     width: '100%',
-                     height: '100%'
-                   }}
-                 >
-                   Your browser does not support the video tag.
-                 </video>
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center center',
+                width: '100%',
+                height: '100%'
+              }}
+            >
+              Your browser does not support the video tag.
+            </video>
                </div>
              )
            ) : (
              <div className="w-full h-full bg-gray-100 animate-pulse" />
-           )}
-         </div>
+          )}
+        </div>
       </section>
 
       {/* Section 2: DISCOVER YOUR FIT - Subtitle below heading */}
@@ -652,22 +715,22 @@ const getBundleProductHref = (bundle: Bundle): string => {
 
           {/* 2x2 Grid of Category Cards - Dynamically loaded from database */}
           {loadingCategories ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
               {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
                   className="relative overflow-hidden"
-                  style={{
+              style={{
                     width: '100%',
                     aspectRatio: '642/230',
                     borderRadius: 'clamp(16px, 2vw, 32px)',
-                    backgroundColor: '#E0E0E0',
+                backgroundColor: '#E0E0E0',
                     opacity: 0.5
                   }}
                 >
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-gray-400">Loading...</div>
-                  </div>
+              </div>
                 </div>
               ))}
             </div>
@@ -675,80 +738,80 @@ const getBundleProductHref = (bundle: Bundle): string => {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
                {categories.map((category) => {
                  const categoryName = formatCategoryName(category.name);
-                 const categoryImage = getImageUrl(category.image || category.carouselImage || '/6.png');
+                 const categoryImage = getDiscoverBackgroundImage(category.name, category);
                  
                  return (
-               <Link 
+            <Link 
                        key={category._id}
                        href={getCategoryUrl(category)}
-               className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-               style={{
-                 position: 'relative',
-                 left: '0',
-                 marginTop: '0',
+              className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+              style={{
+                position: 'relative',
+                left: '0',
+                marginTop: '0',
                        width: '100%',
                        maxWidth: '100%',
                        aspectRatio: '642/230',
-                 opacity: 1,
+                opacity: 1,
                        borderRadius: 'clamp(16px, 2vw, 32px)',
-                       backgroundImage: categoryImage ? `url(${categoryImage})` : 'url(/6.png)',
+                       backgroundImage: `url(${categoryImage})`,
                        backgroundSize: 'cover',
                        backgroundPosition: 'center',
-                 backgroundRepeat: 'no-repeat',
-                 backgroundColor: '#E0E0E0',
-                 transform: 'rotate(0deg)',
-                 overflow: 'hidden'
-               }}
-             >
+                backgroundRepeat: 'no-repeat',
+                backgroundColor: '#E0E0E0',
+                transform: 'rotate(0deg)',
+                overflow: 'hidden'
+              }}
+            >
                <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/10 to-transparent" />
-               <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
-                       <div className="z-10">
-                 <h3 
-                           className="text-white uppercase"
-                 style={{
-                   fontFamily: "'Bebas Neue', sans-serif",
+              <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
+                <div className="z-10">
+                  <h3 
+                    className="text-white uppercase"
+                    style={{
+                      fontFamily: "'Bebas Neue', sans-serif",
                              fontSize: 'clamp(32px, 4.5vw, 65.01px)',
-                   fontWeight: 400,
+                      fontWeight: 400,
                              lineHeight: 'clamp(28px, 4vw, 58px)',
-                   letterSpacing: '0px',
-                   color: '#FFFFFF',
-                   opacity: 1,
-                   borderRadius: '0px',
-                   textAlign: 'left',
-                   position: 'relative',
-                   margin: '0',
-                   padding: '0',
+                      letterSpacing: '0px',
+                      color: '#FFFFFF',
+                      opacity: 1,
+                      borderRadius: '0px',
+                      textAlign: 'left',
+                      position: 'relative',
+                      margin: '0',
+                      padding: '0',
                              marginBottom: categoryName.line2 ? 'clamp(4px, 0.5vw, 8px)' : '0',
                    textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                 }}
-               >
+                    }}
+                  >
                          {categoryName.line1}
-                 </h3>
+                  </h3>
                          {categoryName.line2 && (
-                   <h3 
-                             className="text-white uppercase"
-                     style={{
-                       fontFamily: "'Bebas Neue', sans-serif",
+                  <h3 
+                    className="text-white uppercase"
+                    style={{
+                      fontFamily: "'Bebas Neue', sans-serif",
                                fontSize: 'clamp(32px, 4.5vw, 65.01px)',
-                       fontWeight: 400,
+                      fontWeight: 400,
                                lineHeight: 'clamp(28px, 4vw, 58px)',
-                       letterSpacing: '0px',
-                       color: '#FFFFFF',
-                       opacity: 1,
-                       borderRadius: '0px',
-                       textAlign: 'left',
-                       position: 'relative',
-                       margin: '0',
-                       padding: '0',
+                      letterSpacing: '0px',
+                      color: '#FFFFFF',
+                      opacity: 1,
+                      borderRadius: '0px',
+                      textAlign: 'left',
+                      position: 'relative',
+                      margin: '0',
+                      padding: '0',
                        textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                     }}
-                   >
+                    }}
+                  >
                              {categoryName.line2}
-                   </h3>
+                  </h3>
                          )}
-                       </div>
-               </div>
-                 </Link>
+                </div>
+              </div>
+            </Link>
                );
              })}
            </div>
@@ -756,42 +819,43 @@ const getBundleProductHref = (bundle: Bundle): string => {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
                {["Men", "Women", "New Arrivals", "Sets"].map((label) => {
                  const formatted = formatCategoryName(label)
+                 const categoryImage = getDiscoverBackgroundImage(label)
                  return (
-                   <Link 
+            <Link 
                      key={label}
                      href={getCategoryUrl({ _id: label, name: label, isActive: true } as Category)}
-                     className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                     style={{
-                       position: 'relative',
+              className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+              style={{
+                position: 'relative',
                        width: '100%',
                        aspectRatio: '642/230',
                        borderRadius: 'clamp(16px, 2vw, 32px)',
-                       backgroundImage: 'url(/6.png)',
+               backgroundImage: `url(${categoryImage})`,
                        backgroundSize: 'cover',
                        backgroundPosition: 'center',
-                       backgroundColor: '#E0E0E0',
-                       overflow: 'hidden'
-                     }}
-                   >
+                backgroundColor: '#E0E0E0',
+                overflow: 'hidden'
+              }}
+            >
                      <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/10 to-transparent" />
-                     <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
+              <div className="absolute inset-0 flex items-start justify-start" style={{ padding: 'clamp(16px, 2vw, 32px)' }}>
                        <div className="z-10">
-                         <h3
+                <h3 
                            className="text-white uppercase"
-                           style={{
-                             fontFamily: "'Bebas Neue', sans-serif",
+                  style={{
+                    fontFamily: "'Bebas Neue', sans-serif",
                              fontSize: 'clamp(32px, 4.5vw, 65.01px)',
-                             fontWeight: 400,
+                    fontWeight: 400,
                              lineHeight: 'clamp(28px, 4vw, 58px)',
-                             letterSpacing: '0px',
-                             color: '#FFFFFF',
-                             margin: '0',
-                             padding: '0',
+                    letterSpacing: '0px',
+                    color: '#FFFFFF',
+                    margin: '0',
+                    padding: '0',
                              textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                           }}
-                         >
+                  }}
+                >
                            {formatted.line1}
-                         </h3>
+                </h3>
                          {formatted.line2 && (
                            <h3
                              className="text-white uppercase"
@@ -811,11 +875,11 @@ const getBundleProductHref = (bundle: Bundle): string => {
                            </h3>
                          )}
                        </div>
-                     </div>
-                   </Link>
+              </div>
+            </Link>
                  )
                })}
-             </div>
+          </div>
            )}
         </div>
       </section>

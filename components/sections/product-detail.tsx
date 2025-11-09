@@ -1004,19 +1004,19 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                         }
                       }}
                     >
-                      <span
-                        className="uppercase text-black whitespace-nowrap"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    <span 
+                      className="uppercase text-black whitespace-nowrap"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                           fontSize: 'clamp(12px, 1.2vw, 14px)',
-                          fontWeight: 600,
-                          lineHeight: '1'
-                        }}
-                      >
-                        SIZE CHART
-                      </span>
-                      <Package className="h-4 w-4 text-black flex-shrink-0" />
-                    </div>
+                        fontWeight: 600,
+                        lineHeight: '1'
+                      }}
+                    >
+                      SIZE CHART
+                    </span>
+                    <Package className="h-4 w-4 text-black flex-shrink-0" />
+              </div>
                   )}
                 </div>
               </div>
@@ -1444,17 +1444,22 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   Read all reviews
                 </Link>
               ) : (
-                <Link
-                  href="#customer-reviews"
+                <button
+                  type="button"
+                  onClick={() => setShowReviewForm(true)}
                   className="uppercase text-black underline underline-offset-4"
                   style={{
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                     fontSize: 'clamp(12px, 1.2vw, 14px)',
-                    fontWeight: 600
+                    fontWeight: 600,
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer'
                   }}
                 >
                   Write a Review
-                </Link>
+                </button>
               )}
             </div>
           </div>
@@ -1833,21 +1838,21 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               .concat(communityHighlights)
               .slice(0, 8)
               .map((imgUrl, i) => (
-                <div
-                  key={i}
-                  className="rounded-[24px] aspect-square relative overflow-hidden bg-gray-300"
-                >
-                  <Image
+              <div
+                key={i}
+                className="rounded-[24px] aspect-square relative overflow-hidden bg-gray-300"
+              >
+                <Image
                     src={imgUrl || DEFAULT_COMMUNITY_HIGHLIGHTS[i % DEFAULT_COMMUNITY_HIGHLIGHTS.length]}
-                    alt="Community Highlight"
-                    fill
-                    className="object-cover rounded-[24px]"
-                    style={{
-                      objectPosition: 'center top' // Face fully visible from top
-                    }}
-                  />
-                </div>
-              ))}
+                  alt="Community Highlight"
+                  fill
+                  className="object-cover rounded-[24px]"
+                  style={{
+                    objectPosition: 'center top' // Face fully visible from top
+                  }}
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>
