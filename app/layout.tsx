@@ -1,13 +1,11 @@
-import type React from "react"
+import React, { Suspense } from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import Script from "next/script"
 import "./globals.css"
 import FloatingCartButton from "@/components/ui/floating-cart-button"
 import CartSidebar from "@/components/ui/cart-sidebar"
-import { CartProvider } from "@/lib/cart-context"
-import { CurrencyProvider } from "@/lib/currency-context"
-import { WishlistProvider } from "@/lib/wishlist-context"
+import { Providers } from "@/components/layout/providers"
 import OrderCompletionChecker from "@/components/order-completion-checker"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -53,17 +51,14 @@ export default function RootLayout({
         </Script>
       </head>
       <body className={inter.className}>
-        <CurrencyProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <OrderCompletionChecker />
-            <CartSidebar />
-            {children}
-            <FloatingCartButton />
-          </WishlistProvider>
-        </CartProvider>
-        </CurrencyProvider>
-       
+        <Suspense fallback={<div>Loading...</div>}>
+          <Providers>
+              <OrderCompletionChecker />
+              <CartSidebar />
+              {children}
+              <FloatingCartButton />
+          </Providers>
+        </Suspense>
       </body>
     </html>
   )
