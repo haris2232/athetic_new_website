@@ -175,8 +175,8 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
         </nav>
 
         <div className="flex flex-col gap-10 lg:flex-row">
-          <div className="flex flex-col gap-4 lg:w-1/2 lg:flex-row">
-            <div className="order-2 flex gap-3 overflow-x-auto pr-1 lg:order-1 lg:max-h-[480px] lg:flex-col lg:overflow-y-auto">
+          <div className="flex flex-col gap-4 lg:w-1/2 lg:flex-row lg:h-[560px]">
+            <div className="order-2 flex gap-3 overflow-x-auto pr-1 lg:order-1 lg:w-[96px] lg:flex-col lg:gap-3 lg:overflow-y-auto lg:overflow-x-hidden lg:pr-0 lg:justify-between">
               {mediaImages.map((imageUrl, idx) => (
                 <button
                   key={`${imageUrl}-${idx}`}
@@ -184,14 +184,14 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
                     setActiveImageIndex(idx)
                     setOverrideImage(null)
                   }}
-                  className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl border transition ${
-                    overrideImage
-                      ? "border-transparent opacity-60"
-                      : activeImageIndex === idx
-                        ? "border-black shadow"
-                        : "border-transparent hover:border-zinc-300"
-                  }`}
                   aria-label={`View bundle image ${idx + 1}`}
+                  className={`relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-2xl transition ${
+                    overrideImage
+                      ? "opacity-60"
+                      : activeImageIndex === idx
+                        ? "ring-2 ring-black shadow"
+                        : "ring-1 ring-transparent hover:ring-zinc-300"
+                  }`}
                 >
                   <img
                     src={imageUrl}
@@ -301,39 +301,38 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
                     <p className="text-xs text-muted-foreground">{selection.color.description}</p>
                   )}
                 </div>
-                <div className="flex gap-3 overflow-x-auto pb-1">
+                <div className="grid grid-flow-col auto-cols-[88px] gap-3 overflow-x-auto pb-1">
                   {bundle.colorOptions.map((color) => (
                     <button
                       key={color.name}
+                      aria-label={color.name}
                       onClick={() => handleColorSelect(color)}
-                      className={`relative flex h-20 w-20 flex-shrink-0 flex-col rounded-2xl border transition ${
+                      className={`relative flex h-20 w-[88px] flex-shrink-0 flex-col rounded-2xl transition ${
                         selection.color?.name === color.name
-                          ? "border-black shadow"
-                          : "border-zinc-200 hover:border-zinc-300"
+                          ? "ring-2 ring-black shadow"
+                          : "ring-1 ring-transparent hover:ring-zinc-300"
                       }`}
                     >
-                      <div className="relative h-12 overflow-hidden rounded-t-2xl bg-zinc-100">
+                      <div className="relative h-20 overflow-hidden rounded-2xl bg-zinc-100">
                         <img
                           src={getFullImageUrl(color.thumbnailImage) || bundle.heroImage || "/placeholder.svg"}
                           alt={color.name}
                           className="h-full w-full object-cover"
                         />
+                        {color.badge && (
+                          <span className="absolute left-1.5 top-1.5 rounded-full bg-black/80 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+                            {color.badge}
+                          </span>
+                        )}
                       </div>
-                      <span className="px-2 py-1 text-xs font-medium capitalize line-clamp-1">
-                        {color.name}
-                      </span>
-                      {color.badge && (
-                        <span className="absolute left-2 top-2 rounded-full bg-amber-500 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
-                          {color.badge}
-                        </span>
-                      )}
+                      <span className="sr-only">{color.name}</span>
                     </button>
                   ))}
                 </div>
               </div>
             )}
 
-              {bundle.packOptions && bundle.packOptions.length > 0 && (
+            {bundle.packOptions && bundle.packOptions.length > 0 && (
               <div className="space-y-3">
                 <p className="text-sm font-medium text-zinc-900">
                   Packs{" "}

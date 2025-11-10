@@ -458,13 +458,13 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             discount: Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
           })))
           if (typeof window !== 'undefined') {
-            setCarouselItems(products.slice(5, 9).map((product: any) => ({
-              id: product.id,
-              name: product.name,
-              price: product.price,
-              image: product.image,
-              discount: Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
-            })))
+          setCarouselItems(products.slice(5, 9).map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            discount: Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
+          })))
           }
         }
       } catch (error) {
