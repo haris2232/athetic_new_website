@@ -1201,62 +1201,176 @@ const getBundleProductHref = (bundle: Bundle): string => {
       <section className="bg-white text-[#212121] pt-0 pb-0 mt-12 relative" style={{ overflowX: 'hidden', overflowY: 'visible' }}>
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Container - Same width as products section - Exact Figma Layout - Allow overflow on top - Aligned like COMMUNITY FAVOURITES */}
-          <div 
-            className="relative mx-auto"
-            style={{
-              position: 'relative',
-              width: '100%',
-              maxWidth: '100%',
-              minHeight: 'auto', // Auto height - no minimum height constraint
-              paddingTop: 'clamp(100px, 10vw, 150px)', // Top padding - allow image overflow on top
-              paddingBottom: '0px', // Bottom padding - removed to reduce gap
-              marginBottom: '0px', // No bottom margin - reduce gap
-              overflow: 'visible' // Visible - allow image to overflow on top
-            }}
-          >
-            {/* Background Rectangle - Linear Gradient (Pic 1-2) - Behind everything - Exact Figma - Fully Responsive - Reduced size */}
-            <div
-              className="absolute"
-              style={{
-                position: 'absolute',
-                // Responsive positioning - aligned left like COMMUNITY FAVOURITES (container padding = 16px)
-                left: 'clamp(0px, 1.28vw, 16px)', // Aligned left - exact same as COMMUNITY FAVOURITES (small: 0px, large: 16px)
-                top: 'clamp(50px, 7.5vw, 130px)', // Fully responsive top position - proportional scaling (small: 50px, large: 130px)
-                // Responsive dimensions - Fully proportional scaling across all desktop sizes and zoom levels
-                // Maintains exact proportions at all zoom levels - uses viewport units for consistent scaling
-                width: 'clamp(320px, 48.25vw, 682px)', // Fully responsive width - proportional scaling (small: 320px, large: 682px)
-                height: 'clamp(200px, 29.75vw, 412px)', // Fully responsive height - proportional scaling (small: 200px, large: 412px)
-                
-                // Background - Linear Gradient (Pic 1-2) - Exact colors
-                background: 'linear-gradient(180deg, #91ADB9 0%, #3A6685 100%)', // Linear gradient from light blue-grey to dark blue
-                
-                // Appearance
-                opacity: 1,
-                borderRadius: 'clamp(40px, 5.5vw, 96px)', // Responsive corner radius - scales from small desktop (40px) to large (96px)
-                
-                // Border - Stroke inside (Pic 1-2)
-                border: '1px solid #000000', // Black stroke, 1px, inside position
-                boxSizing: 'border-box',
-                
-                // Rotation
-                transform: 'rotate(180deg)', // Desktop: Rotation: 180deg
-                
-                zIndex: 1 // Behind content
-              }}
-            />
+          <div className="relative mx-auto">
+            {/* Mobile Layout */}
+            <div className="flex flex-col items-center gap-6 py-12 lg:hidden">
+              <div className="relative w-full max-w-sm">
+                <div className="absolute inset-x-4 top-8 h-60 rounded-[40px] border border-black bg-gradient-to-b from-[#91ADB9] to-[#3A6685]" />
+                <div className="relative z-10 overflow-hidden rounded-[40px] border border-black bg-white shadow-lg">
+                  <img
+                    src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : "/9.png"}
+                    alt="Why Athlekt"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </div>
+              <div className="flex w-full max-w-sm flex-col items-center gap-4 px-4 text-center">
+                <h2
+                  className="text-black uppercase"
+                  style={{
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: "46px",
+                    lineHeight: 1,
+                    letterSpacing: "-1px",
+                    margin: 0,
+                  }}
+                >
+                  WHY ATHLEKT
+                </h2>
+                <div
+                  className="text-black"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: "15px",
+                    fontWeight: 500,
+                    lineHeight: "22px",
+                    letterSpacing: "-0.3px",
+                  }}
+                >
+                  <p className="mb-3">
+                    We believe activewear shouldn't compromise. Comfort meets performance, design meets function.
+                  </p>
+                  <p className="mb-0">
+                    Whether it's lifting, running, stretching, or relaxing.. Whether you're an athlete or rocking a dad-bod.. we've engineered fabrics and fits to support your pace and lifestyle.
+                  </p>
+                </div>
+              </div>
+              <div className="grid w-full max-w-sm grid-cols-1 gap-3 px-4">
+                <div className="flex flex-col items-center justify-center rounded-3xl border border-black bg-white p-5 shadow-sm">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center">
+                    <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 4L8 8L12 12L16 8L12 4Z" stroke="#000000" strokeWidth="2" fill="none" />
+                      <path d="M4 12L8 8L12 12L8 16L4 12Z" stroke="#000000" strokeWidth="2" fill="none" />
+                      <path d="M12 12L16 8L20 12L16 16L12 12Z" stroke="#000000" strokeWidth="2" fill="none" />
+                      <path d="M12 20L8 16L12 12L16 16L12 20Z" stroke="#000000" strokeWidth="2" fill="none" />
+                    </svg>
+                  </div>
+                  <p
+                    className="text-center text-black"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      lineHeight: "18px",
+                      margin: 0,
+                    }}
+                  >
+                    Engineered<br />Fabrics
+                  </p>
+                </div>
+                <div className="flex flex-col items-center justify-center rounded-3xl border border-black bg-white p-5 shadow-sm">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center">
+                    <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 12H20" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M12 4L12 20" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M7 7L17 17" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M17 7L7 17" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <p
+                    className="text-center text-black"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      lineHeight: "18px",
+                      margin: 0,
+                    }}
+                  >
+                    Precision<br />Fit
+                  </p>
+                </div>
+                <div className="flex flex-col items-center justify-center rounded-3xl border border-black bg-white p-5 shadow-sm">
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center">
+                    <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M6 8C6 5.79086 7.79086 4 10 4H14C16.2091 4 18 5.79086 18 8C18 10.2091 16.2091 12 14 12H10C7.79086 12 6 13.7909 6 16C6 18.2091 7.79086 20 10 20H14" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M12 8V4" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
+                      <path d="M12 20V16" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                  <p
+                    className="text-center text-black"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      lineHeight: "18px",
+                      margin: 0,
+                    }}
+                  >
+                    Sustainable<br />Practices
+                  </p>
+                </div>
+              </div>
+            </div>
 
-            {/* Main Content - Exact Figma Layout with Absolute Positioning - Allow overflow on top */}
-            <div 
-              className="relative"
+            {/* Desktop Layout */}
+            <div
+              className="relative hidden lg:block"
               style={{
                 position: 'relative',
                 width: '100%',
-                height: '100%',
-                minHeight: 'clamp(650px, 70vw, 900px)', // Increased height for large screens - prevents content clipping
+                maxWidth: '100%',
+                minHeight: 'auto', // Auto height - no minimum height constraint
+                paddingTop: 'clamp(100px, 10vw, 150px)', // Top padding - allow image overflow on top
+                paddingBottom: '0px', // Bottom padding - removed to reduce gap
+                marginBottom: '0px', // No bottom margin - reduce gap
                 overflow: 'visible', // Visible - allow image to overflow on top
-                zIndex: 10 // Above background
               }}
             >
+              {/* Background Rectangle - Linear Gradient (Pic 1-2) - Behind everything - Exact Figma - Fully Responsive - Reduced size */}
+              <div
+                className="absolute"
+                style={{
+                  position: 'absolute',
+                  // Responsive positioning - aligned left like COMMUNITY FAVOURITES (container padding = 16px)
+                  left: 'clamp(0px, 1.28vw, 16px)', // Aligned left - exact same as COMMUNITY FAVOURITES (small: 0px, large: 16px)
+                  top: 'clamp(50px, 7.5vw, 130px)', // Fully responsive top position - proportional scaling (small: 50px, large: 130px)
+                  // Responsive dimensions - Fully proportional scaling across all desktop sizes and zoom levels
+                  // Maintains exact proportions at all zoom levels - uses viewport units for consistent scaling
+                  width: 'clamp(320px, 48.25vw, 682px)', // Fully responsive width - proportional scaling (small: 320px, large: 682px)
+                  height: 'clamp(200px, 29.75vw, 412px)', // Fully responsive height - proportional scaling (small: 200px, large: 412px)
+                  
+                  // Background - Linear Gradient (Pic 1-2) - Exact colors
+                  background: 'linear-gradient(180deg, #91ADB9 0%, #3A6685 100%)', // Linear gradient from light blue-grey to dark blue
+                  
+                  // Appearance
+                  opacity: 1,
+                  borderRadius: 'clamp(40px, 5.5vw, 96px)', // Responsive corner radius - scales from small desktop (40px) to large (96px)
+                  
+                  // Border - Stroke inside (Pic 1-2)
+                  border: '1px solid #000000', // Black stroke, 1px, inside position
+                  boxSizing: 'border-box',
+                  
+                  // Rotation
+                  transform: 'rotate(180deg)', // Desktop: Rotation: 180deg
+                  
+                  zIndex: 1, // Behind content
+                }}
+              />
+
+              {/* Main Content - Exact Figma Layout with Absolute Positioning - Allow overflow on top */}
+              <div 
+                className="relative"
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: '100%',
+                  minHeight: 'clamp(650px, 70vw, 900px)', // Increased height for large screens - prevents content clipping
+                  overflow: 'visible', // Visible - allow image to overflow on top
+                  zIndex: 10, // Above background
+                }}
+              >
               {/* Left Side - Image 9.png - Centered within background box - Increased size */}
               <div
                 className="absolute"
@@ -1530,12 +1644,13 @@ const getBundleProductHref = (bundle: Bundle): string => {
                     Sustainable<br />Practices
                   </p>
                 </div>
-              </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+              </div> {/* Feature boxes row */}
+            </div> {/* Text content column */}
+          </div> {/* Desktop main content */}
+        </div> {/* Desktop layout wrapper */}
+      </div> {/* Outer frame */}
+    </div> {/* Section container */}
+  </section>
 
       {/* Section 7: COMPLETE THE LOOK - Subtitle below heading */}
       <section className="bg-white text-[#212121] pt-0 pb-20" style={{ marginTop: '2px' }}>

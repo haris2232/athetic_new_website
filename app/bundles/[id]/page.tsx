@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import type { Bundle } from "@/lib/api"
+import Header from "@/components/layout/header"
+import Footer from "@/components/layout/footer"
 import { BundleDetailView } from "@/components/sections/bundle-detail-view"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://athlekt.com/backendnew/api"
@@ -99,6 +101,12 @@ export default async function Page({ params }: PageProps) {
     notFound()
   }
 
-  return <BundleDetailView bundle={bundle} />
+  return (
+    <>
+      <Header />
+      <BundleDetailView bundle={bundle} />
+      <Footer />
+    </>
+  )
 }
 
