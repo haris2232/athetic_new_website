@@ -885,7 +885,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       fontSize: 'clamp(28px, 3.2vw, 48px)', // Further reduced from 36px-56px to 28px-48px
                       fontWeight: 400,
                       lineHeight: 'clamp(26px, 3vw, 44px)', // Further reduced line height
-                      letterSpacing: '-2px',
+                      letterSpacing: '0.5px',
                       color: '#000000',
                       margin: 0,
                       padding: 0,
@@ -1668,7 +1668,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
                 fontSize: '90px',
-                letterSpacing: '-3.37px'
+                letterSpacing: '0.5px'
               }}
             >
               COMMUNITY HIGHLIGHTS
@@ -1930,7 +1930,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontWeight: 400,
                   fontSize: '90px',
-                  letterSpacing: '-3.37px'
+                  letterSpacing: '0.5px'
                 }}
               >
                 YOU MAY ALSO LIKE

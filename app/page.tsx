@@ -742,7 +742,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
                 fontSize: '90px',
-                letterSpacing: '-3.37px'
+                letterSpacing: '0.5px'
               }}
             >
               DISCOVER YOUR FIT
@@ -941,7 +941,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
                 fontSize: '90px',
-                letterSpacing: '-3.37px'
+                letterSpacing: '0.5px'
               }}
             >
               WHAT'S NEW
@@ -1133,7 +1133,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontWeight: 400,
                   fontSize: '90px',
-                  letterSpacing: '-3.37px'
+                  letterSpacing: '0.5px'
                 }}
               >
                 COMMUNITY FAVOURITES
@@ -1706,7 +1706,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
                 fontSize: '90px',
-                letterSpacing: '-3.37px'
+                letterSpacing: '0.5px'
               }}
             >
               COMPLETE THE LOOK

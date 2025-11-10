@@ -222,7 +222,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontWeight: 400,
                   fontSize: '90px',
-                  letterSpacing: '-3.37px'
+                  letterSpacing: '0.5px'
                 }}
               >
                 {normalizedGender === 'women' ? 'WOMEN' : 'MEN'}
@@ -462,7 +462,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontWeight: 400,
                   fontSize: '90px',
-                  letterSpacing: '-3.37px'
+                  letterSpacing: '0.5px'
                 }}
               >
                 YOU MAY ALSO LIKE

@@ -324,7 +324,7 @@ export default function ProductReviews({ product, onStatsChange, showReviewForm,
               fontFamily: "'Bebas Neue', sans-serif",
               fontWeight: 400,
               fontSize: 'clamp(40px, 6.5vw, 70px)',
-              letterSpacing: '-3.37px'
+              letterSpacing: '0.5px'
             }}
           >
             CUSTOMER REVIEWS
