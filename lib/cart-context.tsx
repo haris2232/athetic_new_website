@@ -15,30 +15,56 @@ export interface CartItem {
   productId?: string
   isBundle?: boolean
   bundleId?: string
+  bundleKey?: string
   bundleName?: string
+  bundlePack?: {
+    name: string
+    quantity: number
+    pricePerItem: number
+    totalPrice: number
+    tag?: string
+  }
+  bundleSize?: string
+  bundleLength?: string
+  bundleColorName?: string
+  bundleColorDescription?: string
+  bundleDealTag?: string
   bundleProducts?: CartItem[]
 }
 
-interface Bundle {
+interface BundleCartPayload {
   id: string
   name: string
-  bundlePrice: number
-  originalPrice: number
-  products: CartItem[]
-  category: string
+  thumbnail: string
+  selectedPack: {
+    name: string
+    quantity: number
+    totalPrice: number
+    pricePerItem: number
+    tag?: string
+  }
+  selectedSize?: string
+  selectedLength?: string
+  selectedColor?: {
+    name: string
+    description?: string
+  }
+  totalPrice: number
+  unitPrice: number
+  dealTag?: string
 }
 
 interface CartContextType {
   cartItems: CartItem[]
   addToCart: (item: CartItem) => void
-  addBundleToCart: (bundle: Bundle) => void
+  addBundleToCart: (bundle: BundleCartPayload) => void
   removeFromCart: (id: string) => void
   updateQuantity: (id: string, quantity: number) => void
   clearCart: () => void
   cartCount: number
   cartTotal: number
   showNotification: (message: string) => void
-  isBundleInCart: (bundleId: string) => boolean
+  isBundleInCart: (bundleId: string, bundleKey?: string) => boolean
   shippingInfo: any
   isCartSidebarOpen: boolean
   openCartSidebar: () => void
@@ -138,17 +164,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const addBundleToCart = (bundle: Bundle) => {
+  const addBundleToCart = (bundle: BundleCartPayload) => {
     setCartItems(prevItems => {
-      // Check if bundle already exists in cart
+      const bundleKey = [
+        bundle.id,
+        bundle.selectedPack?.name ?? "default",
+        bundle.selectedSize ?? "default",
+        bundle.selectedLength ?? "default",
+        bundle.selectedColor?.name ?? "default",
+      ].join("|")
+
       const existingBundle = prevItems.find(item => 
-        item.isBundle && item.bundleId === bundle.id
+        item.isBundle && item.bundleKey === bundleKey
       )
 
       if (existingBundle) {
         // Update quantity if bundle already exists
         const updatedItems = prevItems.map(item =>
-          item.isBundle && item.bundleId === bundle.id
+          item.isBundle && item.bundleKey === bundleKey
             ? { ...item, quantity: item.quantity + 1 }
             : item
         )
@@ -157,15 +190,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
       } else {
         // Add bundle as single item
         const bundleItem: CartItem = {
-          id: `bundle-${bundle.id}`,
+          id: `bundle-${bundleKey}`,
           name: bundle.name,
-          price: bundle.bundlePrice,
-          image: bundle.products[0]?.image || "/placeholder.svg",
+          price: bundle.totalPrice,
+          image: bundle.thumbnail || "/placeholder.svg",
           quantity: 1,
           isBundle: true,
           bundleId: bundle.id,
+          bundleKey,
           bundleName: bundle.name,
-          bundleProducts: bundle.products
+          bundlePack: bundle.selectedPack,
+          bundleSize: bundle.selectedSize,
+          bundleLength: bundle.selectedLength,
+          bundleColorName: bundle.selectedColor?.name,
+          bundleColorDescription: bundle.selectedColor?.description,
+          bundleDealTag: bundle.dealTag,
+          bundleProducts: [
+            {
+              id: `${bundleKey}-pack`,
+              name: `${bundle.selectedPack.name} • ${bundle.selectedPack.quantity} pcs`,
+              price: bundle.unitPrice,
+              image: bundle.thumbnail,
+              quantity: bundle.selectedPack.quantity,
+              color: bundle.selectedColor?.name,
+              size: bundle.selectedSize,
+            },
+          ],
         }
         showNotification(`${bundle.name} bundle added to cart!`)
         return [...prevItems, bundleItem]
@@ -199,8 +249,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     console.log('🛒 Cart cleared from both state and localStorage');
   }
 
-  const isBundleInCart = (bundleId: string) => {
-    return cartItems.some(item => item.isBundle && item.bundleId === bundleId)
+  const isBundleInCart = (bundleId: string, bundleKey?: string) => {
+    return cartItems.some(item => 
+      item.isBundle &&
+      item.bundleId === bundleId &&
+      (!bundleKey || item.bundleKey === bundleKey)
+    )
   }
 
   // Count unique products (not total quantity)

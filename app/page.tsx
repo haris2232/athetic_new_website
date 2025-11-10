@@ -43,6 +43,10 @@ interface Bundle {
   id?: string;
   name: string;
   description?: string;
+  shortDescription?: string;
+  badgeText?: string;
+  heroImage?: string;
+  galleryImages?: string[];
   products?: Product[];
   originalPrice: number;
   bundlePrice: number;
@@ -448,6 +452,8 @@ export default function HomePage() {
 
   // Helper function to get bundle image
   const getBundleImage = (bundle: Bundle): string => {
+    if (bundle.heroImage) return getImageUrl(bundle.heroImage);
+    if (bundle.galleryImages && bundle.galleryImages.length > 0) return getImageUrl(bundle.galleryImages[0]);
     if (bundle.image) return getImageUrl(bundle.image);
     if (bundle.images && bundle.images.length > 0) return getImageUrl(bundle.images[0]);
     // If bundle has products, use first product's image
@@ -469,14 +475,11 @@ export default function HomePage() {
   };
 
 const getBundleProductHref = (bundle: Bundle): string => {
-  if (bundle.products && bundle.products.length > 0) {
-    const firstProduct = bundle.products[0] as Product & { slug?: string };
-    const productSlugOrId = firstProduct.slug || firstProduct._id || firstProduct.id;
-    if (productSlugOrId) {
-      return `/product/${productSlugOrId}`;
-    }
+  const slugOrId = bundle.id || bundle._id;
+  if (slugOrId) {
+    return `/bundles/${slugOrId}`;
   }
-  return '/product';
+  return '/bundles';
 };
 
   // Content for the hero box - can be image or video
@@ -1595,6 +1598,16 @@ const getBundleProductHref = (bundle: Bundle): string => {
                 aspectRatio: '307/450'
               }}
             >
+              {bundle.badgeText && (
+                <span
+                  className="absolute top-4 left-4 bg-white/90 text-black uppercase tracking-[0.2em] text-xs font-semibold px-3 py-1 rounded-full shadow-md"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
+                  }}
+                >
+                  {bundle.badgeText}
+                </span>
+              )}
               <img 
                       src={bundleImage} 
                       alt={bundleName}
@@ -1608,9 +1621,10 @@ const getBundleProductHref = (bundle: Bundle): string => {
                 }}
               />
               <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                className="absolute bottom-0 left-0 right-0 bg-black/90 text-white p-4 rounded-b-[32px] flex items-center justify-between gap-4"
                 style={{
-                  height: '60px'
+                  minHeight: '72px',
+                  zIndex: 20
                 }}
               >
                 <div className="flex flex-col text-left">
@@ -1654,6 +1668,30 @@ const getBundleProductHref = (bundle: Bundle): string => {
                         {formatPrice(bundlePrice)}
                 </p>
               </div>
+              {bundle.shortDescription && (
+                <div
+                  className="absolute left-0 right-0 bottom-[72px] bg-gradient-to-t from-black/80 to-transparent text-white px-6 pb-10 pt-6"
+                  style={{
+                    borderBottomLeftRadius: '32px',
+                    borderBottomRightRadius: '32px',
+                    zIndex: 10
+                  }}
+                >
+                  <p
+                    className="text-sm leading-snug"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      letterSpacing: '0px',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {bundle.shortDescription}
+                  </p>
+                </div>
+              )}
                   </Link>
                 );
               })}

@@ -42,34 +42,12 @@ export default function Header() {
   const { cartCount } = useCart()
   const { wishlistCount } = useWishlist()
 
-  const normalizeHref = (href: string) => {
-    if (!href) return "/";
-    if (href.startsWith("http")) return href;
-    if (href.startsWith("/")) return href;
-    return `/${href}`;
-  };
-
   const navigateTo = (href: string) => {
     setIsMenuOpen(false)
     setIsMenMenuOpen(false)
     setIsWomenMenuOpen(false)
     setIsTopSellerOpen(false)
-    const target = normalizeHref(href)
-    router.push(target)
-
-    if (typeof window !== "undefined") {
-      const targetUrl = new URL(target, window.location.origin)
-      const checkNavigation = () => {
-        const currentUrl = new URL(window.location.href)
-        if (
-          currentUrl.pathname !== targetUrl.pathname ||
-          currentUrl.search !== targetUrl.search
-        ) {
-          window.location.href = targetUrl.toString()
-        }
-      }
-      setTimeout(checkNavigation, 250)
-    }
+    router.push(href)
   }
 
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {

@@ -34,6 +34,10 @@ interface Bundle {
   id?: string;
   name?: string;
   title?: string;
+  shortDescription?: string;
+  badgeText?: string;
+  heroImage?: string;
+  galleryImages?: string[];
   description?: string;
   products?: BundleProduct[];
   originalPrice?: number | string;
@@ -191,7 +195,7 @@ export default function ProductDetail({ product }: { product: Product }) {
   const discountAmount = (currentPrice * (product.discountPercentage || 0)) / 100;
   const finalPrice = currentPrice - discountAmount;
 
-  const remainingBundles = bundles.slice(4);
+  const remainingBundles = bundles;
 
   const splitBundleName = (name: string): { line1: string; line2?: string } => {
     const words = name?.trim().split(/\s+/) ?? [];
@@ -216,6 +220,8 @@ export default function ProductDetail({ product }: { product: Product }) {
   };
 
   const getBundleImage = (bundle: Bundle): string => {
+    if (bundle.heroImage) return getFullImageUrl(bundle.heroImage);
+    if (bundle.galleryImages && bundle.galleryImages.length > 0) return getFullImageUrl(bundle.galleryImages[0]);
     if (bundle.image) return getFullImageUrl(bundle.image);
     if (bundle.images && bundle.images.length > 0) return getFullImageUrl(bundle.images[0]);
     const firstProduct = bundle.products && bundle.products.length > 0 ? bundle.products[0] : undefined;
@@ -227,18 +233,11 @@ export default function ProductDetail({ product }: { product: Product }) {
   };
 
   const getBundleProductHref = (bundle: Bundle): string => {
-    if (bundle.products && bundle.products.length > 0) {
-      const firstProduct = bundle.products[0];
-      const slugOrId = firstProduct.slug || firstProduct._id || firstProduct.id;
-      if (slugOrId) {
-        return `/product/${slugOrId}`;
-      }
-    }
     const slugOrId = bundle.id || bundle._id;
     if (slugOrId) {
-      return `/product/${slugOrId}`;
+      return `/bundles/${slugOrId}`;
     }
-    return '/product';
+    return '/bundles';
   };
 
 const parsePriceToNumber = (price: string | number | undefined, fallback?: number): number => {
@@ -1527,6 +1526,16 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       aspectRatio: '307/450'
                     }}
                   >
+                    {bundle.badgeText && (
+                      <span
+                        className="absolute top-4 left-4 z-30 bg-white/90 text-black uppercase tracking-[0.2em] text-xs font-semibold px-3 py-1 rounded-full shadow-md"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
+                        }}
+                      >
+                        {bundle.badgeText}
+                      </span>
+                    )}
                     <img
                       src={bundleImage}
                       alt={bundle.name || 'Bundle Product'}
@@ -1539,10 +1548,34 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                         target.src = '/placeholder.svg';
                       }}
                     />
+                    {bundle.shortDescription && (
+                      <div
+                        className="absolute left-0 right-0 bottom-[72px] bg-gradient-to-t from-black/80 to-transparent text-white px-6 pb-10 pt-6 z-20"
+                        style={{
+                          borderBottomLeftRadius: '32px',
+                          borderBottomRightRadius: '32px'
+                        }}
+                      >
+                        <p
+                          className="text-sm leading-snug"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            letterSpacing: '0px',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          {bundle.shortDescription}
+                        </p>
+                      </div>
+                    )}
                     <div 
                       className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
                       style={{
-                        height: '60px'
+                        height: '72px',
+                        zIndex: 30
                       }}
                     >
                       <div className="flex flex-col text-left">

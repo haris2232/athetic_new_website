@@ -18,6 +18,16 @@ const nextConfig = {
         port: '5000',
         pathname: '/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'athlekt.com',
+        pathname: '/backendnew/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'athlekt.com',
+        pathname: '/uploads/**',
+      },
     ],
   },
 }

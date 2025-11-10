@@ -331,19 +331,35 @@ export default function CartPage() {
                           item.name
                         )}
                       </h3>
-                      {item.isBundle && item.bundleProducts && (
-                        <div className="text-xs text-gray-500 mb-2">
-                          <p className="font-medium mb-1">Includes:</p>
-                          {item.bundleProducts.map((p, index) => (
-                            <div key={index} className="ml-2 mb-1">
-                              <span className="font-medium">{p.name}</span>
-                              {p.size && p.color && (
+                      {item.isBundle && (
+                        <div className="text-xs text-gray-500 mb-2 space-y-1">
+                          {item.bundlePack && (
+                            <div>
+                              <span className="font-medium">Pack:</span>{" "}
+                              {item.bundlePack.name} · {item.bundlePack.quantity} pcs
+                            </div>
+                          )}
+                          {item.bundleSize && (
+                            <div>
+                              <span className="font-medium">Size:</span> {item.bundleSize}
+                              {item.bundleLength && ` · ${item.bundleLength}`}
+                            </div>
+                          )}
+                          {item.bundleColorName && (
+                            <div>
+                              <span className="font-medium">Color:</span> {item.bundleColorName}
+                              {item.bundleColorDescription && (
                                 <span className="text-gray-400 ml-1">
-                                  ({p.size}, {p.color})
+                                  ({item.bundleColorDescription})
                                 </span>
                               )}
                             </div>
-                          ))}
+                          )}
+                          {item.bundleDealTag && (
+                            <div className="uppercase text-amber-500 font-semibold">
+                              {item.bundleDealTag}
+                            </div>
+                          )}
                         </div>
                       )}
                       {!item.isBundle && (

@@ -1,12 +1,10 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { useCart } from "@/lib/cart-context"
 import { getBundles, type Bundle } from "@/lib/api"
 import { formatCurrency } from "@/lib/utils"
 import { Package } from "lucide-react"
-import { BundleVariationModal } from "@/components/ui/bundle-variation-modal"
+import Link from "next/link"
 
 interface BundleSectionProps {
   category?: 'men' | 'women' | 'mixed'
@@ -15,9 +13,6 @@ interface BundleSectionProps {
 export function BundleSection({ category }: BundleSectionProps) {
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedBundle, setSelectedBundle] = useState<Bundle | null>(null)
-  const [isVariationModalOpen, setIsVariationModalOpen] = useState(false)
-  const { addBundleToCart, isBundleInCart } = useCart()
 
   useEffect(() => {
     const fetchBundles = async () => {
@@ -43,49 +38,6 @@ export function BundleSection({ category }: BundleSectionProps) {
 
     fetchBundles()
   }, [category])
-
-  const handleAddBundleToCart = (bundle: Bundle) => {
-    setSelectedBundle(bundle)
-    setIsVariationModalOpen(true)
-  }
-
-  const handleVariationConfirm = (selectedVariations: Record<string, { size: string; color: string; quantity: number }>) => {
-    if (!selectedBundle) return
-
-    addBundleToCart({
-      id: selectedBundle._id || selectedBundle.id,
-      name: selectedBundle.name,
-      bundlePrice: selectedBundle.bundlePrice,
-      originalPrice: selectedBundle.originalPrice,
-      products: selectedBundle.products.map(product => {
-        const productId = product._id || product.id
-        const variation = selectedVariations[productId]
-        const selectedSize = variation?.size || product.sizeOptions?.[0] || product.sizes?.[0] || 'M'
-        const selectedColor = variation?.color || product.colorOptions?.[0]?.name || product.colors?.[0]?.name || 'Default'
-        
-        // Find the specific variant to get variant-specific price
-        const productVariant = product.variants?.find(
-          v => v.size === selectedSize && v.color.name === selectedColor
-        )
-        
-        // Use variant-specific price if available, otherwise use base price
-        const variantPrice = productVariant?.priceOverride && productVariant.priceOverride > 0 
-          ? productVariant.priceOverride 
-          : (product.basePrice || parseFloat(product.price || '0'))
-        
-        return {
-          id: product._id || product.id,
-          name: product.title || product.name,
-          price: variantPrice,
-          image: product.images?.[0] || product.image || "/placeholder.svg",
-          quantity: variation?.quantity || 1,
-          size: selectedSize,
-          color: selectedColor
-        }
-      }),
-      category: selectedBundle.category
-    })
-  }
 
   if (loading) {
     return (
@@ -123,6 +75,7 @@ export function BundleSection({ category }: BundleSectionProps) {
         {bundles.map((bundle, index) => {
           const savings = bundle.originalPrice - bundle.bundlePrice
           const savingsPercentage = Math.round((savings / bundle.originalPrice) * 100)
+          const bundleHref = `/bundles/${bundle._id || bundle.id}`
 
           return (
             <div key={bundle._id} className="flex-1 bg-gray-100 rounded-lg p-6">
@@ -130,6 +83,11 @@ export function BundleSection({ category }: BundleSectionProps) {
 
               {/* THIS IS THE MODIFIED LINE */}
               <div className="grid grid-cols-2 gap-4 mb-6">
+                {bundle.badgeText && (
+                  <span className="col-span-2 mb-2 inline-flex items-center justify-center rounded-full bg-black text-white text-xs uppercase tracking-[0.3em] px-4 py-1">
+                    {bundle.badgeText}
+                  </span>
+                )}
                 {bundle.products.map((product, productIndex) => (
                   <div key={productIndex} className="bg-white rounded-lg p-4 shadow-sm">
                     <img
@@ -151,6 +109,11 @@ export function BundleSection({ category }: BundleSectionProps) {
               </div>
 
               <div className="text-center">
+                {bundle.shortDescription && (
+                  <div className="mb-4 text-sm text-muted-foreground">
+                    {bundle.shortDescription}
+                  </div>
+                )}
                 <div className="mb-4">
                   <div className="text-gray-500 text-sm line-through">
                     Original: {formatCurrency(bundle.originalPrice)}
@@ -162,37 +125,14 @@ export function BundleSection({ category }: BundleSectionProps) {
                     Save {formatCurrency(savings)} ({savingsPercentage}% off)
                   </div>
                 </div>
-
-                <Button
-                  onClick={() => handleAddBundleToCart(bundle)}
-                  disabled={isBundleInCart(bundle._id || bundle.id)}
-                  className={`w-full font-bold py-3 px-6 rounded-lg ${
-                    isBundleInCart(bundle._id || bundle.id)
-                      ? "bg-green-600 text-white cursor-not-allowed"
-                      : "bg-green-500 hover:bg-green-600 text-white"
-                  }`}
-                >
-                  {isBundleInCart(bundle._id || bundle.id) 
-                    ? "✓ BUNDLE IN CART" 
-                    : `SELECT VARIATIONS & SAVE ${formatCurrency(savings)}`
-                  }
-                </Button>
+                <Link href={bundleHref} className="inline-block mt-3 text-sm font-medium text-[#212121] underline">
+                  View Bundle Details
+                </Link>
               </div>
             </div>
           )
         })}
       </div>
-
-      {/* Bundle Variation Modal */}
-      <BundleVariationModal
-        bundle={selectedBundle}
-        isOpen={isVariationModalOpen}
-        onClose={() => {
-          setIsVariationModalOpen(false)
-          setSelectedBundle(null)
-        }}
-        onConfirm={handleVariationConfirm}
-      />
     </div>
   )
 }

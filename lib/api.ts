@@ -80,14 +80,54 @@ export interface Category {
   createdAt: string;
 }
 
+export interface BundleColorOption {
+  name: string;
+  description?: string;
+  thumbnailImage?: string;
+  galleryImages?: string[];
+  badge?: string;
+}
+
+export interface BundlePackOption {
+  name: string;
+  quantity: number;
+  totalPrice: number;
+  pricePerItem?: number;
+  tag?: string;
+  thumbnailImage?: string;
+}
+
+export interface BundleGuarantee {
+  title?: string;
+  description?: string;
+  icon?: string;
+}
+
 export interface Bundle {
   _id: string;
   name: string;
   description?: string;
-  products: Product[];
-  originalPrice: number;
-  bundlePrice: number;
-  bundleType: string;
+  productSlug?: string;
+  shortDescription?: string;
+  badgeText?: string;
+  ratingValue?: number;
+  reviewsCount?: number;
+  basePrice?: number;
+  discountedPrice?: number;
+  finalPrice?: number;
+  dealTag?: string;
+  heroImage?: string;
+  galleryImages?: string[];
+  colorOptions?: BundleColorOption[];
+  packOptions?: BundlePackOption[];
+  sizeOptions?: string[];
+  sizePriceVariation?: Record<string, number>;
+  lengthOptions?: string[];
+  guarantees?: BundleGuarantee[];
+  products?: Product[];
+  originalPrice?: number;
+  bundlePrice?: number;
+  bundleType?: string;
   category?: 'men' | 'women' | 'mixed';
   startDate?: string;
   endDate?: string;
