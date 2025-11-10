@@ -1410,7 +1410,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
                   position: 'relative',
                   width: '100%',
                   height: '100%',
-                  minHeight: 'clamp(450px, 70vw, 400px)', // Increased height for large screens - prevents content clipping
+                  minHeight: 'clamp(450px, 70vw, 550px)', // Increased height for large screens - prevents content clipping
                   overflow: 'visible', // Visible - allow image to overflow on top
                   zIndex: 10, // Above background
                 }}
