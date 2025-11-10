@@ -74,13 +74,13 @@ export default function AllProductsPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#212121]">
+    <div className="min-h-screen bg-white"> {/* Changed background color to white */}
       <Header />
       
       {/* --- UNIFIED COLLECTION SECTION --- */}
-      <section id="all-products-collection" className="py-16"> {/* Increased top padding slightly for balance */}
-        <div> {/* Removed the "mt-12" class */}
-          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-white text-center mb-10">
+      <section id="all-products-collection" className="py-16">
+        <div>
+          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-10"> {/* Changed text color to black for contrast */}
             Our Entire Collection
           </h2>
           <ProductGrid products={allProducts} loading={loading} />

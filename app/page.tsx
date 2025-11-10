@@ -123,7 +123,51 @@ export default function HomePage() {
   const [loadingBlogs, setLoadingBlogs] = useState(true)
   const [carouselImages, setCarouselImages] = useState<string[]>([])
   const [loadingCarouselImages, setLoadingCarouselImages] = useState(true)
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const { formatPrice } = useCurrency()
+  
+  // Lightbox helpers
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index)
+    setLightboxOpen(true)
+  }
+  const closeLightbox = () => {
+    setLightboxOpen(false)
+    setLightboxIndex(null)
+  }
+  // prevent body scroll when lightbox open
+  useEffect(() => {
+    if (lightboxOpen) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = ""
+    }
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [lightboxOpen])
+  // keyboard navigation (Esc, ArrowLeft, ArrowRight)
+  useEffect(() => {
+    if (!lightboxOpen) return
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeLightbox()
+      if (e.key === "ArrowRight") {
+        setLightboxIndex((i) => {
+          if (i == null) return 0
+          return Math.min(carouselImages.length - 1, i + 1)
+        })
+      }
+      if (e.key === "ArrowLeft") {
+        setLightboxIndex((i) => {
+          if (i == null) return 0
+          return Math.max(0, i - 1)
+        })
+      }
+    }
+    window.addEventListener("keydown", handler)
+    return () => window.removeEventListener("keydown", handler)
+  }, [lightboxOpen, carouselImages.length])
 
   // Fetch homepage images from API
   useEffect(() => {
@@ -1366,7 +1410,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
                   position: 'relative',
                   width: '100%',
                   height: '100%',
-                  minHeight: 'clamp(650px, 70vw, 900px)', // Increased height for large screens - prevents content clipping
+                  minHeight: 'clamp(500px, 70vw, 100px) !important', // Increased height for large screens - prevents content clipping
                   overflow: 'visible', // Visible - allow image to overflow on top
                   zIndex: 10, // Above background
                 }}
@@ -1914,34 +1958,35 @@ const getBundleProductHref = (bundle: Bundle): string => {
               {carouselImages.map((image, index) => (
                 <div
                   key={index}
-                  className="flex-shrink-0"
-                  style={{
-                    scrollSnapAlign: 'start',
-                    // Figma dimensions - reduced size to match design
-                    width: 'clamp(160px, 18vw, 240px)', // Reduced from 276px to 240px max
-                    height: 'clamp(240px, 28vw, 380px)', // Reduced from 431px to 380px max
-                    minWidth: '160px',
-                    minHeight: '240px'
-                  }}
-                >
-                  <div
-                    className="relative w-full h-full overflow-hidden cursor-pointer transition-transform duration-300 ease-out"
-                    style={{
-                      // Exact Figma dimensions
-                      width: '100%',
-                      height: '100%',
-                      transform: 'translateY(0)',
-                      borderRadius: 'clamp(24px, 3vw, 40px)', // Reduced border radius to match smaller size
-                      opacity: 1, // Figma: 100% opacity
-                      overflow: 'hidden'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-8px)'
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)'
-                    }}
-                  >
+                  className="flex-shrink-0 cursor-pointer"
+                  onClick={() => openLightbox(index)}
+                   style={{
+                     scrollSnapAlign: 'start',
+                     // Figma dimensions - reduced size to match design
+                     width: 'clamp(160px, 18vw, 240px)', // Reduced from 276px to 240px max
+                     height: 'clamp(240px, 28vw, 380px)', // Reduced from 431px to 380px max
+                     minWidth: '160px',
+                     minHeight: '240px'
+                   }}
+                 >
+                   <div
+                     className="relative w-full h-full overflow-hidden cursor-pointer transition-transform duration-300 ease-out"
+                     style={{
+                       // Exact Figma dimensions
+                       width: '100%',
+                       height: '100%',
+                       transform: 'translateY(0)',
+                       borderRadius: 'clamp(24px, 3vw, 40px)', // Reduced border radius to match smaller size
+                       opacity: 1, // Figma: 100% opacity
+                       overflow: 'hidden'
+                     }}
+                     onMouseEnter={(e) => {
+                       e.currentTarget.style.transform = 'translateY(-8px)'
+                     }}
+                     onMouseLeave={(e) => {
+                       e.currentTarget.style.transform = 'translateY(0)'
+                     }}
+                   >
                     <Image
                       src={image}
                       alt={`Carousel image ${index + 1}`}
@@ -1953,10 +1998,10 @@ const getBundleProductHref = (bundle: Bundle): string => {
                         objectPosition: 'center top' // Show top portion of image
                       }}
                       sizes="(max-width: 640px) 160px, (max-width: 768px) 200px, (max-width: 1024px) 220px, 240px"
-                    />
-                  </div>
-                </div>
-              ))}
+                   />
+                   </div>
+                 </div>
+               ))}
             </div>
             ) : (
               <div className="text-center py-12" style={{
@@ -2000,6 +2045,68 @@ const getBundleProductHref = (bundle: Bundle): string => {
           )}
         </div>
       </section>
+
+      {/* Lightbox / Modal for MOVE WITH US images */}
+      {lightboxOpen && lightboxIndex != null && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
+          onClick={(e) => {
+            // close when clicking backdrop
+            if (e.currentTarget === e.target) closeLightbox()
+          }}
+        >
+          <div className="relative max-w-[92vw] max-h-[92vh] w-full">
+            <button
+              onClick={closeLightbox}
+              aria-label="Close"
+              className="absolute right-2 top-2 z-50 rounded-full bg-white/90 p-2 text-black shadow"
+            >
+              ✕
+            </button>
+
+            {/* Prev */}
+            {lightboxIndex > 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setLightboxIndex((i) => (i == null ? 0 : Math.max(0, i - 1)))
+                }}
+                aria-label="Previous"
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-50 rounded-full bg-white/90 p-2 text-black shadow"
+              >
+                ‹
+              </button>
+            )}
+
+            {/* Next */}
+            {lightboxIndex < carouselImages.length - 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setLightboxIndex((i) => (i == null ? 0 : Math.min(carouselImages.length - 1, i + 1)))
+                }}
+                aria-label="Next"
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-50 rounded-full bg-white/90 p-2 text-black shadow"
+              >
+                ›
+              </button>
+            )}
+
+            <div className="w-full h-full flex items-center justify-center p-4">
+              <div className="relative max-w-full max-h-full rounded" style={{ width: 'auto', height: 'auto' }}>
+                <Image
+                  src={carouselImages[lightboxIndex]}
+                  alt={`Image ${lightboxIndex + 1}`}
+                  width={1200}
+                  height={900}
+                  className="object-contain max-w-[90vw] max-h-[90vh]"
+                  style={{ objectFit: 'contain' }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Footer />
 
