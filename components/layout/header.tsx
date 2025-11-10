@@ -338,6 +338,20 @@ export default function Header() {
               PRODUCTS
             </Link>
 
+            {/* Blogs Link */}
+            <Link
+              href="/blog"
+              className={`transition-colors font-medium tracking-wide uppercase text-sm ${
+                isActivePath("/blog") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+              }`}
+              onClick={(event) => {
+                event.preventDefault()
+                navigateTo("/blog")
+              }}
+            >
+              BLOGS
+            </Link>
+            
             {/* Men's Category Dropdown */}
             <CategoryDropdown
               gender="men"
@@ -596,6 +610,20 @@ export default function Header() {
                 SALE
               </Link>
 
+              {/* Mobile Blogs */}
+              <Link
+                href="/blog"
+                className={`transition-colors font-medium tracking-wide uppercase text-sm ${
+                  isActivePath("/blog") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+                }`}
+                onClick={(event) => {
+                  event.preventDefault()
+                  navigateTo("/blog")
+                }}
+              >
+                BLOGS
+              </Link>
+              
               {/* ADDED: Mobile Top Sellers */}
               <div className="space-y-3">
                 <span
