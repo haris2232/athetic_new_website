@@ -1503,7 +1503,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
                 fontSize: 'clamp(48px, 6vw, 70px)', // Responsive font size
-                letterSpacing: '-3.37px',
+                letterSpacing: '0.5px',
                 minWidth: 'fit-content'
               }}
             >
