@@ -335,7 +335,7 @@ export default function Header() {
                 navigateTo("/collection")
               }}
             >
-              COLLECTION
+              PRODUCTS
             </Link>
 
             {/* Men's Category Dropdown */}
@@ -355,7 +355,7 @@ export default function Header() {
             />
 
             {/* Sale Link */}
-            <Link
+            {/* <Link
               href="/sale"
               className="transition-colors font-medium tracking-wide uppercase text-sm text-white hover:text-[#cbf26c]"
               onClick={(event) => {
@@ -366,7 +366,7 @@ export default function Header() {
               SALE
             </Link>
             
-            {/* ADDED: Top Sellers with Dropdown */}
+            ADDED: Top Sellers with Dropdown
             <div
               className="relative group"
               onMouseEnter={() => setIsTopSellerOpen(true)}
@@ -378,7 +378,7 @@ export default function Header() {
                 TOP SELLERS
               </button>
 
-              {/* Dropdown Menu */}
+              Dropdown Menu
               <div
                 className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ${
                   isTopSellerOpen ? "opacity-100 visible" : "opacity-0 invisible"
@@ -411,7 +411,7 @@ export default function Header() {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
 
           </nav>
 

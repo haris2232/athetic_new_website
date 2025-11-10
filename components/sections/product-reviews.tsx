@@ -6,6 +6,7 @@ import { Star, MessageSquare, Send, Crown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { useToast } from "@/components/ui/use-toast"
 import type { Product } from "@/lib/types"
 
@@ -115,12 +116,13 @@ interface ReviewStats {
 interface ProductReviewsProps {
   product: Product
   onStatsChange?: (stats: ReviewStats) => void
+  showReviewForm: boolean
+  setShowReviewForm: (show: boolean | ((prev: boolean) => boolean)) => void
 }
 
-export default function ProductReviews({ product, onStatsChange }: ProductReviewsProps) {
+export default function ProductReviews({ product, onStatsChange, showReviewForm, setShowReviewForm }: ProductReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([])
   const [loading, setLoading] = useState(true)
-  const [showReviewForm, setShowReviewForm] = useState(false)
   const [newReview, setNewReview] = useState({
     rating: 5,
     comment: "",
@@ -168,11 +170,11 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
     } finally {
       setLoading(false)
     }
-  }, [productId, onStatsChange])
+  }, [productId])
 
   useEffect(() => {
     loadReviews()
-  }, [loadReviews])
+  }, [productId])
 
   useEffect(() => {
     if (showReviewForm) {
@@ -279,13 +281,11 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
     : 0
 
   useEffect(() => {
-    if (onStatsChange) {
-      onStatsChange({
-        average: averageRating,
-        count: reviews.length
-      })
-    }
-  }, [averageRating, reviews.length, onStatsChange])
+    onStatsChange?.({
+      average: averageRating,
+      count: reviews.length
+    })
+  }, [averageRating, reviews.length])
 
   const { topReview, otherReviews } = useMemo(() => {
     if (reviews.length === 0) {
@@ -351,8 +351,8 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
             <p className="text-gray-500 max-w-md">
               Be the first to share your experience with this product.
             </p>
-            <Button
-              onClick={() => setShowReviewForm(true)}
+            <Button 
+              onClick={() => setShowReviewForm(prev => !prev)}
               className="bg-black text-white hover:bg-gray-800 px-8 py-3 rounded-full"
             >
               Write a Review
@@ -360,7 +360,7 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-[clamp(320px,38vw,380px)_1fr] gap-6 lg:gap-8 xl:gap-10">
-            <div className="w-full lg:max-w-[clamp(320px,38vw,380px)] space-y-6">
+            <div className="w-full lg:max-w-[clamp(320px,38vw,380px)] space-y-6 order-1 lg:order-none">
               <div className="bg-[#F5F5F5] rounded-[32px] p-8 border border-black/5">
                 <p 
                   className="text-black mb-1"
@@ -404,72 +404,64 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
                   {showReviewForm ? 'Cancel review' : 'Write a Review'}
                 </Button>
               </div>
+            </div>
 
-              {showReviewForm && (
-                <div className="bg-white border border-gray-200 rounded-[24px] p-6 space-y-4">
-                  <h3 className="text-lg font-medium text-[#212121]">Write a Review</h3>
+            {showReviewForm && !topReview && (
+              <div className="bg-white border border-gray-200 rounded-[24px] p-6 space-y-4">
+                <h3 className="text-lg font-medium text-[#212121]">Write a Review</h3>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Rating</label>
+                  {renderStars(newReview.rating, true, (rating) =>
+                    setNewReview(prev => ({ ...prev, rating }))
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">Rating</label>
-                    {renderStars(newReview.rating, true, (rating) => 
-                      setNewReview(prev => ({ ...prev, rating }))
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">Your Name</label>
-                      <Input
-                        value={newReview.customerName}
-                        onChange={(e) => setNewReview(prev => ({ ...prev, customerName: e.target.value }))}
-                        placeholder="Enter your name"
-                        className="bg-white border-gray-300 text-[#212121]"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-700 mb-2 block">Your Email</label>
-                      <Input
-                        type="email"
-                        value={newReview.customerEmail}
-                        onChange={(e) => setNewReview(prev => ({ ...prev, customerEmail: e.target.value }))}
-                        placeholder="Enter your email"
-                        className="bg-white border-gray-300 text-[#212121]"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-sm font-medium text-gray-700 mb-2 block">Your Review</label>
-                    <Textarea
-                      value={newReview.comment}
-                      onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
-                      placeholder="Share your experience with this product..."
-                      rows={4}
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Your Name</label>
+                    <Input
+                      value={newReview.customerName}
+                      onChange={(e) => setNewReview(prev => ({ ...prev, customerName: e.target.value }))}
+                      placeholder="Enter your name"
                       className="bg-white border-gray-300 text-[#212121]"
                     />
                   </div>
-
-                  <div className="flex flex-wrap gap-3">
-                    <Button 
-                      onClick={submitReview} 
-                      disabled={submitting}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <Send className="h-4 w-4 mr-2" />
-                      {submitting ? "Submitting..." : "Submit Review"}
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowReviewForm(false)}
-                      className="border-gray-300 text-[#212121] hover:bg-gray-200"
-                    >
-                      Cancel
-                    </Button>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 mb-2 block">Your Email</label>
+                    <Input
+                      type="email"
+                      value={newReview.customerEmail}
+                      onChange={(e) => setNewReview(prev => ({ ...prev, customerEmail: e.target.value }))}
+                      placeholder="Enter your email"
+                      className="bg-white border-gray-300 text-[#212121]"
+                    />
                   </div>
                 </div>
-              )}
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 xl:gap-8 w-full items-start">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Your Review</label>
+                  <Textarea
+                    value={newReview.comment}
+                    onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
+                    placeholder="Share your experience with this product..."
+                    rows={4}
+                    className="bg-white border-gray-300 text-[#212121]"
+                  />
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <Button onClick={submitReview} disabled={submitting} className="bg-green-600 hover:bg-green-700">
+                    <Send className="h-4 w-4 mr-2" />
+                    {submitting ? "Submitting..." : "Submit Review"}
+                  </Button>
+                  <Button variant="outline" onClick={() => setShowReviewForm(false)} className="border-gray-300 text-[#212121] hover:bg-gray-200">
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6 xl:gap-8 w-full items-start order-2 lg:order-none">
               {topReview && renderReviewCard(topReview, renderStars, true)}
               {visibleOtherReviews.map((review) => renderReviewCard(review, renderStars))}
 
@@ -493,6 +485,70 @@ export default function ProductReviews({ product, onStatsChange }: ProductReview
           </div>
         )}
       </div>
+      <Dialog open={showReviewForm} onOpenChange={setShowReviewForm}>
+        <DialogContent className="sm:max-w-[525px] bg-white">
+          <DialogHeader>
+            <DialogTitle>Write a Review</DialogTitle>
+            <DialogDescription>
+              Share your experience with this product.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Rating</label>
+              {renderStars(newReview.rating, true, (rating) =>
+                setNewReview(prev => ({ ...prev, rating }))
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Your Name</label>
+                <Input
+                  value={newReview.customerName}
+                  onChange={(e) => setNewReview(prev => ({ ...prev, customerName: e.target.value }))}
+                  placeholder="Enter your name"
+                  className="bg-white border-gray-300 text-[#212121]"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">Your Email</label>
+                <Input
+                  type="email"
+                  value={newReview.customerEmail}
+                  onChange={(e) => setNewReview(prev => ({ ...prev, customerEmail: e.target.value }))}
+                  placeholder="Enter your email"
+                  className="bg-white border-gray-300 text-[#212121]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">Your Review</label>
+              <Textarea
+                value={newReview.comment}
+                onChange={(e) => setNewReview(prev => ({ ...prev, comment: e.target.value }))}
+                placeholder="Share your experience with this product..."
+                rows={4}
+                className="bg-white border-gray-300 text-[#212121]"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowReviewForm(false)} className="border-gray-300 text-[#212121] hover:bg-gray-200">
+              Cancel
+            </Button>
+            <Button
+              onClick={submitReview}
+              disabled={submitting}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Send className="h-4 w-4 mr-2" />
+              {submitting ? "Submitting..." : "Submit Review"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   )
 } 
