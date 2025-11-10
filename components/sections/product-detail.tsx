@@ -1467,6 +1467,13 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 <button
                   type="button"
                   onClick={() => setShowReviewForm(true)}
+                  onClick={() => {
+                    setShowReviewForm(true);
+                    const reviewSection = document.getElementById("customer-reviews");
+                    if (reviewSection) {
+                      reviewSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }}
                   className="uppercase text-black underline underline-offset-4"
                   style={{
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
