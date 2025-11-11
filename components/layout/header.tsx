@@ -265,7 +265,7 @@ export default function Header() {
           {/* Logo - Left aligned with smaller size */}
           <Link href="/" className="flex items-center">
             <Image 
-              src="/logo.png" 
+              src="/logos.png" 
               alt="ATHLEKT" 
               width={120} 
               height={30} 

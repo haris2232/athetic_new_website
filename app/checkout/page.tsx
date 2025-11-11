@@ -11,7 +11,7 @@ import { useCurrency } from "@/lib/currency-context";
 // Data array for credit card logos
 const cardLogos = [
   { name: 'Visa', src: 'https://img.icons8.com/color/48/visa.png', alt: 'Visa' },
-  { name: 'Mastercard', src: 'https://img.icons8.com/color/48/mastercard-logo.png', alt: 'Mastercard' },
+  { name: 'Mastercard', src: 'https://img.icons8.com/color/48/mastercard-logos.png', alt: 'Mastercard' },
   { name: 'American Express', src: 'https://img.icons8.com/color/48/amex.png', alt: 'American Express' },
   { name: 'Discover', src: 'https://img.icons8.com/color/48/discover.png', alt: 'Discover' },
 ];

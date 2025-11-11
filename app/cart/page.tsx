@@ -17,7 +17,7 @@ import type { Product } from "@/lib/types"
 // Array of payment methods with online logo URLs
 const paymentMethods = [
   { name: 'Visa', src: 'https://img.icons8.com/color/48/visa.png', alt: 'Visa' },
-  { name: 'Mastercard', src: 'https://img.icons8.com/color/48/mastercard-logo.png', alt: 'Mastercard' },
+  { name: 'Mastercard', src: 'https://img.icons8.com/color/48/mastercard-logos.png', alt: 'Mastercard' },
   { name: 'PayPal', src: 'https://img.icons8.com/color/48/paypal.png', alt: 'PayPal' },
   { name: 'Apple Pay', src: 'https://img.icons8.com/ios-filled/50/mac-os.png', alt: 'Apple Pay' },
   { name: 'Klarna', src: 'https://cdn.shopify.com/s/files/1/1331/8591/files/Klarna_PaymentBadge_OutsideCheckout_Black.png?v=1584014942', alt: 'Klarna' },
