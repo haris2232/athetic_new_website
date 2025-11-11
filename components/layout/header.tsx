@@ -26,10 +26,8 @@ interface ProductSuggestion {
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isMenMenuOpen, setIsMenMenuOpen] = useState(false) // ADDED: State for Men dropdown
-  const [isWomenMenuOpen, setIsWomenMenuOpen] = useState(false) // ADDED: State for Women dropdown
-  const [isTopSellerOpen, setIsTopSellerOpen] = useState(false) // ADDED: State for new Top Sellers dropdown
-  // REMOVED: isCategoriesOpen and selectedGender states
+  const [isMenMenuOpen, setIsMenMenuOpen] = useState(false)
+  const [isWomenMenuOpen, setIsWomenMenuOpen] = useState(false)
   const [user, setUser] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<ProductSuggestion[]>([])
@@ -46,7 +44,6 @@ export default function Header() {
     setIsMenuOpen(false)
     setIsMenMenuOpen(false)
     setIsWomenMenuOpen(false)
-    setIsTopSellerOpen(false)
     router.push(href)
   }
 
@@ -54,7 +51,17 @@ export default function Header() {
     if (e.key === 'Enter' && searchQuery.trim()) {
       setIsSearchDropdownOpen(false)
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
-      // If inside mobile menu, close it after search
+      if (isMenuOpen) {
+        setIsMenuOpen(false)
+      }
+    }
+  }
+
+  // Search icon click handler
+  const handleSearchIconClick = () => {
+    if (searchQuery.trim()) {
+      setIsSearchDropdownOpen(false)
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
       if (isMenuOpen) {
         setIsMenuOpen(false)
       }
@@ -84,7 +91,7 @@ export default function Header() {
           setIsSearchLoading(false)
           setSearchResults([])
         })
-    }, 300) // 300ms debounce delay
+    }, 300)
 
     return () => clearTimeout(delayDebounceFn)
   }, [searchQuery])
@@ -122,8 +129,6 @@ export default function Header() {
       try {
         const user = JSON.parse(userData)
         setUser(user)
-        
-        // Check if user is banned by calling backend
         checkBanStatus(token, user.email)
       } catch (error) {
         console.error("Error parsing user data:", error)
@@ -141,7 +146,6 @@ export default function Header() {
       })
       
       if (response.status === 403) {
-        // User is banned, force logout
         console.log("🚫 User is banned, forcing logout...")
         handleLogout()
         alert("Your account has been banned by the administrator.")
@@ -159,7 +163,7 @@ export default function Header() {
         if (token) {
           checkBanStatus(token, user.email)
         }
-      }, 30000) // Check every 30 seconds
+      }, 30000)
       
       return () => clearInterval(interval)
     }
@@ -183,7 +187,6 @@ export default function Header() {
   const getSubCategories = (gender: string) => {
     if (loading) return []
     
-    // Filter sub-categories based on gender
     const genderSubCategories = subCategories.filter(subCat => {
       const categoryName = subCat.category.toLowerCase()
       if (gender === "women") {
@@ -193,7 +196,6 @@ export default function Header() {
       }
     })
 
-    // Remove duplicates by grouping by name and taking the first occurrence
     const uniqueSubCategories = genderSubCategories.reduce((acc, subCat) => {
       if (!acc.find(item => item.name === subCat.name)) {
         acc.push(subCat)
@@ -201,7 +203,6 @@ export default function Header() {
       return acc
     }, [] as typeof genderSubCategories)
 
-    // Convert to navigation format
     return uniqueSubCategories.map(subCat => ({
       href: `/categories/${subCat.name.toLowerCase().replace(/\s+/g, '-')}`,
       label: subCat.name,
@@ -226,13 +227,13 @@ export default function Header() {
       <div className="relative group" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
         <Link
           href={`/categories?gender=${gender}`}
-          className={`transition-colors font-medium tracking-wide uppercase text-sm ${isActivePath(`/${gender}`) ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"}`}
+          className={`transition-colors font-medium uppercase text-[15px] ${isActivePath(`/${gender}`) ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"}`}
           onClick={(event) => {
             event.preventDefault()
             navigateTo(`/categories?gender=${gender}`)
           }}
         >
-          {gender}
+          {gender.toUpperCase()}
         </Link>
         <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
           <div className="bg-white shadow-lg rounded-md overflow-hidden z-50 min-w-[200px]">
@@ -240,7 +241,7 @@ export default function Header() {
               <Link
                 key={category.id || `${gender}-${category.href}`}
                 href={`${category.href}?gender=${gender}`}
-                className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors"
+                className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors text-sm"
                 onClick={(event) => {
                   event.preventDefault()
                   navigateTo(`${category.href}?gender=${gender}`)
@@ -249,7 +250,7 @@ export default function Header() {
                 {category.label}
               </Link>
             ))}
-            {categories.length === 0 && <div className="px-6 py-3 text-gray-400">{loading ? "Loading..." : "No categories"}</div>}
+            {categories.length === 0 && <div className="px-6 py-3 text-gray-400 text-sm">{loading ? "Loading..." : "No categories"}</div>}
           </div>
         </div>
       </div>
@@ -258,76 +259,26 @@ export default function Header() {
 
   return (
     <header className="bg-[#0f1013] text-white sticky top-0 z-50">
-      {/* Top Utility Bar */}
-      <div className="border-b border-[#141619]">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-end h-8 text-xs">
-            <div className="hidden lg:flex items-center space-x-6">
-              {user ? (
-                <>
-                  <span className="text-[#d9d9d9]">
-                    {user.firstName || user.name || user.email}
-                  </span>
-                  <button 
-                    onClick={handleLogout}
-                    className="text-[#d9d9d9] hover:text-white transition-colors"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <Link href="/login" className="text-[#d9d9d9] hover:text-white transition-colors">
-                  Login
-                </Link>
-              )}
-              {/* <Link href="/accessibility" className="text-[#d9d9d9] hover:text-white transition-colors">
-                Accessibility Statement
-              </Link> */}
-              <Link href="/help" className="text-[#d9d9d9] hover:text-white transition-colors">
-                Help
-              </Link>
-              {!user && (
-                <Link href="/signup" className="text-[#d9d9d9] hover:text-white transition-colors">
-                  Email Sign Up
-                </Link>
-              )}
-              {/* <Link href="/blog" className="text-[#d9d9d9] hover:text-white transition-colors">
-                Blog
-              </Link> */}
-              <div className="flex items-center text-[#d9d9d9] hover:text-white transition-colors cursor-pointer">
-                English
-                <ChevronDown className="h-3 w-3 ml-1" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Header */}
+      {/* Main Header - Simplified according to image */}
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
+        <div className="flex items-center justify-between h-20">
+          {/* Logo - Left aligned with smaller size */}
           <Link href="/" className="flex items-center">
-            <Image src="/logo.png" alt="ATHLEKT" width={140} height={37} className="h-9 w-auto" priority />
+            <Image 
+              src="/logo.png" 
+              alt="ATHLEKT" 
+              width={120} 
+              height={30} 
+              className="h-7 w-auto" 
+              priority 
+            />
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-12">
-            <Link
-              href="/"
-              className={`transition-colors font-medium tracking-wide uppercase text-sm ${
-                isActivePath("/") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
-              }`}
-              onClick={(event) => {
-                event.preventDefault()
-                navigateTo("/")
-              }}
-            >
-              HOME
-            </Link>
+          {/* Desktop Navigation - Centered */}
+          <nav className="hidden lg:flex items-center space-x-8">
             <Link
               href="/collection"
-              className={`transition-colors font-medium tracking-wide uppercase text-sm ${
+              className={`transition-colors font-medium uppercase text-[15px] ${
                 isActivePath("/collection") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
               }`}
               onClick={(event) => {
@@ -354,10 +305,10 @@ export default function Header() {
               onMouseLeave={() => setIsWomenMenuOpen(false)}
             />
 
-            {/* BLOGS moved to the end of desktop nav */}
+            {/* BLOGS */}
             <Link
               href="/blog"
-              className={`transition-colors font-medium tracking-wide uppercase text-sm ${
+              className={`transition-colors font-medium uppercase text-[15px] ${
                 isActivePath("/blog") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
               }`}
               onClick={(event) => {
@@ -367,37 +318,44 @@ export default function Header() {
             >
               BLOGS
             </Link>
-            
           </nav>
 
-          {/* Search and Icons */}
+          {/* Search and Icons - Right aligned */}
           <div className="flex items-center space-x-4">
-            {/* Search Bar */}
+            {/* Search Bar - Black background with white border, white text, search icon on right - PROPERLY ROUNDED */}
             <div className="hidden md:flex items-center">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#6e6e6e] h-4 w-4" />
-                <Input
-                  type="search"
-                  placeholder="What are you looking for to..."
-                  className="pl-10 pr-4 w-80 bg-white text-[#212121] border-none rounded-md h-10 placeholder:text-[#6e6e6e]"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value)
-                    if (e.target.value) {
-                      setIsSearchDropdownOpen(true)
-                    } else {
-                      setIsSearchDropdownOpen(false)
-                    }
-                  }}
-                  onKeyDown={handleSearch}
-                  onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)} // Delay to allow click
-                  onFocus={() => searchQuery && setSearchResults.length > 0 && setIsSearchDropdownOpen(true)}
-                />
+                <div className="flex items-center bg-black border border-white rounded-full overflow-hidden">
+                  <input
+                    type="search"
+                    placeholder="Search for products..."
+                    className="px-4 py-2 w-64 bg-black text-white border-none outline-none h-10 placeholder:text-gray-400 text-sm"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value)
+                      if (e.target.value) {
+                        setIsSearchDropdownOpen(true)
+                      } else {
+                        setIsSearchDropdownOpen(false)
+                      }
+                    }}
+                    onKeyDown={handleSearch}
+                    onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)}
+                    onFocus={() => searchQuery && setSearchResults.length > 0 && setIsSearchDropdownOpen(true)}
+                  />
+                  <button 
+                    onClick={handleSearchIconClick}
+                    className="px-4 py-2 hover:bg-gray-800 transition-colors"
+                  >
+                    <Search className="text-white h-4 w-4" />
+                  </button>
+                </div>
+                
                 {/* Search Suggestions Dropdown */}
                 {isSearchDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden z-50">
+                  <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden z-50">
                     {isSearchLoading ? (
-                      <div className="p-4 text-center text-gray-500">Loading...</div>
+                      <div className="p-4 text-center text-gray-500 text-sm">Loading...</div>
                     ) : searchResults.length > 0 ? (
                       searchResults.map((product) => (
                         <Link key={product._id} href={`/product/${product.slug}`} onClick={handleSuggestionClick} className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0">
@@ -412,7 +370,7 @@ export default function Header() {
                         </Link>
                       ))
                     ) : (
-                      <div className="p-4 text-center text-gray-500">No products found.</div>
+                      <div className="p-4 text-center text-gray-500 text-sm">No products found.</div>
                     )}
                   </div>
                 )}
@@ -476,43 +434,23 @@ export default function Header() {
           <div className="lg:hidden py-6 border-t border-[#141619]">
             <nav className="flex flex-col space-y-6">
               <Link
-                href="/"
-                className={`transition-colors font-medium tracking-wide uppercase text-sm ${
-                  isActivePath("/") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
-                }`}
-              onClick={(event) => {
-                event.preventDefault()
-                navigateTo("/")
-              }}
-              >
-                HOME
-              </Link>
-              <Link
                 href="/collection"
-                className={`transition-colors font-medium tracking-wide uppercase text-sm ${
+                className={`transition-colors font-medium uppercase text-[15px] ${
                   isActivePath("/collection") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
                 }`}
-              onClick={(event) => {
-                event.preventDefault()
-                navigateTo("/collection")
-              }}
+                onClick={(event) => {
+                  event.preventDefault()
+                  navigateTo("/collection")
+                }}
               >
-                COLLECTION
+                PRODUCTS
               </Link>
 
               {/* Mobile Categories */}
               <div className="space-y-3">
-                <Link
-                  href="/categories"
-                  onClick={(event) => {
-                    event.preventDefault()
-                    navigateTo("/categories")
-                  }}
-                >
-                  <span className={`font-medium tracking-wide uppercase text-sm ${isActivePath("/categories") ? "text-[#cbf26c]" : "text-white"}`}>
-                    CATEGORIES
-                  </span>
-                </Link>
+                <span className="font-medium uppercase text-[15px] text-white">
+                  CATEGORIES
+                </span>
                 <div className="pl-4 space-y-2">
                   <Link
                     href="/categories?gender=men"
@@ -537,77 +475,53 @@ export default function Header() {
                 </div>
               </div>
 
-              {/* Mobile Sale */}
               <Link
-                href="/sale"
-                className={`transition-colors font-medium tracking-wide uppercase text-sm ${
-                  isActivePath("/sale") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+                href="/blog"
+                className={`transition-colors font-medium uppercase text-[15px] ${
+                  isActivePath("/blog") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
                 }`}
-              onClick={(event) => {
-                event.preventDefault()
-                navigateTo("/sale")
-              }}
+                onClick={(event) => {
+                  event.preventDefault()
+                  navigateTo("/blog")
+                }}
               >
-                SALE
+                BLOGS
               </Link>
 
-              {/* ADDED: Mobile Top Sellers */}
-              <div className="space-y-3">
-                <span
-                  className={`font-medium tracking-wide uppercase text-sm text-white`}
-                >
-                  TOP SELLERS
-                </span>
-                <div className="pl-4 space-y-2">
-                  <Link
-                    href="/sale/men"
-                    className="block text-white hover:text-[#cbf26c] transition-colors text-sm"
-                    onClick={(event) => {
-                      event.preventDefault()
-                      navigateTo("/sale/men")
-                    }}
-                  >
-                    Men Top Seller
-                  </Link>
-                  <Link
-                    href="/sale/women"
-                    className="block text-white hover:text-[#cbf26c] transition-colors text-sm"
-                    onClick={(event) => {
-                      event.preventDefault()
-                      navigateTo("/sale/women")
-                    }}
-                  >
-                    Women Top Seller
-                  </Link>
-                </div>
-              </div>
-              
-              {/* Mobile Search */}
+              {/* Mobile Search - PROPERLY ROUNDED */}
               <div className="pt-4">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#6e6e6e] h-4 w-4" />
-                  <Input
-                    type="search"
-                    placeholder="What are you looking for to..."
-                    className="pl-10 bg-white text-[#212121] border-none rounded-md h-10 placeholder:text-[#6e6e6e]"
-                    value={searchQuery}
-                    onChange={(e) => {
-                      setSearchQuery(e.target.value)
-                      if (e.target.value) {
-                        setIsSearchDropdownOpen(true)
-                      } else {
-                        setIsSearchDropdownOpen(false)
-                      }
-                    }}
-                    onKeyDown={handleSearch}
-                    onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)}
-                    onFocus={() => searchQuery && setSearchResults.length > 0 && setIsSearchDropdownOpen(true)}
-                  />
+                  <div className="flex items-center bg-black border border-white rounded-full overflow-hidden">
+                    <input
+                      type="search"
+                      placeholder="Search for products..."
+                      className="px-4 py-2 w-full bg-black text-white border-none outline-none h-10 placeholder:text-gray-400 text-sm"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value)
+                        if (e.target.value) {
+                          setIsSearchDropdownOpen(true)
+                        } else {
+                          setIsSearchDropdownOpen(false)
+                        }
+                      }}
+                      onKeyDown={handleSearch}
+                      onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)}
+                      onFocus={() => searchQuery && setSearchResults.length > 0 && setIsSearchDropdownOpen(true)}
+                    />
+                    <button 
+                      onClick={handleSearchIconClick}
+                      className="px-4 py-2 hover:bg-gray-800 transition-colors"
+                    >
+                      <Search className="text-white h-4 w-4" />
+                    </button>
+                  </div>
+                  
                   {/* Mobile Search Suggestions Dropdown */}
                   {isSearchDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-md overflow-hidden z-50">
+                    <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden z-50">
                       {isSearchLoading ? (
-                        <div className="p-4 text-center text-gray-500">Loading...</div>
+                        <div className="p-4 text-center text-gray-500 text-sm">Loading...</div>
                       ) : searchResults.length > 0 ? (
                         searchResults.map((product) => (
                           <Link key={product._id} href={`/product/${product.slug}`} onClick={handleSuggestionClick} className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0">
@@ -621,50 +535,10 @@ export default function Header() {
                             <span className="text-[#212121] text-sm">{product.name}</span>
                           </Link>
                         ))
-                      ) : <div className="p-4 text-center text-gray-500">No products found.</div>}
+                      ) : <div className="p-4 text-center text-gray-500 text-sm">No products found.</div>}
                     </div>
                   )}
                 </div>
-              </div>
-
-              {/* Mobile Utility Links */}
-              <div className="pt-4 border-t border-[#141619] space-y-4">
-                {user ? (
-                  <>
-                    <span className="text-[#d9d9d9] text-sm flex items-center">
-                      <User className="h-3 w-3 mr-2" />
-                      {user.firstName || user.name || user.email}
-                    </span>
-                    <Link
-                      href="/profile"
-                      className="text-[#d9d9d9] hover:text-white transition-colors text-sm flex items-center"
-                    >
-                      <User className="h-3 w-3 mr-2" />
-                      Profile
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="text-[#d9d9d9] hover:text-white transition-colors text-sm flex items-center w-full text-left"
-                    >
-                      <LogOut className="h-3 w-3 mr-2" />
-                      Logout
-                    </button>
-                  </>
-                ) : (
-                  <Link
-                    href="/login"
-                    className="text-[#d9d9d9] hover:text-white transition-colors text-sm flex items-center"
-                  >
-                    <User className="h-3 w-3 mr-2" />
-                    Login
-                  </Link>
-                )}
-                <Link href="/help" className="text-[#d9d9d9] hover:text-white transition-colors text-sm">
-                  Help
-                </Link>
-                <Link href="/blog" className="text-[#d9d9d9] hover:text-white transition-colors text-sm">
-                  Blog
-                </Link>
               </div>
             </nav>
           </div>
