@@ -134,6 +134,9 @@ export default function HomePage() {
   const [currentBundleIndex, setCurrentBundleIndex] = useState(0)
   const bundleCarouselRef = useRef<HTMLDivElement>(null)
 
+  // Auto-scroll pause state
+  const [isCarouselHovered, setIsCarouselHovered] = useState(false)
+
   // Lightbox helpers
   const openLightbox = (index: number) => {
     setLightboxIndex(index)
@@ -252,6 +255,29 @@ export default function HomePage() {
     })
   }
 
+  // MOVE WITH US carousel scrolling functions
+  const scrollCarousel = (direction: 'left' | 'right') => {
+    if (carouselRef.current) {
+      const gap = 24
+      const imageWidth = Math.max(160, Math.min(240, carouselRef.current.clientWidth * 0.4))
+      const scrollAmount = imageWidth + gap
+      const currentScroll = carouselRef.current.scrollLeft
+      const newScroll = direction === 'left' 
+        ? Math.max(0, currentScroll - scrollAmount)
+        : currentScroll + scrollAmount
+      
+      const newIndex = direction === 'left' 
+        ? Math.max(0, currentCarouselIndex - 1)
+        : Math.min(carouselImages.length - 1, currentCarouselIndex + 1)
+      
+      setCurrentCarouselIndex(newIndex)
+      carouselRef.current.scrollTo({
+        left: newScroll,
+        behavior: 'smooth'
+      })
+    }
+  }
+
   // Auto-scroll effect for blog slider (optional)
   useEffect(() => {
     if (blogs.length === 0) return
@@ -275,6 +301,29 @@ export default function HomePage() {
 
     return () => clearInterval(interval)
   }, [currentBundleIndex, bundles.length])
+
+  // Auto-scroll effect for MOVE WITH US carousel
+  useEffect(() => {
+    if (carouselImages.length === 0 || isCarouselHovered) return
+
+    const interval = setInterval(() => {
+      const nextIndex = (currentCarouselIndex + 1) % carouselImages.length
+      setCurrentCarouselIndex(nextIndex)
+      
+      if (carouselRef.current) {
+        const gap = 24
+        const imageWidth = Math.max(160, Math.min(240, carouselRef.current.clientWidth * 0.4))
+        const scrollPosition = nextIndex * (imageWidth + gap)
+        
+        carouselRef.current.scrollTo({
+          left: scrollPosition,
+          behavior: 'smooth'
+        })
+      }
+    }, 4000) // Auto-scroll every 4 seconds
+
+    return () => clearInterval(interval)
+  }, [currentCarouselIndex, carouselImages.length, isCarouselHovered])
 
   // Fetch homepage images from API
   useEffect(() => {
@@ -494,6 +543,36 @@ export default function HomePage() {
     fetchBundles();
   }, []);
 
+  // Fetch carousel images from API for MOVE WITH US section
+  useEffect(() => {
+    const fetchCarouselImages = async () => {
+      try {
+        setLoadingCarouselImages(true);
+        const response = await fetch(`${API_BASE_URL}/carousel-images/public/active`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && Array.isArray(data.data)) {
+            // Sort by order and extract image URLs
+            const sortedImages = data.data
+              .sort((a: any, b: any) => a.order - b.order)
+              .map((img: any) => img.imageUrl);
+            setCarouselImages(sortedImages);
+          }
+        } else {
+          // Fallback to static images if API fails
+          setCarouselImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch carousel images:', error);
+        // Fallback to static images on error
+        setCarouselImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
+      } finally {
+        setLoadingCarouselImages(false);
+      }
+    };
+    fetchCarouselImages();
+  }, []);
+
   // Helper function to get full image URL
   const getImageUrl = (url: string | undefined): string => {
     if (!url) return '';
@@ -647,59 +726,6 @@ const getBundleProductHref = (bundle: Bundle): string => {
           alt: 'Hero content'
         }
       : null
-
-  // Fetch carousel images from API for MOVE WITH US section
-  useEffect(() => {
-    const fetchCarouselImages = async () => {
-      try {
-        setLoadingCarouselImages(true);
-        const response = await fetch(`${API_BASE_URL}/carousel-images/public/active`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && Array.isArray(data.data)) {
-            // Sort by order and extract image URLs
-            const sortedImages = data.data
-              .sort((a: any, b: any) => a.order - b.order)
-              .map((img: any) => img.imageUrl);
-            setCarouselImages(sortedImages);
-          }
-        } else {
-          // Fallback to static images if API fails
-          setCarouselImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch carousel images:', error);
-        // Fallback to static images on error
-        setCarouselImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
-      } finally {
-        setLoadingCarouselImages(false);
-      }
-    };
-    fetchCarouselImages();
-  }, []);
-
-  const scrollCarousel = (direction: 'left' | 'right') => {
-    if (carouselRef.current) {
-      const gap = 24 // gap-6 = 24px on md+ screens
-      // Reduced box width: 240px (responsive: clamp(160px, 18vw, 240px))
-      const imageWidth = Math.max(160, Math.min(240, carouselRef.current.clientWidth * 0.18)) // Responsive width
-      const scrollAmount = imageWidth + gap // Scroll by one image width + gap
-      const currentScroll = carouselRef.current.scrollLeft
-      const newScroll = direction === 'left' 
-        ? Math.max(0, currentScroll - scrollAmount)
-        : currentScroll + scrollAmount
-      
-      const newIndex = direction === 'left' 
-        ? Math.max(0, currentCarouselIndex - 1)
-        : Math.min(carouselImages.length - 1, currentCarouselIndex + 1)
-      
-      setCurrentCarouselIndex(newIndex)
-      carouselRef.current.scrollTo({
-        left: newScroll,
-        behavior: 'smooth'
-      })
-    }
-  }
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -2077,18 +2103,18 @@ const getBundleProductHref = (bundle: Bundle): string => {
         </div>
       </section>
 
-      {/* Section 8: MOVE WITH US - Image Carousel with Hover Effect - Fully Responsive */}
+      {/* Section 8: MOVE WITH US - Image Carousel with Auto Scroll */}
       <section className="bg-white text-[#212121] pt-0 pb-20 mt-12">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          {/* Heading and Subtitle - Same font as above sections */}
+          {/* Heading and Subtitle */}
           <div className="mb-8">
             <h1 
               className="uppercase mb-6 text-black leading-none"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
-                fontSize: 'clamp(40px, 5vw, 90px)', // Responsive font size
-                letterSpacing: 'clamp(-1.5px, -0.23vw, -3.37px)' // Responsive letter spacing
+                fontSize: 'clamp(40px, 5vw, 90px)',
+                letterSpacing: 'clamp(-1.5px, -0.23vw, -3.37px)'
               }}
             >
               MOVE WITH US
@@ -2097,24 +2123,24 @@ const getBundleProductHref = (bundle: Bundle): string => {
               className="text-black text-left leading-normal"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(14px, 1.5vw, 18px)', // Responsive font size
+                fontSize: 'clamp(14px, 1.5vw, 18px)',
                 letterSpacing: '0px',
                 fontWeight: 500,
-                marginTop: '2px' // Small gap between heading and subtitle
+                marginTop: '2px'
               }}
             >
               Real athletes, real movement. Tag us @Athlekt to be featured.
             </p>
           </div>
 
-          {/* Image Carousel - Fully Responsive */}
+          {/* Image Carousel with Auto Scroll */}
           <div className="relative">
-            {/* Navigation Arrows - Figma Design - Positioned to frame images */}
+            {/* Navigation Arrows */}
             <button
               onClick={() => scrollCarousel('left')}
-              className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors"
+              className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
               style={{
-                left: '0',
+                left: '-12px',
                 width: 'clamp(32px, 3.5vw, 48px)',
                 height: 'clamp(32px, 3.5vw, 48px)',
                 border: '1px solid #000000',
@@ -2126,9 +2152,9 @@ const getBundleProductHref = (bundle: Bundle): string => {
             </button>
             <button
               onClick={() => scrollCarousel('right')}
-              className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors"
+              className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
               style={{
-                right: '0',
+                right: '-12px',
                 width: 'clamp(32px, 3.5vw, 48px)',
                 height: 'clamp(32px, 3.5vw, 48px)',
                 border: '1px solid #000000',
@@ -2139,123 +2165,108 @@ const getBundleProductHref = (bundle: Bundle): string => {
               <ChevronRight className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
             </button>
 
-            {/* Carousel Container - Shows multiple images - Centered between arrows */}
+            {/* Carousel Container */}
             {loadingCarouselImages ? (
-              <div className="flex justify-center items-center gap-4 md:gap-6" style={{
-                paddingLeft: 'clamp(48px, 5.5vw, 64px)',
-                paddingRight: 'clamp(48px, 5.5vw, 64px)',
-                minHeight: 'clamp(240px, 28vw, 380px)'
+              <div className="flex justify-start items-center gap-4 md:gap-6 px-4" style={{
+                minHeight: 'clamp(240px, 28vw, 380px)',
+                overflowX: 'auto'
               }}>
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="bg-gray-200 animate-pulse rounded-[40px] flex-shrink-0" style={{
-                    width: 'clamp(160px, 18vw, 240px)',
-                    height: 'clamp(240px, 28vw, 380px)'
+                    width: 'clamp(160px, 40vw, 240px)',
+                    height: 'clamp(240px, 60vw, 380px)'
                   }} />
                 ))}
               </div>
             ) : carouselImages.length > 0 ? (
-            <div 
-              ref={carouselRef}
-              className="flex overflow-x-hidden scroll-smooth gap-4 md:gap-6"
-              style={{
-                scrollSnapType: 'x mandatory',
-                paddingLeft: 'clamp(48px, 5.5vw, 64px)', // Space for left arrow
-                paddingRight: 'clamp(48px, 5.5vw, 64px)', // Space for right arrow
-                margin: '0 auto',
-                width: '100%',
-                maxWidth: '100%',
-                display: 'flex',
-                justifyContent: 'center', // Center images between arrows
-                alignItems: 'center'
-              }}
-            >
-              {carouselImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="flex-shrink-0 cursor-pointer"
-                  onClick={() => openLightbox(index)}
-                   style={{
-                     scrollSnapAlign: 'start',
-                     // Figma dimensions - reduced size to match design
-                     width: 'clamp(160px, 18vw, 240px)', // Reduced from 276px to 240px max
-                     height: 'clamp(240px, 28vw, 380px)', // Reduced from 431px to 380px max
-                     minWidth: '160px',
-                     minHeight: '240px'
-                   }}
-                 >
-                   <div
-                     className="relative w-full h-full overflow-hidden cursor-pointer transition-transform duration-300 ease-out"
-                     style={{
-                       // Exact Figma dimensions
-                       width: '100%',
-                       height: '100%',
-                       transform: 'translateY(0)',
-                       borderRadius: 'clamp(24px, 3vw, 40px)', // Reduced border radius to match smaller size
-                       opacity: 1, // Figma: 100% opacity
-                       overflow: 'hidden'
-                     }}
-                     onMouseEnter={(e) => {
-                       e.currentTarget.style.transform = 'translateY(-8px)'
-                     }}
-                     onMouseLeave={(e) => {
-                       e.currentTarget.style.transform = 'translateY(0)'
-                     }}
-                   >
-                    <Image
-                      src={image}
-                      alt={`Carousel image ${index + 1}`}
-                      fill
-                      className="object-cover"
+              <div 
+                ref={carouselRef}
+                className="flex overflow-x-auto scroll-smooth gap-4 md:gap-6 px-4"
+                style={{
+                  scrollSnapType: 'x mandatory',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch'
+                }}
+                onMouseEnter={() => setIsCarouselHovered(true)}
+                onMouseLeave={() => setIsCarouselHovered(false)}
+                onTouchStart={() => setIsCarouselHovered(true)}
+                onTouchEnd={() => setTimeout(() => setIsCarouselHovered(false), 3000)}
+              >
+                {carouselImages.map((image, index) => (
+                  <div
+                    key={index}
+                    className="flex-shrink-0 cursor-pointer"
+                    onClick={() => openLightbox(index)}
+                    style={{
+                      scrollSnapAlign: 'start',
+                      width: 'clamp(160px, 40vw, 240px)',
+                      height: 'clamp(240px, 60vw, 380px)',
+                      minWidth: '160px',
+                      minHeight: '240px'
+                    }}
+                  >
+                    <div
+                      className="relative w-full h-full overflow-hidden cursor-pointer transition-transform duration-300 ease-out hover:translate-y-[-8px]"
                       style={{
-                        borderRadius: 'clamp(24px, 3vw, 40px)', // Same border radius as container
-                        objectFit: 'cover', // Fit image inside box
-                        objectPosition: 'center top' // Show top portion of image
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: 'clamp(24px, 3vw, 40px)',
+                        opacity: 1,
+                        overflow: 'hidden'
                       }}
-                      sizes="(max-width: 640px) 160px, (max-width: 768px) 200px, (max-width: 1024px) 220px, 240px"
-                   />
-                   </div>
-                 </div>
-               ))}
-            </div>
+                    >
+                      <Image
+                        src={image}
+                        alt={`Carousel image ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        style={{
+                          borderRadius: 'clamp(24px, 3vw, 40px)',
+                          objectFit: 'cover',
+                          objectPosition: 'center top'
+                        }}
+                        sizes="(max-width: 640px) 160px, (max-width: 768px) 200px, (max-width: 1024px) 220px, 240px"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
-              <div className="text-center py-12" style={{
-                paddingLeft: 'clamp(48px, 5.5vw, 64px)',
-                paddingRight: 'clamp(48px, 5.5vw, 64px)',
-              }}>
+              <div className="text-center py-12 px-4">
                 <p className="text-gray-500">No images available at the moment.</p>
               </div>
             )}
           </div>
 
-          {/* Pagination Dots - Responsive */}
+          {/* Pagination Dots */}
           {!loadingCarouselImages && carouselImages.length > 0 && (
-          <div className="flex items-center justify-center gap-2 mt-6">
-            {carouselImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setCurrentCarouselIndex(index)
-                  if (carouselRef.current) {
-                    const containerWidth = carouselRef.current.clientWidth
-                    const gap = 24
-                    // Reduced box width: 240px (responsive: clamp(160px, 18vw, 240px))
-                    const imageWidth = Math.max(160, Math.min(240, containerWidth * 0.18)) // Responsive width
-                    const scrollPosition = index * (imageWidth + gap)
-                    carouselRef.current.scrollTo({
-                      left: scrollPosition,
-                      behavior: 'smooth'
-                    })
-                  }
-                }}
-                className={`transition-all duration-300 ${
-                  index === currentCarouselIndex 
-                    ? 'w-2.5 h-2.5 bg-gray-400' 
-                    : 'w-2 h-2 bg-gray-600'
-                } rounded-full`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
+            <div className="flex items-center justify-center gap-2 mt-6">
+              {carouselImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    setCurrentCarouselIndex(index)
+                    if (carouselRef.current) {
+                      const containerWidth = carouselRef.current.clientWidth
+                      const gap = 24
+                      const imageWidth = Math.max(160, Math.min(240, containerWidth * 0.4))
+                      const scrollPosition = index * (imageWidth + gap)
+                      carouselRef.current.scrollTo({
+                        left: scrollPosition,
+                        behavior: 'smooth'
+                      })
+                    }
+                  }}
+                  className={`transition-all duration-300 rounded-full ${
+                    index === currentCarouselIndex 
+                      ? 'w-2.5 h-2.5 bg-gray-800' 
+                      : 'w-2 h-2 bg-gray-400'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
           )}
         </div>
       </section>
@@ -2265,7 +2276,6 @@ const getBundleProductHref = (bundle: Bundle): string => {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
           onClick={(e) => {
-            // close when clicking backdrop
             if (e.currentTarget === e.target) closeLightbox()
           }}
         >
