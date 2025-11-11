@@ -338,20 +338,6 @@ export default function Header() {
               PRODUCTS
             </Link>
 
-            {/* Blogs Link */}
-            <Link
-              href="/blog"
-              className={`transition-colors font-medium tracking-wide uppercase text-sm ${
-                isActivePath("/blog") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
-              }`}
-              onClick={(event) => {
-                event.preventDefault()
-                navigateTo("/blog")
-              }}
-            >
-              BLOGS
-            </Link>
-            
             {/* Men's Category Dropdown */}
             <CategoryDropdown
               gender="men"
@@ -368,65 +354,20 @@ export default function Header() {
               onMouseLeave={() => setIsWomenMenuOpen(false)}
             />
 
-            {/* Sale Link */}
-            {/* <Link
-              href="/sale"
-              className="transition-colors font-medium tracking-wide uppercase text-sm text-white hover:text-[#cbf26c]"
+            {/* BLOGS moved to the end of desktop nav */}
+            <Link
+              href="/blog"
+              className={`transition-colors font-medium tracking-wide uppercase text-sm ${
+                isActivePath("/blog") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+              }`}
               onClick={(event) => {
                 event.preventDefault()
-                navigateTo("/sale")
+                navigateTo("/blog")
               }}
             >
-              SALE
+              BLOGS
             </Link>
             
-            ADDED: Top Sellers with Dropdown
-            <div
-              className="relative group"
-              onMouseEnter={() => setIsTopSellerOpen(true)}
-              onMouseLeave={() => setIsTopSellerOpen(false)}
-            >
-              <button
-                className="transition-colors font-medium tracking-wide uppercase text-sm text-white hover:text-[#cbf26c]"
-              >
-                TOP SELLERS
-              </button>
-
-              Dropdown Menu
-              <div
-                className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ${
-                  isTopSellerOpen ? "opacity-100 visible" : "opacity-0 invisible"
-                }`}
-              >
-                <div className="bg-white shadow-lg rounded-md overflow-hidden z-50">
-                  <div className="min-w-[200px]">
-                    <div className="bg-white">
-                      <Link
-                        href="/sale/men"
-                        className="block w-full text-left px-6 py-3 transition-colors font-medium text-[#212121] hover:bg-gray-50 border-b border-gray-100"
-                        onClick={(event) => {
-                          event.preventDefault()
-                          navigateTo("/sale/men")
-                        }}
-                      >
-                        Men Top Seller
-                      </Link>
-                      <Link
-                        href="/sale/women"
-                        className="block w-full text-left px-6 py-3 transition-colors font-medium text-[#212121] hover:bg-gray-50"
-                        onClick={(event) => {
-                          event.preventDefault()
-                          navigateTo("/sale/women")
-                        }}
-                      >
-                        Women Top Seller
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div> */}
-
           </nav>
 
           {/* Search and Icons */}
@@ -610,20 +551,6 @@ export default function Header() {
                 SALE
               </Link>
 
-              {/* Mobile Blogs */}
-              <Link
-                href="/blog"
-                className={`transition-colors font-medium tracking-wide uppercase text-sm ${
-                  isActivePath("/blog") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
-                }`}
-                onClick={(event) => {
-                  event.preventDefault()
-                  navigateTo("/blog")
-                }}
-              >
-                BLOGS
-              </Link>
-              
               {/* ADDED: Mobile Top Sellers */}
               <div className="space-y-3">
                 <span

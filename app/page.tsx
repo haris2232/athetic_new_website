@@ -106,7 +106,6 @@ const normalizeBlogHref = (blog: Blog): string => {
   return `/blog/${blog._id}`
 }
 
-
 export default function HomePage() {
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
@@ -127,6 +126,14 @@ export default function HomePage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const { formatPrice } = useCurrency()
   
+  // Blog slider state variables
+  const [currentBlogIndex, setCurrentBlogIndex] = useState(0)
+  const blogCarouselRef = useRef<HTMLDivElement>(null)
+
+  // Bundle slider state variables
+  const [currentBundleIndex, setCurrentBundleIndex] = useState(0)
+  const bundleCarouselRef = useRef<HTMLDivElement>(null)
+
   // Lightbox helpers
   const openLightbox = (index: number) => {
     setLightboxIndex(index)
@@ -168,6 +175,106 @@ export default function HomePage() {
     window.addEventListener("keydown", handler)
     return () => window.removeEventListener("keydown", handler)
   }, [lightboxOpen, carouselImages.length])
+
+  // Blog carousel scrolling functions
+  const scrollBlogCarousel = (direction: 'left' | 'right') => {
+    if (!blogCarouselRef.current) return
+
+    const gap = 24
+    const cardWidth = Math.min(280, window.innerWidth * 0.8) // Responsive card width
+    const scrollAmount = cardWidth + gap
+    const currentScroll = blogCarouselRef.current.scrollLeft
+    
+    const newScroll = direction === 'left' 
+      ? Math.max(0, currentScroll - scrollAmount)
+      : currentScroll + scrollAmount
+    
+    const newIndex = direction === 'left' 
+      ? Math.max(0, currentBlogIndex - 1)
+      : Math.min(blogs.length - 1, currentBlogIndex + 1)
+    
+    setCurrentBlogIndex(newIndex)
+    blogCarouselRef.current.scrollTo({
+      left: newScroll,
+      behavior: 'smooth'
+    })
+  }
+
+  const scrollToBlogSlide = (index: number) => {
+    if (!blogCarouselRef.current) return
+
+    const gap = 24
+    const cardWidth = Math.min(280, window.innerWidth * 0.8)
+    const scrollPosition = index * (cardWidth + gap)
+    
+    setCurrentBlogIndex(index)
+    blogCarouselRef.current.scrollTo({
+      left: scrollPosition,
+      behavior: 'smooth'
+    })
+  }
+
+  // Bundle carousel scrolling functions
+  const scrollBundleCarousel = (direction: 'left' | 'right') => {
+    if (!bundleCarouselRef.current) return
+
+    const gap = 24
+    const cardWidth = Math.min(280, window.innerWidth * 0.8) // Responsive card width
+    const scrollAmount = cardWidth + gap
+    const currentScroll = bundleCarouselRef.current.scrollLeft
+    
+    const newScroll = direction === 'left' 
+      ? Math.max(0, currentScroll - scrollAmount)
+      : currentScroll + scrollAmount
+    
+    const newIndex = direction === 'left' 
+      ? Math.max(0, currentBundleIndex - 1)
+      : Math.min(bundles.length - 1, currentBundleIndex + 1)
+    
+    setCurrentBundleIndex(newIndex)
+    bundleCarouselRef.current.scrollTo({
+      left: newScroll,
+      behavior: 'smooth'
+    })
+  }
+
+  const scrollToBundleSlide = (index: number) => {
+    if (!bundleCarouselRef.current) return
+
+    const gap = 24
+    const cardWidth = Math.min(280, window.innerWidth * 0.8)
+    const scrollPosition = index * (cardWidth + gap)
+    
+    setCurrentBundleIndex(index)
+    bundleCarouselRef.current.scrollTo({
+      left: scrollPosition,
+      behavior: 'smooth'
+    })
+  }
+
+  // Auto-scroll effect for blog slider (optional)
+  useEffect(() => {
+    if (blogs.length === 0) return
+
+    const interval = setInterval(() => {
+      const nextIndex = (currentBlogIndex + 1) % blogs.length
+      scrollToBlogSlide(nextIndex)
+    }, 5000) // Auto-scroll every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [currentBlogIndex, blogs.length])
+
+  // Auto-scroll effect for bundle slider (optional)
+  useEffect(() => {
+    if (bundles.length === 0) return
+
+    const interval = setInterval(() => {
+      const nextIndex = (currentBundleIndex + 1) % bundles.length
+      scrollToBundleSlide(nextIndex)
+    }, 5000) // Auto-scroll every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [currentBundleIndex, bundles.length])
 
   // Fetch homepage images from API
   useEffect(() => {
@@ -1122,7 +1229,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
         </div>
       </section>
 
-      {/* Section 5: COMMUNITY FAVOURITES - Subtitle below heading */}
+      {/* Section 5: COMMUNITY FAVOURITES - Subtitle below heading - SLIDER VERSION */}
       <section className="bg-white text-[#212121] pt-0 pb-20 mt-12">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="mb-8">
@@ -1153,90 +1260,145 @@ const getBundleProductHref = (bundle: Bundle): string => {
             </p>
           </div>
 
-          {/* Blog Grid - 4 Blogs */}
+          {/* Blog Slider - 4 Blogs */}
           {loadingBlogs ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            <div className="flex gap-6 mt-12 overflow-x-hidden">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-gray-200 animate-pulse rounded-[32px] w-full" style={{ aspectRatio: '307/450' }} />
+                <div key={i} className="flex-shrink-0 bg-gray-200 animate-pulse rounded-[32px]" 
+                  style={{ 
+                    width: 'min(280px, 80vw)', 
+                    aspectRatio: '307/450' 
+                  }} 
+                />
               ))}
-                </div>
+            </div>
           ) : blogs.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-              {blogs.map((blog) => {
-                const blogImage = blog.coverImage ? getImageUrl(blog.coverImage) : ""
-                return (
-                  <Link 
-                    key={blog._id}
-                    href={normalizeBlogHref(blog)}
-                    className="bg-white relative overflow-hidden w-full block hover:opacity-90 transition-opacity"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-                    <div className="relative w-full h-full rounded-[32px] overflow-hidden">
-                      {blogImage ? (
-                        <Image
-                          src={blogImage}
-                          alt={blog.adminName || "Blog cover"}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 25vw"
-                        />
-                      ) : (
-                        <div 
-                          className="bg-gradient-to-br from-gray-100 to-gray-200 w-full h-full flex items-center justify-center"
-                        >
-                          <div className="text-center p-8">
-                            <div className="text-6xl mb-4">📝</div>
-                            <h3 className="text-lg font-semibold text-gray-800 mb-2">{blog.adminName}</h3>
-                </div>
-              </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70" />
-                      <div 
-                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 flex items-center justify-between"
+            <div className="relative mt-12">
+              {/* Navigation Arrows */}
+              <button
+                onClick={() => scrollBlogCarousel('left')}
+                className="absolute top-1/2 -translate-y-1/2 -left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
-                  height: '60px'
+                  width: '48px',
+                  height: '48px',
+                }}
+                aria-label="Previous blog"
+              >
+                <ChevronLeft className="text-black w-6 h-6" />
+              </button>
+              
+              <button
+                onClick={() => scrollBlogCarousel('right')}
+                className="absolute top-1/2 -translate-y-1/2 -right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                style={{
+                  width: '48px',
+                  height: '48px',
+                }}
+                aria-label="Next blog"
+              >
+                <ChevronRight className="text-black w-6 h-6" />
+              </button>
+
+              {/* Blog Slider Container */}
+              <div
+                ref={blogCarouselRef}
+                className="flex gap-6 overflow-x-auto scroll-smooth pb-4 blog-slider"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none'
                 }}
               >
-                        <div className="flex flex-col text-left flex-1 min-w-0">
-                  <span 
-                            className="uppercase text-white truncate"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                            title={blog.adminName}
-                  >
-                            {blog.adminName.length > 20 ? blog.adminName.substring(0, 20) + '...' : blog.adminName}
-                  </span>
-                  <span 
-                            className="uppercase text-white text-xs truncate"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: '11px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                              fontWeight: 400
-                    }}
-                            title={blog.url}
-                  >
-                            {blog.url.length > 25 ? blog.url.substring(0, 25) + '...' : blog.url}
-                  </span>
-                </div>
+                {blogs.map((blog) => {
+                  const blogImage = blog.coverImage ? getImageUrl(blog.coverImage) : ""
+                  return (
+                    <Link 
+                      key={blog._id}
+                      href={normalizeBlogHref(blog)}
+                      className="flex-shrink-0 bg-white relative overflow-hidden hover:opacity-90 transition-opacity cursor-pointer"
+                      style={{
+                        width: 'min(280px, 80vw)',
+                        aspectRatio: '307/450'
+                      }}
+                    >
+                      <div className="relative w-full h-full rounded-[32px] overflow-hidden">
+                        {blogImage ? (
+                          <Image
+                            src={blogImage}
+                            alt={blog.adminName || "Blog cover"}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, 25vw"
+                          />
+                        ) : (
+                          <div className="bg-gradient-to-br from-gray-100 to-gray-200 w-full h-full flex items-center justify-center">
+                            <div className="text-center p-8">
+                              <div className="text-6xl mb-4">📝</div>
+                              <h3 className="text-lg font-semibold text-gray-800 mb-2">{blog.adminName}</h3>
+                            </div>
+                          </div>
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/70" />
+                        <div 
+                          className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 flex items-center justify-between"
+                          style={{
+                            height: '60px'
+                          }}
+                        >
+                          <div className="flex flex-col text-left flex-1 min-w-0">
+                            <span 
+                              className="uppercase text-white truncate"
+                              style={{
+                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                                fontSize: '13.41px',
+                                lineHeight: '14.6px',
+                                letterSpacing: '0px',
+                                fontWeight: 500
+                              }}
+                              title={blog.adminName}
+                            >
+                              {blog.adminName.length > 20 ? blog.adminName.substring(0, 20) + '...' : blog.adminName}
+                            </span>
+                            <span 
+                              className="uppercase text-white text-xs truncate"
+                              style={{
+                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                                fontSize: '11px',
+                                lineHeight: '14.6px',
+                                letterSpacing: '0px',
+                                fontWeight: 400
+                              }}
+                              title={blog.url}
+                            >
+                              {blog.url.length > 25 ? blog.url.substring(0, 25) + '...' : blog.url}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+
+              {/* Pagination Dots */}
+              <div className="flex items-center justify-center gap-2 mt-6">
+                {blogs.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => scrollToBlogSlide(index)}
+                    className={`transition-all duration-300 rounded-full ${
+                      index === currentBlogIndex 
+                        ? 'w-2.5 h-2.5 bg-gray-800' 
+                        : 'w-2 h-2 bg-gray-400'
+                    }`}
+                    aria-label={`Go to blog ${index + 1}`}
+                  />
+                ))}
               </div>
             </div>
-                  </Link>
-                )
-              })}
-                </div>
           ) : (
             <div className="text-center py-12 mt-12">
               <p className="text-gray-500">No blogs available at the moment.</p>
-              </div>
+            </div>
           )}
         </div>
       </section>
@@ -1696,7 +1858,7 @@ const getBundleProductHref = (bundle: Bundle): string => {
     </div> {/* Section container */}
   </section>
 
-      {/* Section 7: COMPLETE THE LOOK - Subtitle below heading */}
+      {/* Section 7: COMPLETE THE LOOK - Subtitle below heading - SLIDER VERSION */}
       <section className="bg-white text-[#212121] pt-0 pb-20" style={{ marginTop: '2px' }}>
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="mb-8">
@@ -1724,141 +1886,193 @@ const getBundleProductHref = (bundle: Bundle): string => {
             </p>
           </div>
 
-          {/* Bundle Grid - 4 Bundles */}
+          {/* Bundle Slider - 4 Bundles */}
           {loadingBundles ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            <div className="flex gap-6 mt-12 overflow-x-hidden">
               {[1, 2, 3, 4].map((i) => (
-            <div 
+                <div 
                   key={i}
-                  className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
-              style={{
-                    aspectRatio: '307/450',
-                  borderRadius: '32px'
-                }}
-              />
-              ))}
-                </div>
-          ) : bundles.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-              {bundles.slice(0, 4).map((bundle) => {
-                const bundleId = bundle.id || bundle._id;
-                const bundleName = bundle.name || 'Bundle';
-                const bundleImage = getBundleImage(bundle);
-                const bundlePrice = bundle.bundlePrice || 0;
-                const nameLines = splitProductName(bundleName.toUpperCase());
-                const bundleHref = getBundleProductHref(bundle);
-                
-                return (
-                  <Link 
-                    key={bundleId}
-                    href={bundleHref}
-                    className="bg-white relative overflow-hidden w-full cursor-pointer hover:opacity-90 transition-opacity"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              {bundle.badgeText && (
-                <span
-                  className="absolute top-4 left-4 bg-white/90 text-black uppercase tracking-[0.2em] text-xs font-semibold px-3 py-1 rounded-full shadow-md"
+                  className="flex-shrink-0 bg-gray-200 relative overflow-hidden w-full animate-pulse rounded-[32px]"
                   style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
+                    width: 'min(280px, 80vw)',
+                    aspectRatio: '307/450'
                   }}
-                >
-                  {bundle.badgeText}
-                </span>
-              )}
-              <img 
-                      src={bundleImage} 
-                      alt={bundleName}
-                className="w-full h-full object-cover"
+                />
+              ))}
+            </div>
+          ) : bundles.length > 0 ? (
+            <div className="relative mt-12">
+              {/* Navigation Arrows */}
+              <button
+                onClick={() => scrollBundleCarousel('left')}
+                className="absolute top-1/2 -translate-y-1/2 -left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
-                  borderRadius: '32px'
+                  width: '48px',
+                  height: '48px',
                 }}
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                }}
-              />
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black/90 text-white p-4 rounded-b-[32px] flex items-center justify-between gap-4"
+                aria-label="Previous bundle"
+              >
+                <ChevronLeft className="text-black w-6 h-6" />
+              </button>
+              
+              <button
+                onClick={() => scrollBundleCarousel('right')}
+                className="absolute top-1/2 -translate-y-1/2 -right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
-                  minHeight: '72px',
-                  zIndex: 20
+                  width: '48px',
+                  height: '48px',
+                }}
+                aria-label="Next bundle"
+              >
+                <ChevronRight className="text-black w-6 h-6" />
+              </button>
+
+              {/* Bundle Slider Container */}
+              <div
+                ref={bundleCarouselRef}
+                className="flex gap-6 overflow-x-auto scroll-smooth pb-4 bundle-slider"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none'
                 }}
               >
-                <div className="flex flex-col text-left">
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                          {nameLines.line1}
-                  </span>
-                        {nameLines.line2 && (
-                  <span 
-                    className="uppercase text-white"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
-                  >
-                            {nameLines.line2}
-                  </span>
-                        )}
-                </div>
-                <p 
-                  className="text-white font-bold text-right"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
-                        {formatPrice(bundlePrice)}
-                </p>
+                {bundles.slice(0, 4).map((bundle) => {
+                  const bundleId = bundle.id || bundle._id;
+                  const bundleName = bundle.name || 'Bundle';
+                  const bundleImage = getBundleImage(bundle);
+                  const bundlePrice = bundle.bundlePrice || 0;
+                  const nameLines = splitProductName(bundleName.toUpperCase());
+                  const bundleHref = getBundleProductHref(bundle);
+                  
+                  return (
+                    <Link 
+                      key={bundleId}
+                      href={bundleHref}
+                      className="flex-shrink-0 bg-white relative overflow-hidden w-full cursor-pointer hover:opacity-90 transition-opacity"
+                      style={{
+                        width: 'min(280px, 80vw)',
+                        aspectRatio: '307/450'
+                      }}
+                    >
+                      {bundle.badgeText && (
+                        <span
+                          className="absolute top-4 left-4 bg-white/90 text-black uppercase tracking-[0.2em] text-xs font-semibold px-3 py-1 rounded-full shadow-md z-20"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
+                          }}
+                        >
+                          {bundle.badgeText}
+                        </span>
+                      )}
+                      <img 
+                        src={bundleImage} 
+                        alt={bundleName}
+                        className="w-full h-full object-cover"
+                        style={{
+                          borderRadius: '32px'
+                        }}
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                      <div 
+                        className="absolute bottom-0 left-0 right-0 bg-black/90 text-white p-4 rounded-b-[32px] flex items-center justify-between gap-4"
+                        style={{
+                          minHeight: '72px',
+                          zIndex: 20
+                        }}
+                      >
+                        <div className="flex flex-col text-left">
+                          <span 
+                            className="uppercase text-white"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: '13.41px',
+                              lineHeight: '14.6px',
+                              letterSpacing: '0px',
+                              fontWeight: 500
+                            }}
+                          >
+                            {nameLines.line1}
+                          </span>
+                          {nameLines.line2 && (
+                            <span 
+                              className="uppercase text-white"
+                              style={{
+                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                                fontSize: '13.41px',
+                                lineHeight: '14.6px',
+                                letterSpacing: '0px',
+                                fontWeight: 500
+                              }}
+                            >
+                              {nameLines.line2}
+                            </span>
+                          )}
+                        </div>
+                        <p 
+                          className="text-white font-bold text-right"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '22px',
+                            lineHeight: '26px',
+                            letterSpacing: '0px',
+                            fontWeight: 600
+                          }}
+                        >
+                          {formatPrice(bundlePrice)}
+                        </p>
+                      </div>
+                      {bundle.shortDescription && (
+                        <div
+                          className="absolute left-0 right-0 bottom-[72px] bg-gradient-to-t from-black/80 to-transparent text-white px-6 pb-10 pt-6"
+                          style={{
+                            borderBottomLeftRadius: '32px',
+                            borderBottomRightRadius: '32px',
+                            zIndex: 10
+                          }}
+                        >
+                          <p
+                            className="text-sm leading-snug"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              letterSpacing: '0px',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            {bundle.shortDescription}
+                          </p>
+                        </div>
+                      )}
+                    </Link>
+                  );
+                })}
               </div>
-              {bundle.shortDescription && (
-                <div
-                  className="absolute left-0 right-0 bottom-[72px] bg-gradient-to-t from-black/80 to-transparent text-white px-6 pb-10 pt-6"
-                  style={{
-                    borderBottomLeftRadius: '32px',
-                    borderBottomRightRadius: '32px',
-                    zIndex: 10
-                  }}
-                >
-                  <p
-                    className="text-sm leading-snug"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      letterSpacing: '0px',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    {bundle.shortDescription}
-                  </p>
-                </div>
-              )}
-                  </Link>
-                );
-              })}
+
+              {/* Pagination Dots */}
+              <div className="flex items-center justify-center gap-2 mt-6">
+                {bundles.slice(0, 4).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => scrollToBundleSlide(index)}
+                    className={`transition-all duration-300 rounded-full ${
+                      index === currentBundleIndex 
+                        ? 'w-2.5 h-2.5 bg-gray-800' 
+                        : 'w-2 h-2 bg-gray-400'
+                    }`}
+                    aria-label={`Go to bundle ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
           ) : (
             <div className="text-center py-12 mt-12">
               <p className="text-gray-500">No bundles available</p>
-                </div>
+            </div>
           )}
         </div>
       </section>
@@ -2117,6 +2331,26 @@ const getBundleProductHref = (bundle: Bundle): string => {
         }
 
         .whats-new-scroll::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+        }
+
+        .blog-slider {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        .blog-slider::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+        }
+
+        .bundle-slider {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+
+        .bundle-slider::-webkit-scrollbar {
           width: 0;
           height: 0;
         }
