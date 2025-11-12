@@ -624,7 +624,7 @@ export default function HomePage() {
     const name = category.name.toLowerCase();
     if (name === 'men') return '/categories?gender=men';
     if (name === 'women') return '/categories?gender=women';
-    if (name === 'new arrivals') return '/categories/new-arrivals';
+    if (name === 'new arrivals') return '/new-arrival';
     if (name === 'sets') return '/categories/sets';
     const slug = name.trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || category._id;
     return `/categories/${slug}`;

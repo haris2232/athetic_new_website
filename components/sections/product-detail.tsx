@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -12,7 +12,6 @@ import { useWishlist } from "@/lib/wishlist-context"
 import { formatCurrency } from "@/lib/utils"
 import { Product } from "@/lib/types"
 import ProductReviews from "@/components/sections/product-reviews"
-// Related section styled like MEN page (static figma block)
 import { submitForm } from "@/lib/api"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew';
@@ -112,6 +111,13 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [communityHighlights, setCommunityHighlights] = useState<string[]>(DEFAULT_COMMUNITY_HIGHLIGHTS)
   const hasSizeGuideImage = Boolean(product.sizeGuideImage)
   const sizeGuideImagePath = hasSizeGuideImage ? product.sizeGuideImage! : ""
+
+  // MOVE WITH US carousel state
+  const [moveWithUsImages, setMoveWithUsImages] = useState<string[]>([])
+  const [loadingMoveWithUs, setLoadingMoveWithUs] = useState(true)
+  const [currentMoveWithUsIndex, setCurrentMoveWithUsIndex] = useState(0)
+  const moveWithUsCarouselRef = useRef<HTMLDivElement>(null)
+  const [isMoveWithUsHovered, setIsMoveWithUsHovered] = useState(false)
 
   // Use dynamic color options from product
   const colorOptions = product.colors || [
@@ -349,6 +355,97 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
     }
   }, [product.highlightImage, product.id, product.name])
 
+  // Fetch MOVE WITH US carousel images
+  useEffect(() => {
+    const fetchMoveWithUsImages = async () => {
+      try {
+        setLoadingMoveWithUs(true);
+        const response = await fetch(`${API_BASE_URL}/carousel-images/public/active`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && Array.isArray(data.data)) {
+            // Sort by order and extract image URLs
+            const sortedImages = data.data
+              .sort((a: any, b: any) => a.order - b.order)
+              .map((img: any) => img.imageUrl);
+            setMoveWithUsImages(sortedImages);
+          }
+        } else {
+          // Fallback to static images if API fails
+          setMoveWithUsImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
+        }
+      } catch (error) {
+        console.error('Failed to fetch MOVE WITH US images:', error);
+        // Fallback to static images on error
+        setMoveWithUsImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
+      } finally {
+        setLoadingMoveWithUs(false);
+      }
+    };
+    fetchMoveWithUsImages();
+  }, []);
+
+  // MOVE WITH US carousel scrolling functions
+  const scrollMoveWithUsCarousel = (direction: 'left' | 'right') => {
+    if (!moveWithUsCarouselRef.current) return;
+
+    const gap = 24
+    const imageWidth = Math.max(160, Math.min(240, moveWithUsCarouselRef.current.clientWidth * 0.4))
+    const scrollAmount = imageWidth + gap
+    const currentScroll = moveWithUsCarouselRef.current.scrollLeft
+    
+    const newScroll = direction === 'left' 
+      ? Math.max(0, currentScroll - scrollAmount)
+      : currentScroll + scrollAmount
+    
+    const newIndex = direction === 'left' 
+      ? Math.max(0, currentMoveWithUsIndex - 1)
+      : Math.min(moveWithUsImages.length - 1, currentMoveWithUsIndex + 1)
+    
+    setCurrentMoveWithUsIndex(newIndex)
+    moveWithUsCarouselRef.current.scrollTo({
+      left: newScroll,
+      behavior: 'smooth'
+    })
+  }
+
+  const scrollToMoveWithUsSlide = (index: number) => {
+    if (!moveWithUsCarouselRef.current) return;
+
+    const gap = 24
+    const imageWidth = Math.max(160, Math.min(240, moveWithUsCarouselRef.current.clientWidth * 0.4))
+    const scrollPosition = index * (imageWidth + gap)
+    
+    setCurrentMoveWithUsIndex(index)
+    moveWithUsCarouselRef.current.scrollTo({
+      left: scrollPosition,
+      behavior: 'smooth'
+    })
+  }
+
+  // Auto-scroll effect for MOVE WITH US carousel
+  useEffect(() => {
+    if (moveWithUsImages.length === 0 || isMoveWithUsHovered) return;
+
+    const interval = setInterval(() => {
+      const nextIndex = (currentMoveWithUsIndex + 1) % moveWithUsImages.length
+      setCurrentMoveWithUsIndex(nextIndex)
+      
+      if (moveWithUsCarouselRef.current) {
+        const gap = 24
+        const imageWidth = Math.max(160, Math.min(240, moveWithUsCarouselRef.current.clientWidth * 0.4))
+        const scrollPosition = nextIndex * (imageWidth + gap)
+        
+        moveWithUsCarouselRef.current.scrollTo({
+          left: scrollPosition,
+          behavior: 'smooth'
+        })
+      }
+    }, 4000) // Auto-scroll every 4 seconds
+
+    return () => clearInterval(interval)
+  }, [currentMoveWithUsIndex, moveWithUsImages.length, isMoveWithUsHovered])
+
   useEffect(() => {
     const fetchBundles = async () => {
       try {
@@ -454,16 +551,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             image: product.image,
             isNew: Math.random() > 0.7 // Randomly mark some as new
           })))
-          if (typeof window !== 'undefined') {
-            setShopTheLookItems(products.slice(0, 5).map((product: any) => ({
-              id: product.id,
-              name: product.name,
-              price: product.price,
-              originalPrice: product.originalPrice,
-              image: product.image,
-              isNew: Math.random() > 0.7 // Randomly mark some as new
-            })))
-          }
           
           // Set Carousel items (next 4 products)
           setCarouselItems(products.slice(5, 9).map((product: any) => ({
@@ -473,60 +560,51 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             image: product.image,
             discount: Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
           })))
-          if (typeof window !== 'undefined') {
-          setCarouselItems(products.slice(5, 9).map((product: any) => ({
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            discount: Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
-          })))
-          }
         }
       } catch (error) {
         console.error('Error fetching dynamic products:', error)
         // Fallback to static data
         setShopTheLookItems([
-    {
-      id: 1,
-      name: "Essential Oversized Tee - Pearl White",
-      price: "$28.00",
-      originalPrice: "$44.00",
-      image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
-      isNew: false,
-    },
-    {
-      id: 2,
+          {
+            id: 1,
+            name: "Essential Oversized Tee - Pearl White",
+            price: "$28.00",
+            originalPrice: "$44.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
+            isNew: false,
+          },
+          {
+            id: 2,
             name: "Athletic Training Shirt - Coral",
             price: "$48.00",
             originalPrice: "$72.00",
-      image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
-      isNew: true,
-    },
-    {
-      id: 3,
+            image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
+            isNew: true,
+          },
+          {
+            id: 3,
             name: "Zip-Up Hoodie - Coral Pink",
             price: "$72.00",
             originalPrice: "$96.00",
-      image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
-      isNew: false,
-    },
-    {
-      id: 4,
-            name: "SQUATWOLF Athletic Socks - White",
-      price: "$26.00",
-            originalPrice: "$36.00",
-      image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
+            image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
             isNew: false,
-    },
-    {
-      id: 5,
-      name: "Essential Oversized Tee - Pearl White",
-      price: "$28.00",
-      originalPrice: "$44.00",
-      image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
-      isNew: false,
-    },
+          },
+          {
+            id: 4,
+            name: "SQUATWOLF Athletic Socks - White",
+            price: "$26.00",
+            originalPrice: "$36.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
+            isNew: false,
+          },
+          {
+            id: 5,
+            name: "Essential Oversized Tee - Pearl White",
+            price: "$28.00",
+            originalPrice: "$44.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
+            isNew: false,
+          },
         ])
 
         setCarouselItems([
@@ -588,6 +666,13 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
 
     fetchCommunityHighlights()
   }, [])
+
+  const [openSections, setOpenSections] = useState({
+    purpose: false,
+    features: false,
+    materials: false,
+    reviews: false,
+  })
 
   const toggleSection = (section: string) => {
     setOpenSections((prev) => ({
@@ -678,13 +763,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
       [name]: value
     }))
   }
-
-  const [openSections, setOpenSections] = useState({
-    purpose: false,
-    features: false,
-    materials: false,
-    reviews: false,
-  })
 
   const defaultDescription = "The Athlekt Classic Hybrid Tee is designed to move with you wherever the day takes you. Lightweight, breathable, and stretchable, it delivers all-day comfort whether you're training, on the move, or unwinding after a long day. Its adaptive fit complements every body type from athletes to dads with dad bods offering a clean, confident silhouette without compromising comfort. Perfect for both lifestyle and gym, this tee keeps you cool, sharp, and ready for anything from your morning session to your evening plans. One tee. Every moment. Athlekt."
   const defaultFit = "Boxy, oversized look—size down if you prefer a closer fit."
@@ -1008,12 +1086,12 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                           fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                           fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
                           fontWeight: 600,
-                          width: 'clamp(28px, 2.8vw, 32px)', // Responsive width
-                          height: 'clamp(28px, 2.8vw, 32px)', // Responsive height
+                          width: 'clamp(40px, 4vw, 48px)', // Increased width
+                          height: 'clamp(40px, 4vw, 48px)', // Increased height
                           borderRadius: '8px',
                           border: '2px solid #000000',
-                          backgroundColor: selectedSize === size ? '#E5E7EB' : '#FFFFFF',
-                          color: '#000000',
+                          backgroundColor: selectedSize === size ? '#000000' : '#FFFFFF', // Black background when selected
+                          color: selectedSize === size ? '#FFFFFF' : '#000000', // White text when selected
                           lineHeight: '1',
                           padding: 0
                         }}
@@ -1206,32 +1284,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 </div>
               </div>
               </div>
-
-              {/* Shop the Look */}
-              {/* <div className="space-y-4 pt-8">
-                <div className="flex items-center justify-between">
-                  <div className="flex space-x-2">
-                    <div className="w-12 h-12 bg-red rounded-md overflow-hidden">
-                      <Image
-                        src={getFullImageUrl("/placeholder.svg?height=48&width=48")}
-                        alt="Shop the look item 1"
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="w-12 h-12 bg-white rounded-md overflow-hidden">
-                      <Image
-                        src={getFullImageUrl("/placeholder.svg?height=48&width=48")}
-                        alt="Shop the look item 2"
-                        width={48}
-                        height={48}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div> */}
             </div>
           </div>
         </div>
@@ -1479,7 +1531,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               ) : (
                 <button
                   type="button"
-                  onClick={() => setShowReviewForm(true)}
                   onClick={() => {
                     setShowReviewForm(true);
                     const reviewSection = document.getElementById("customer-reviews");
@@ -1672,7 +1723,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
         </div>
       </section>
 
-      {/* Community Highlights Section - Figma Design */}
+      {/* MOVE WITH US Section - Replaced Community Highlights */}
       <section className="bg-white text-[#212121] py-12">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8 gap-6">
@@ -1685,7 +1736,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 letterSpacing: '0.5px'
               }}
             >
-              COMMUNITY HIGHLIGHTS
+              MOVE WITH US
             </h1>
             <p 
               className="text-black text-left leading-normal lg:max-w-[412px]"
@@ -1696,238 +1747,132 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 fontWeight: 500
               }}
             >
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+              Real athletes, real movement. Tag us @Athlekt to be featured.
             </p>
-                  </div>
-
-          {/* Desktop mosaic grid - exact Figma: left 2x2, big center, right 2x2 - Responsive */}
-          <div 
-            className="hidden lg:grid"
-            style={{
-              gap: 'clamp(16px, 1.6vw, 24px)', // Responsive gap
-              gridTemplateColumns: 'repeat(5, 1fr)', // Use fr units for flexibility
-              gridAutoRows: 'clamp(180px, 18vw, 200px)', // Responsive row height
-              maxWidth: '100%',
-              overflow: 'hidden'
-            }}
-          >
-            {/* Left 2x2 - Responsive sizes with images */}
-            <div 
-              className="rounded-[24px] bg-black relative overflow-hidden"
-              style={{
-                gridColumn: '1/2',
-                gridRow: '1/2',
-                width: '100%',
-                height: '100%',
-                minWidth: 'clamp(140px, 14vw, 160px)',
-                minHeight: 'clamp(180px, 18vw, 200px)'
-              }}
-            >
-              <Image
-                src={communityHighlights[0] || DEFAULT_COMMUNITY_HIGHLIGHTS[0]}
-                alt="Community Highlight"
-                fill
-                className="object-cover rounded-[24px]"
-                style={{
-                  objectPosition: 'center top' // Face fully visible from top
-                }}
-              />
-            </div>
-            <div 
-              className="rounded-[24px] bg-gray-300 relative overflow-hidden"
-              style={{
-                gridColumn: '2/3',
-                gridRow: '1/2',
-                width: '100%',
-                height: '100%',
-                minWidth: 'clamp(140px, 14vw, 160px)',
-                minHeight: 'clamp(180px, 18vw, 200px)'
-              }}
-            >
-              <Image
-                src={communityHighlights[1] || DEFAULT_COMMUNITY_HIGHLIGHTS[1]}
-                alt="Community Highlight"
-                fill
-                className="object-cover rounded-[24px]"
-                style={{
-                  objectPosition: 'center top' // Face fully visible from top
-                }}
-              />
-            </div>
-            <div 
-              className="rounded-[24px] bg-gray-300 relative overflow-hidden"
-              style={{
-                gridColumn: '1/2',
-                gridRow: '2/3',
-                width: '100%',
-                height: '100%',
-                minWidth: 'clamp(140px, 14vw, 160px)',
-                minHeight: 'clamp(180px, 18vw, 200px)'
-              }}
-            >
-              <Image
-                src={communityHighlights[2] || DEFAULT_COMMUNITY_HIGHLIGHTS[2]}
-                alt="Community Highlight"
-                fill
-                className="object-cover rounded-[24px]"
-                style={{
-                  objectPosition: 'center top' // Face fully visible from top
-                }}
-              />
-            </div>
-            <div 
-              className="rounded-[24px] bg-black relative overflow-hidden"
-              style={{
-                gridColumn: '2/3',
-                gridRow: '2/3',
-                width: '100%',
-                height: '100%',
-                minWidth: 'clamp(140px, 14vw, 160px)',
-                minHeight: 'clamp(180px, 18vw, 200px)'
-              }}
-            >
-              <Image
-                src={communityHighlights[3] || DEFAULT_COMMUNITY_HIGHLIGHTS[3]}
-                alt="Community Highlight"
-                fill
-                className="object-cover rounded-[24px]"
-                style={{
-                  objectPosition: 'center top' // Face fully visible from top
-                }}
-              />
-            </div>
-
-            {/* Center big tile - Responsive with image */}
-            <div 
-              className="rounded-[24px] bg-black relative overflow-hidden"
-              style={{
-                gridColumn: '3/4',
-                gridRow: '1/3',
-                width: '100%',
-                height: 'clamp(380px, 38vw, 420px)', // Responsive height (2 rows + gap)
-                minWidth: 'clamp(240px, 24vw, 280px)'
-              }}
-            >
-              <Image
-                src={communityHighlights[4] || DEFAULT_COMMUNITY_HIGHLIGHTS[4]}
-                alt="Community Highlight"
-                fill
-                className="object-cover rounded-[24px]"
-                style={{
-                  objectPosition: 'center top' // Face fully visible from top
-                }}
-              />
-            </div>
-
-            {/* Right 2x2 - Responsive sizes with images */}
-            <div 
-              className="rounded-[24px] bg-black relative overflow-hidden"
-              style={{
-                gridColumn: '4/5',
-                gridRow: '1/2',
-                width: '100%',
-                height: '100%',
-                minWidth: 'clamp(140px, 14vw, 160px)',
-                minHeight: 'clamp(180px, 18vw, 200px)'
-              }}
-            >
-              <Image
-                src={communityHighlights[5] || DEFAULT_COMMUNITY_HIGHLIGHTS[5]}
-                alt="Community Highlight"
-                fill
-                className="object-cover rounded-[24px]"
-                style={{
-                  objectPosition: 'center top' // Face fully visible from top
-                }}
-              />
-            </div>
-            <div 
-              className="rounded-[24px] bg-gray-300 relative overflow-hidden"
-              style={{
-                gridColumn: '5/6',
-                gridRow: '1/2',
-                width: '100%',
-                height: '100%',
-                minWidth: 'clamp(140px, 14vw, 160px)',
-                minHeight: 'clamp(180px, 18vw, 200px)'
-              }}
-            >
-              <Image
-                src={communityHighlights[6] || DEFAULT_COMMUNITY_HIGHLIGHTS[6]}
-                alt="Community Highlight"
-                fill
-                className="object-cover rounded-[24px]"
-                style={{
-                  objectPosition: 'center top' // Face fully visible from top
-                }}
-              />
-            </div>
-            <div 
-              className="rounded-[24px] bg-gray-300 relative overflow-hidden"
-              style={{
-                gridColumn: '4/5',
-                gridRow: '2/3',
-                width: '100%',
-                height: '100%',
-                minWidth: 'clamp(140px, 14vw, 160px)',
-                minHeight: 'clamp(180px, 18vw, 200px)'
-              }}
-            >
-              <Image
-                src={communityHighlights[7] || DEFAULT_COMMUNITY_HIGHLIGHTS[7]}
-                alt="Community Highlight"
-                fill
-                className="object-cover rounded-[24px]"
-                style={{
-                  objectPosition: 'center top' // Face fully visible from top
-                }}
-              />
-            </div>
-            <div 
-              className="rounded-[24px] bg-black relative overflow-hidden"
-              style={{
-                gridColumn: '5/6',
-                gridRow: '2/3',
-                width: '100%',
-                height: '100%',
-                minWidth: 'clamp(140px, 14vw, 160px)',
-                minHeight: 'clamp(180px, 18vw, 200px)'
-              }}
-            >
-              <Image
-                src={communityHighlights[8] || DEFAULT_COMMUNITY_HIGHLIGHTS[8]}
-                alt="Community Highlight"
-                fill
-                className="object-cover rounded-[24px]"
-                style={{
-                  objectPosition: 'center top' // Face fully visible from top
-                }}
-              />
-            </div>
           </div>
 
-          {/* Mobile simple grid */}
-          <div className="grid md:hidden grid-cols-2 gap-4">
-            {communityHighlights
-              .concat(communityHighlights)
-              .slice(0, 8)
-              .map((imgUrl, i) => (
-              <div
-                key={i}
-                className="rounded-[24px] aspect-square relative overflow-hidden bg-gray-300"
-              >
-                <Image
-                    src={imgUrl || DEFAULT_COMMUNITY_HIGHLIGHTS[i % DEFAULT_COMMUNITY_HIGHLIGHTS.length]}
-                  alt="Community Highlight"
-                  fill
-                  className="object-cover rounded-[24px]"
-                  style={{
-                    objectPosition: 'center top' // Face fully visible from top
-                  }}
-                />
+          {/* MOVE WITH US Carousel */}
+          <div className="relative">
+            {/* Navigation Arrows */}
+            <button
+              onClick={() => scrollMoveWithUsCarousel('left')}
+              className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+              style={{
+                left: '-12px',
+                width: 'clamp(32px, 3.5vw, 48px)',
+                height: 'clamp(32px, 3.5vw, 48px)',
+                border: '1px solid #000000',
+                backgroundColor: '#FFFFFF'
+              }}
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
+            </button>
+            <button
+              onClick={() => scrollMoveWithUsCarousel('right')}
+              className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+              style={{
+                right: '-12px',
+                width: 'clamp(32px, 3.5vw, 48px)',
+                height: 'clamp(32px, 3.5vw, 48px)',
+                border: '1px solid #000000',
+                backgroundColor: '#FFFFFF'
+              }}
+              aria-label="Next image"
+            >
+              <ChevronRight className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
+            </button>
+
+            {/* Carousel Container */}
+            {loadingMoveWithUs ? (
+              <div className="flex justify-start items-center gap-4 md:gap-6 px-4" style={{
+                minHeight: 'clamp(240px, 28vw, 380px)',
+                overflowX: 'auto'
+              }}>
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="bg-gray-200 animate-pulse rounded-[40px] flex-shrink-0" style={{
+                    width: 'clamp(160px, 40vw, 240px)',
+                    height: 'clamp(240px, 60vw, 380px)'
+                  }} />
+                ))}
               </div>
-            ))}
+            ) : moveWithUsImages.length > 0 ? (
+              <div 
+                ref={moveWithUsCarouselRef}
+                className="flex overflow-x-auto scroll-smooth gap-4 md:gap-6 px-4"
+                style={{
+                  scrollSnapType: 'x mandatory',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch'
+                }}
+                onMouseEnter={() => setIsMoveWithUsHovered(true)}
+                onMouseLeave={() => setIsMoveWithUsHovered(false)}
+                onTouchStart={() => setIsMoveWithUsHovered(true)}
+                onTouchEnd={() => setTimeout(() => setIsMoveWithUsHovered(false), 3000)}
+              >
+                {moveWithUsImages.map((image, index) => (
+                  <div
+                    key={index}
+                    className="flex-shrink-0 cursor-pointer"
+                    style={{
+                      scrollSnapAlign: 'start',
+                      width: 'clamp(160px, 40vw, 240px)',
+                      height: 'clamp(240px, 60vw, 380px)',
+                      minWidth: '160px',
+                      minHeight: '240px'
+                    }}
+                  >
+                    <div
+                      className="relative w-full h-full overflow-hidden cursor-pointer transition-transform duration-300 ease-out hover:translate-y-[-8px]"
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: 'clamp(24px, 3vw, 40px)',
+                        opacity: 1,
+                        overflow: 'hidden'
+                      }}
+                    >
+                      <Image
+                        src={image}
+                        alt={`Move with us image ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        style={{
+                          borderRadius: 'clamp(24px, 3vw, 40px)',
+                          objectFit: 'cover',
+                          objectPosition: 'center top'
+                        }}
+                        sizes="(max-width: 640px) 160px, (max-width: 768px) 200px, (max-width: 1024px) 220px, 240px"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 px-4">
+                <p className="text-gray-500">No images available at the moment.</p>
+              </div>
+            )}
           </div>
+
+          {/* Pagination Dots */}
+          {!loadingMoveWithUs && moveWithUsImages.length > 0 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              {moveWithUsImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => scrollToMoveWithUsSlide(index)}
+                  className={`transition-all duration-300 rounded-full ${
+                    index === currentMoveWithUsIndex 
+                      ? 'w-2.5 h-2.5 bg-gray-800' 
+                      : 'w-2 h-2 bg-gray-400'
+                  }`}
+                  aria-label={`Go to slide ${index + 1}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 

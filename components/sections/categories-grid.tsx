@@ -316,12 +316,6 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                   HOODIE
                 </button>
               </div>
-              
-              {/* Filter Option */}
-              <div className="flex items-center gap-2 mt-auto">
-                <span className="uppercase text-black font-bold" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '14px', fontWeight: 600 }}>Filter</span>
-                <span className="text-base text-black font-bold">→</span>
-              </div>
             </div>
             
             {/* Right - Lorem ipsum text and Sort By */}

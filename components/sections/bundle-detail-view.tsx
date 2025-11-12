@@ -136,6 +136,17 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
   const descriptionParagraphs =
     bundle.description?.split(/\n+/).filter((paragraph) => paragraph.trim().length > 0) ?? []
 
+  // Default values for sections
+  const defaultPurpose = "Designed to support high-intensity training, everyday movement, and casual wear without sacrificing comfort."
+  const defaultFeatures = "Boxy, oversized look—size down if you prefer a closer fit."
+  const defaultMaterials = "65% Cotton, 35% Polyester - This lightweight, drapey fabric is smooth on the outside and looped on the inside."
+  const defaultCare = "Machine wash cold\nTumble dry low"
+
+  const purposeItems = bundle.purpose ? bundle.purpose.split('\n') : [defaultPurpose]
+  const featuresItems = bundle.features ? bundle.features.split('\n') : [defaultFeatures]
+  const materialsItems = bundle.materials ? bundle.materials.split('\n') : [defaultMaterials]
+  const careItems = bundle.care ? bundle.care.split('\n') : defaultCare.split('\n')
+
   const handleColorSelect = (color: BundleColorOption) => {
     setSelection((prev) => ({ ...prev, color }))
     if (color.galleryImages && color.galleryImages.length > 0) {
@@ -465,6 +476,271 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
           </div>
         </div>
 
+        {/* Description, Purpose, Features & Fit, Material & Care Sections - Product Page Style */}
+        <section className="bg-white text-[#212121] py-8">
+          <div className="container mx-auto px-4 max-w-[1250px]">
+            {/* Top Horizontal Line */}
+            <div className="border-t border-black mb-8"></div>
+            
+            {/* Three Column Layout */}
+            <div className="grid grid-cols-1 gap-4 md:gap-4 md:[grid-template-columns:clamp(400px,45vw,460px)_clamp(280px,32vw,340px)_clamp(240px,28vw,280px)]">
+              
+              {/* Column 1: DESCRIPTION */}
+              <div className="border-b border-black pb-8 md:border-b-0 md:pb-0 md:pr-8 space-y-6">
+                <div>
+                  <h2 
+                    className="uppercase text-black mb-3"
+                    style={{
+                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(16px, 1.6vw, 18px)',
+                      fontWeight: 700,
+                      letterSpacing: '0px'
+                    }}
+                  >
+                    DESCRIPTION
+                  </h2>
+                  <div className="space-y-3">
+                    {descriptionParagraphs.map((paragraph, index) => (
+                      <p 
+                        key={`description-${index}`}
+                        className="text-black"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(13px, 1.3vw, 15px)',
+                          fontWeight: 400,
+                          lineHeight: '1.4',
+                          letterSpacing: '0px',
+                          margin: 0,
+                          maxWidth: 'clamp(400px, 45vw, 460px)'
+                        }}
+                      >
+                        {paragraph}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+
+                {/* PURPOSE Section */}
+                <div>
+                  <h3
+                    className="uppercase text-black mb-3"
+                    style={{
+                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(16px, 1.6vw, 18px)',
+                      fontWeight: 700,
+                      letterSpacing: '0px'
+                    }}
+                  >
+                    PURPOSE
+                  </h3>
+                  <ul className="space-y-2">
+                    {purposeItems.map((item, index) => (
+                      <li
+                        key={`purpose-${index}`}
+                        className="text-black"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(13px, 1.3vw, 15px)',
+                          fontWeight: 400,
+                          lineHeight: '1.4',
+                          letterSpacing: '0px',
+                          margin: 0,
+                          maxWidth: 'clamp(400px, 45vw, 460px)'
+                        }}
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Column 2: FEATURES & FIT and MATERIAL & CARE */}
+              <div className="space-y-1 border-b border-black pb-6 md:border-b-0 md:pb-0 md:pr-6">
+                
+                {/* FEATURES & FIT */}
+                <div>
+                  <h2 
+                    className="uppercase text-black mb-3"
+                    style={{
+                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(16px, 1.6vw, 18px)',
+                      fontWeight: 700,
+                      letterSpacing: '0px'
+                    }}
+                  >
+                    FEATURES & FIT
+                  </h2>
+                  <ul className="space-y-2">
+                    {featuresItems.map((item, index) => (
+                      <li
+                        key={`fit-${index}`}
+                        className="text-black"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(13px, 1.3vw, 15px)',
+                          fontWeight: 400,
+                          lineHeight: '1.4',
+                          letterSpacing: '0px',
+                          margin: 0,
+                          maxWidth: 'clamp(280px, 32vw, 340px)'
+                        }}
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* MATERIAL & CARE */}
+                <div className="pt-6">
+                  <h2 
+                    className="uppercase text-black mb-3"
+                    style={{
+                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(16px, 1.6vw, 18px)',
+                      fontWeight: 700,
+                      letterSpacing: '0px'
+                    }}
+                  >
+                    MATERIAL & CARE
+                  </h2>
+                  <div className="space-y-4">
+                    {materialsItems.length > 0 && (
+                      <ul className="space-y-2">
+                        {materialsItems.map((item, index) => (
+                          <li
+                            key={`material-${index}`}
+                            className="text-black"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: 'clamp(13px, 1.3vw, 15px)',
+                              fontWeight: 400,
+                              lineHeight: '1.4',
+                              letterSpacing: '0px',
+                              margin: 0,
+                              maxWidth: 'clamp(400px, 45vw, 460px)'
+                            }}
+                          >
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    
+                    {careItems.length > 0 && (
+                      <div>
+                        <h4
+                          className="uppercase text-black mb-2"
+                          style={{
+                            fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                            fontSize: 'clamp(13px, 1.3vw, 15px)',
+                            fontWeight: 700,
+                            letterSpacing: '0.5px'
+                          }}
+                        >
+                          CARE
+                        </h4>
+                        <ul className="space-y-2">
+                          {careItems.map((item, index) => (
+                            <li
+                              key={`care-${index}`}
+                              className="text-black"
+                              style={{
+                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                                fontSize: 'clamp(13px, 1.3vw, 15px)',
+                                fontWeight: 400,
+                                lineHeight: '1.4',
+                                letterSpacing: '0px',
+                                margin: 0,
+                                maxWidth: 'clamp(400px, 45vw, 460px)'
+                              }}
+                            >
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Column 3: REVIEWS */}
+              <div className="space-y-3">
+                <h2
+                  className="uppercase text-black"
+                  style={{
+                    fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(16px, 1.6vw, 18px)',
+                    fontWeight: 700,
+                    letterSpacing: '0px'
+                  }}
+                >
+                  REVIEWS
+                </h2>
+                <div className="flex items-center" style={{ gap: 'clamp(6px, 0.7vw, 8px)' }}>
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <svg
+                      key={i}
+                      className="h-3 w-3"
+                      style={{
+                        fill: i < Math.round(bundle.ratingValue || 0) ? '#c9ff4a' : 'transparent',
+                        stroke: '#000000',
+                        strokeWidth: 1
+                      }}
+                      viewBox="0 0 24 24"
+                    >
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                  ))}
+                </div>
+                <p
+                  className="text-black"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(13px, 1.3vw, 15px)',
+                    fontWeight: 400,
+                    lineHeight: '1.4',
+                    letterSpacing: '0px',
+                    margin: 0,
+                    maxWidth: 'clamp(240px, 28vw, 280px)'
+                  }}
+                >
+                  {bundle.ratingValue 
+                    ? `${bundle.ratingValue.toFixed(1)} out of 5 based on ${bundle.reviewsCount || 0} review${bundle.reviewsCount === 1 ? '' : 's'}.`
+                    : "No reviews yet. Be the first to share your experience with this bundle."
+                  }
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const reviewSection = document.getElementById("bundle-reviews");
+                    if (reviewSection) {
+                      reviewSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }}
+                  className="uppercase text-black underline underline-offset-4"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(12px, 1.2vw, 14px)',
+                    fontWeight: 600,
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer'
+                  }}
+                >
+                  {bundle.reviewsCount ? 'Read all reviews' : 'Write a Review'}
+                </button>
+              </div>
+            </div>
+            
+            {/* Bottom Horizontal Line */}
+            <div className="border-t border-black mt-4"></div>
+          </div>
+        </section>
+
         <section className="space-y-6">
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-bold text-zinc-900 sm:text-3xl">What's inside the bundle</h2>
@@ -527,8 +803,15 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
             </div>
           )}
         </section>
+
+        {/* Reviews Section Placeholder */}
+        <div id="bundle-reviews" className="py-8">
+          <div className="container mx-auto px-4 max-w-[1250px] text-center">
+            <h3 className="text-2xl font-bold mb-4">Bundle Reviews</h3>
+            <p className="text-gray-600">Reviews section will be implemented here.</p>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
-
