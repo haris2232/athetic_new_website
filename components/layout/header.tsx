@@ -4,75 +4,68 @@ import { useState, useEffect } from "react"
 import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
-import { Search, Heart, User, ShoppingBag, Menu, X, ChevronDown, LogOut } from "lucide-react"
+import { Search, Heart, User, ShoppingBag, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { useCart } from "@/lib/cart-context"
 import { useWishlist } from "@/lib/wishlist-context"
 
-interface SubCategory {
-  id: string
-  name: string
-  category: string
-}
-
-interface ProductSuggestion {
+interface Product {
   _id: string;
-  name: string;
+  title: string;
   slug: string;
-  images: { url: string }[];
-  price: number;
+  images?: { url: string }[];
+  basePrice: number;
+  category: string;
+  subCategory: string;
 }
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isMenMenuOpen, setIsMenMenuOpen] = useState(false)
-  const [isWomenMenuOpen, setIsWomenMenuOpen] = useState(false)
   const [user, setUser] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<ProductSuggestion[]>([])
+  const [searchResults, setSearchResults] = useState<Product[]>([])
   const [isSearchLoading, setIsSearchLoading] = useState(false)
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false)
-  const [subCategories, setSubCategories] = useState<SubCategory[]>([])
-  const [loading, setLoading] = useState(true)
+  const [allProducts, setAllProducts] = useState<Product[]>([])
+  const [productsLoaded, setProductsLoaded] = useState(false)
   const pathname = usePathname()
   const router = useRouter()
   const { cartCount } = useCart()
   const { wishlistCount } = useWishlist()
 
-  const navigateTo = (href: string) => {
-    setIsMenuOpen(false)
-    setIsMenMenuOpen(false)
-    setIsWomenMenuOpen(false)
-    router.push(href)
-  }
-
-  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
-      setIsSearchDropdownOpen(false)
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
-      if (isMenuOpen) {
-        setIsMenuOpen(false)
-      }
-    }
-  }
-
-  // Search icon click handler
-  const handleSearchIconClick = () => {
-    if (searchQuery.trim()) {
-      setIsSearchDropdownOpen(false)
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
-      if (isMenuOpen) {
-        setIsMenuOpen(false)
-      }
-    }
-  }
-
-  // Debounced search suggestions fetching
+  // Fetch all products on component mount
   useEffect(() => {
-    if (searchQuery.trim().length < 2) {
+    const fetchAllProducts = async () => {
+      try {
+        console.log("🔄 Fetching all products...")
+        const response = await fetch('https://athlekt.com/backendnew/api/products')
+        const data = await response.json()
+        
+        if (data.success && data.data) {
+          console.log("✅ Products loaded:", data.data.length)
+          setAllProducts(data.data)
+          setProductsLoaded(true)
+        }
+      } catch (error) {
+        console.error("❌ Error fetching products:", error)
+      }
+    }
+
+    fetchAllProducts()
+  }, [])
+
+  // Client-side search function
+  useEffect(() => {
+    const query = searchQuery.trim().toLowerCase()
+    
+    if (query.length < 2) {
       setSearchResults([])
       setIsSearchDropdownOpen(false)
+      return
+    }
+
+    if (!productsLoaded) {
+      console.log("⏳ Products not loaded yet...")
       return
     }
 
@@ -80,100 +73,86 @@ export default function Header() {
     setIsSearchDropdownOpen(true)
 
     const delayDebounceFn = setTimeout(() => {
-      fetch(`https://athlekt.com/backendnew/api/products/search?q=${encodeURIComponent(searchQuery.trim())}&limit=5`)
-        .then(res => res.json())
-        .then(data => {
-          setSearchResults(data.products || [])
-          setIsSearchLoading(false)
-        })
-        .catch(error => {
-          console.error("Error fetching search results:", error)
-          setIsSearchLoading(false)
-          setSearchResults([])
-        })
+      try {
+        const filteredProducts = allProducts.filter(product =>
+          product.title.toLowerCase().includes(query) ||
+          product.category.toLowerCase().includes(query) ||
+          product.subCategory.toLowerCase().includes(query) ||
+          (product.slug && product.slug.toLowerCase().includes(query))
+        ).slice(0, 5)
+
+        setSearchResults(filteredProducts)
+        setIsSearchLoading(false)
+        
+      } catch (error) {
+        console.error("❌ Search error:", error)
+        setIsSearchLoading(false)
+      }
     }, 300)
 
     return () => clearTimeout(delayDebounceFn)
-  }, [searchQuery])
+  }, [searchQuery, allProducts, productsLoaded])
 
-  const handleSuggestionClick = () => {
-    setIsSearchDropdownOpen(false);
-    setSearchQuery('');
+  // Function to get correct image URL
+  const getImageUrl = (product: Product) => {
+    try {
+      if (product.images && 
+          Array.isArray(product.images) && 
+          product.images.length > 0 && 
+          product.images[0]?.url) {
+        
+        const imageUrl = product.images[0].url
+        
+        if (imageUrl.startsWith('http')) {
+          return imageUrl
+        }
+        else if (imageUrl.startsWith('/')) {
+          return `https://athlekt.com${imageUrl}`
+        } else {
+          return `https://athlekt.com/${imageUrl}`
+        }
+      }
+      
+      return "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
+      
+    } catch (error) {
+      console.error("❌ Error getting image URL for product:", product._id, error)
+      return "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
+    }
   }
 
-  // Fetch sub-categories from backend
+  const handleSuggestionClick = (slug: string) => {
+    setIsSearchDropdownOpen(false)
+    setSearchQuery('')
+    router.push(`/product/${slug}`)
+  }
+
+  // Close dropdown when clicking outside
   useEffect(() => {
-    fetchSubCategories()
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!target.closest('.search-container')) {
+        setIsSearchDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const fetchSubCategories = async () => {
-    try {
-      const response = await fetch('https://athlekt.com/backendnew/api/subcategories/public')
-      if (response.ok) {
-        const data = await response.json()
-        setSubCategories(data.data || [])
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      setIsSearchDropdownOpen(false)
+      if (isMenuOpen) {
+        setIsMenuOpen(false)
       }
-    } catch (error) {
-      console.error('Error fetching sub-categories:', error)
-    } finally {
-      setLoading(false)
     }
   }
 
-  // Check authentication status and ban status
-  useEffect(() => {
-    const token = localStorage.getItem("token")
-    const userData = localStorage.getItem("user")
-    
-    if (token && userData) {
-      try {
-        const user = JSON.parse(userData)
-        setUser(user)
-        checkBanStatus(token, user.email)
-      } catch (error) {
-        console.error("Error parsing user data:", error)
-      }
+  const handleSearchIconClick = () => {
+    if (searchQuery.trim()) {
+      setIsSearchDropdownOpen(true)
     }
-  }, [])
-
-  const checkBanStatus = async (token: string, email: string) => {
-    try {
-      const response = await fetch(`https://athlekt.com/backendnew/api/users/profile`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      
-      if (response.status === 403) {
-        console.log("🚫 User is banned, forcing logout...")
-        handleLogout()
-        alert("Your account has been banned by the administrator.")
-      }
-    } catch (error) {
-      console.error("Error checking ban status:", error)
-    }
-  }
-
-  // Periodic ban check every 30 seconds
-  useEffect(() => {
-    if (user) {
-      const interval = setInterval(() => {
-        const token = localStorage.getItem("token")
-        if (token) {
-          checkBanStatus(token, user.email)
-        }
-      }, 30000)
-      
-      return () => clearInterval(interval)
-    }
-  }, [user])
-
-  const handleLogout = () => {
-    localStorage.removeItem("token")
-    localStorage.removeItem("user")
-    setUser(null)
-    window.location.href = "/"
   }
 
   // Function to check if a path is active
@@ -183,86 +162,11 @@ export default function Header() {
     return false
   }
 
-  // Get sub-categories based on selected gender
-  const getSubCategories = (gender: string) => {
-    if (loading) return []
-    
-    const genderSubCategories = subCategories.filter(subCat => {
-      const categoryName = subCat.category.toLowerCase()
-      if (gender === "women") {
-        return categoryName === "women"
-      } else {
-        return categoryName === "men"
-      }
-    })
-
-    const uniqueSubCategories = genderSubCategories.reduce((acc, subCat) => {
-      if (!acc.find(item => item.name === subCat.name)) {
-        acc.push(subCat)
-      }
-      return acc
-    }, [] as typeof genderSubCategories)
-
-    return uniqueSubCategories.map(subCat => ({
-      href: `/categories/${subCat.name.toLowerCase().replace(/\s+/g, '-')}`,
-      label: subCat.name,
-      id: subCat.id
-    }))
-  }
-
-  // Reusable component for category dropdowns
-  const CategoryDropdown = ({
-    gender,
-    isOpen,
-    onMouseEnter,
-    onMouseLeave,
-  }: {
-    gender: "men" | "women"
-    isOpen: boolean
-    onMouseEnter: () => void
-    onMouseLeave: () => void
-  }) => {
-    const categories = getSubCategories(gender);
-    return (
-      <div className="relative group" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-        <Link
-          href={`/categories?gender=${gender}`}
-          className={`transition-colors font-medium uppercase text-[15px] ${isActivePath(`/${gender}`) ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"}`}
-          onClick={(event) => {
-            event.preventDefault()
-            navigateTo(`/categories?gender=${gender}`)
-          }}
-        >
-          {gender.toUpperCase()}
-        </Link>
-        <div className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 transition-all duration-200 ${isOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}>
-          <div className="bg-white shadow-lg rounded-md overflow-hidden z-50 min-w-[200px]">
-            {categories.map(category => (
-              <Link
-                key={category.id || `${gender}-${category.href}`}
-                href={`${category.href}?gender=${gender}`}
-                className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors text-sm"
-                onClick={(event) => {
-                  event.preventDefault()
-                  navigateTo(`${category.href}?gender=${gender}`)
-                }}
-              >
-                {category.label}
-              </Link>
-            ))}
-            {categories.length === 0 && <div className="px-6 py-3 text-gray-400 text-sm">{loading ? "Loading..." : "No categories"}</div>}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <header className="bg-[#0f1013] text-white sticky top-0 z-50">
-      {/* Main Header - Simplified according to image */}
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          {/* Logo - Left aligned with smaller size */}
+          {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image 
               src="/logos.png" 
@@ -274,56 +178,69 @@ export default function Header() {
             />
           </Link>
 
-          {/* Desktop Navigation - Centered */}
+          {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-8">
             <Link
               href="/collection"
               className={`transition-colors font-medium uppercase text-[15px] ${
                 isActivePath("/collection") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
               }`}
-              onClick={(event) => {
-                event.preventDefault()
-                navigateTo("/collection")
-              }}
             >
               PRODUCTS
             </Link>
 
-            {/* Men's Category Dropdown */}
-            <CategoryDropdown
-              gender="men"
-              isOpen={isMenMenuOpen}
-              onMouseEnter={() => setIsMenMenuOpen(true)}
-              onMouseLeave={() => setIsMenMenuOpen(false)}
-            />
+            <Link
+              href="/categories?gender=men"
+              className={`transition-colors font-medium uppercase text-[15px] ${
+                isActivePath("/categories?gender=men") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+              }`}
+            >
+              MEN
+            </Link>
 
-            {/* Women's Category Dropdown */}
-            <CategoryDropdown
-              gender="women"
-              isOpen={isWomenMenuOpen}
-              onMouseEnter={() => setIsWomenMenuOpen(true)}
-              onMouseLeave={() => setIsWomenMenuOpen(false)}
-            />
+            <Link
+              href="/categories?gender=women"
+              className={`transition-colors font-medium uppercase text-[15px] ${
+                isActivePath("/categories?gender=women") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+              }`}
+            >
+              WOMEN
+            </Link>
 
-            {/* BLOGS */}
+            {/* NEW: ABOUT PAGE */}
+            <Link
+              href="/about"
+              className={`transition-colors font-medium uppercase text-[15px] ${
+                isActivePath("/about") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+              }`}
+            >
+              ABOUT
+            </Link>
+
+            {/* NEW: CONTACT PAGE */}
+            <Link
+              href="/contact"
+              className={`transition-colors font-medium uppercase text-[15px] ${
+                isActivePath("/contact") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+              }`}
+            >
+              CONTACT
+            </Link>
+
             <Link
               href="/blog"
               className={`transition-colors font-medium uppercase text-[15px] ${
                 isActivePath("/blog") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
               }`}
-              onClick={(event) => {
-                event.preventDefault()
-                navigateTo("/blog")
-              }}
             >
               BLOGS
             </Link>
           </nav>
 
-          {/* Search and Icons - Right aligned */}
+          {/* Search and Icons */}
           <div className="flex items-center space-x-4">
-            {/* Search Bar - Black background with white border, white text, search icon on right - PROPERLY ROUNDED */}
-            <div className="hidden md:flex items-center">
+            {/* Search Bar */}
+            <div className="hidden md:flex items-center search-container">
               <div className="relative">
                 <div className="flex items-center bg-black border border-white rounded-full overflow-hidden">
                   <input
@@ -333,15 +250,14 @@ export default function Header() {
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value)
-                      if (e.target.value) {
+                      if (e.target.value.trim().length >= 2) {
                         setIsSearchDropdownOpen(true)
                       } else {
                         setIsSearchDropdownOpen(false)
                       }
                     }}
                     onKeyDown={handleSearch}
-                    onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)}
-                    onFocus={() => searchQuery && setSearchResults.length > 0 && setIsSearchDropdownOpen(true)}
+                    onFocus={() => searchQuery.trim().length >= 2 && setIsSearchDropdownOpen(true)}
                   />
                   <button 
                     onClick={handleSearchIconClick}
@@ -353,25 +269,56 @@ export default function Header() {
                 
                 {/* Search Suggestions Dropdown */}
                 {isSearchDropdownOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden z-50">
-                    {isSearchLoading ? (
-                      <div className="p-4 text-center text-gray-500 text-sm">Loading...</div>
+                  <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
+                    {!productsLoaded ? (
+                      <div className="p-4 text-center text-gray-500 text-sm">Loading products...</div>
+                    ) : isSearchLoading ? (
+                      <div className="p-4 text-center text-gray-500 text-sm">Searching...</div>
                     ) : searchResults.length > 0 ? (
-                      searchResults.map((product) => (
-                        <Link key={product._id} href={`/product/${product.slug}`} onClick={handleSuggestionClick} className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0">
-                          <Image 
-                            src={product.images[0]?.url || '/placeholder.png'} 
-                            alt={product.name} 
-                            width={40} 
-                            height={40} 
-                            className="w-10 h-10 object-cover rounded-md mr-3"
-                          />
-                          <span className="text-[#212121] text-sm">{product.name}</span>
-                        </Link>
-                      ))
-                    ) : (
-                      <div className="p-4 text-center text-gray-500 text-sm">No products found.</div>
-                    )}
+                      <>
+                        <div className="p-2 bg-gray-50 border-b">
+                          <p className="text-xs text-gray-500">
+                            Found {searchResults.length} results for "{searchQuery}"
+                          </p>
+                        </div>
+                        {searchResults.map((product) => (
+                          <button
+                            key={product._id}
+                            onClick={() => handleSuggestionClick(product.slug || product._id)}
+                            className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0 w-full text-left"
+                          >
+                            <div className="w-12 h-12 bg-gray-200 rounded-md mr-3 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                              <Image 
+                                src={getImageUrl(product)}
+                                alt={product.title}
+                                width={48}
+                                height={48}
+                                className="w-12 h-12 object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement
+                                  target.src = "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
+                                }}
+                              />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-[#212121] text-sm font-medium block truncate">
+                                {product.title}
+                              </span>
+                              <div className="flex justify-between items-center mt-1">
+                                <span className="text-[#cbf26c] text-sm font-bold">${product.basePrice}</span>
+                                <span className="text-xs text-gray-500 capitalize truncate ml-2">
+                                  {product.category} • {product.subCategory}
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </>
+                    ) : searchQuery.trim().length >= 2 ? (
+                      <div className="p-4 text-center text-gray-500 text-sm">
+                        No products found for "{searchQuery}"
+                      </div>
+                    ) : null}
                   </div>
                 )}
               </div>
@@ -379,7 +326,6 @@ export default function Header() {
 
             {/* Icons */}
             <div className="flex items-center space-x-3">
-              {/* Wishlist */}
               <Button variant="ghost" size="icon" className="relative hover:bg-[#141619] text-white group" asChild>
                 <Link href="/wishlist">
                   <Heart className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
@@ -391,7 +337,6 @@ export default function Header() {
                 </Link>
               </Button>
 
-              {/* User Account */}
               {user ? (
                 <Button variant="ghost" size="icon" className="hover:bg-[#141619] text-white group" asChild>
                   <Link href="/profile">
@@ -406,7 +351,6 @@ export default function Header() {
                 </Button>
               )}
 
-              {/* Shopping Bag */}
               <Button variant="ghost" size="icon" className="relative hover:bg-[#141619] text-white group" asChild>
                 <Link href="/cart">
                   <ShoppingBag className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
@@ -416,7 +360,6 @@ export default function Header() {
                 </Link>
               </Button>
 
-              {/* Mobile Menu Button */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -438,58 +381,65 @@ export default function Header() {
                 className={`transition-colors font-medium uppercase text-[15px] ${
                   isActivePath("/collection") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
                 }`}
-                onClick={(event) => {
-                  event.preventDefault()
-                  navigateTo("/collection")
-                }}
+                onClick={() => setIsMenuOpen(false)}
               >
                 PRODUCTS
               </Link>
 
-              {/* Mobile Categories */}
-              <div className="space-y-3">
-                <span className="font-medium uppercase text-[15px] text-white">
-                  CATEGORIES
-                </span>
-                <div className="pl-4 space-y-2">
-                  <Link
-                    href="/categories?gender=men"
-                    className="block text-white hover:text-[#cbf26c] transition-colors text-sm"
-                    onClick={(event) => {
-                      event.preventDefault()
-                      navigateTo("/categories?gender=men")
-                    }}
-                  >
-                    Men
-                  </Link>
-                  <Link
-                    href="/categories?gender=women"
-                    className="block text-white hover:text-[#cbf26c] transition-colors text-sm"
-                    onClick={(event) => {
-                      event.preventDefault()
-                      navigateTo("/categories?gender=women")
-                    }}
-                  >
-                    Women
-                  </Link>
-                </div>
-              </div>
+              <Link
+                href="/categories?gender=men"
+                className={`transition-colors font-medium uppercase text-[15px] ${
+                  isActivePath("/categories?gender=men") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                MEN
+              </Link>
+
+              <Link
+                href="/categories?gender=women"
+                className={`transition-colors font-medium uppercase text-[15px] ${
+                  isActivePath("/categories?gender=women") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                WOMEN
+              </Link>
+
+              {/* NEW: ABOUT PAGE - MOBILE */}
+              <Link
+                href="/about"
+                className={`transition-colors font-medium uppercase text-[15px] ${
+                  isActivePath("/about") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                ABOUT
+              </Link>
+
+              {/* NEW: CONTACT PAGE - MOBILE */}
+              <Link
+                href="/contact"
+                className={`transition-colors font-medium uppercase text-[15px] ${
+                  isActivePath("/contact") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
+                }`}
+                onClick={() => setIsMenuOpen(false)}
+              >
+                CONTACT
+              </Link>
 
               <Link
                 href="/blog"
                 className={`transition-colors font-medium uppercase text-[15px] ${
                   isActivePath("/blog") ? "text-[#cbf26c]" : "text-white hover:text-[#cbf26c]"
                 }`}
-                onClick={(event) => {
-                  event.preventDefault()
-                  navigateTo("/blog")
-                }}
+                onClick={() => setIsMenuOpen(false)}
               >
                 BLOGS
               </Link>
 
-              {/* Mobile Search - PROPERLY ROUNDED */}
-              <div className="pt-4">
+              {/* Mobile Search */}
+              <div className="pt-4 search-container">
                 <div className="relative">
                   <div className="flex items-center bg-black border border-white rounded-full overflow-hidden">
                     <input
@@ -499,15 +449,14 @@ export default function Header() {
                       value={searchQuery}
                       onChange={(e) => {
                         setSearchQuery(e.target.value)
-                        if (e.target.value) {
+                        if (e.target.value.trim().length >= 2) {
                           setIsSearchDropdownOpen(true)
                         } else {
                           setIsSearchDropdownOpen(false)
                         }
                       }}
                       onKeyDown={handleSearch}
-                      onBlur={() => setTimeout(() => setIsSearchDropdownOpen(false), 200)}
-                      onFocus={() => searchQuery && setSearchResults.length > 0 && setIsSearchDropdownOpen(true)}
+                      onFocus={() => searchQuery.trim().length >= 2 && setIsSearchDropdownOpen(true)}
                     />
                     <button 
                       onClick={handleSearchIconClick}
@@ -519,23 +468,57 @@ export default function Header() {
                   
                   {/* Mobile Search Suggestions Dropdown */}
                   {isSearchDropdownOpen && (
-                    <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden z-50">
+                    <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
                       {isSearchLoading ? (
-                        <div className="p-4 text-center text-gray-500 text-sm">Loading...</div>
+                        <div className="p-4 text-center text-gray-500 text-sm">Searching...</div>
                       ) : searchResults.length > 0 ? (
-                        searchResults.map((product) => (
-                          <Link key={product._id} href={`/product/${product.slug}`} onClick={handleSuggestionClick} className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0">
-                            <Image 
-                              src={product.images[0]?.url || '/placeholder.png'} 
-                              alt={product.name} 
-                              width={40} 
-                              height={40} 
-                              className="w-10 h-10 object-cover rounded-md mr-3"
-                            />
-                            <span className="text-[#212121] text-sm">{product.name}</span>
-                          </Link>
-                        ))
-                      ) : <div className="p-4 text-center text-gray-500 text-sm">No products found.</div>}
+                        <>
+                          <div className="p-2 bg-gray-50 border-b">
+                            <p className="text-xs text-gray-500">
+                              Found {searchResults.length} results for "{searchQuery}"
+                            </p>
+                          </div>
+                          {searchResults.map((product) => (
+                            <button
+                              key={product._id}
+                              onClick={() => {
+                                handleSuggestionClick(product.slug || product._id)
+                                setIsMenuOpen(false)
+                              }}
+                              className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0 w-full text-left"
+                            >
+                              <div className="w-12 h-12 bg-gray-200 rounded-md mr-3 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                <Image 
+                                  src={getImageUrl(product)}
+                                  alt={product.title}
+                                  width={48}
+                                  height={48}
+                                  className="w-12 h-12 object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement
+                                    target.src = "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
+                                  }}
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <span className="text-[#212121] text-sm font-medium block truncate">
+                                  {product.title}
+                                </span>
+                                <div className="flex justify-between items-center mt-1">
+                                  <span className="text-[#cbf26c] text-sm font-bold">${product.basePrice}</span>
+                                  <span className="text-xs text-gray-500 capitalize truncate ml-2">
+                                    {product.category} • {product.subCategory}
+                                  </span>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </>
+                      ) : searchQuery.trim().length >= 2 ? (
+                        <div className="p-4 text-center text-gray-500 text-sm">
+                          No products found for "{searchQuery}"
+                        </div>
+                      ) : null}
                     </div>
                   )}
                 </div>

@@ -29,6 +29,7 @@ export default function ProductCard({
   tall = false,
 }: ProductCardProps) {
   const { formatPrice } = useCurrency()
+  
   return (
     <Link href={href} className={cn("group block", className)}>
       <div className="relative overflow-hidden bg-white hover:shadow-xl transition-all duration-300 rounded-[40px] border border-gray-200">
@@ -53,11 +54,19 @@ export default function ProductCard({
             </div>
           )}
 
-          {/* Discount Badge */}
-          {discount && (
-            <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
-              {discount}% OFF
-            </div>
+          {/* Discount Badges */}
+          {discount && discount > 0 && (
+            <>
+              {/* SALE Tag - Top Left */}
+              <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+                SALE
+              </div>
+              
+              {/* Discount Percentage - Top Right */}
+              <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
+                {discount}% OFF
+              </div>
+            </>
           )}
         </div>
 

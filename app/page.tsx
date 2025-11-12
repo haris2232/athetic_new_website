@@ -630,6 +630,16 @@ export default function HomePage() {
     return `/categories/${slug}`;
   };
 
+  // Helper function to check if product has discount
+  const hasDiscount = (product: Product): boolean => {
+    return (product.discountPercentage && product.discountPercentage > 0) || product.isOnSale === true;
+  };
+
+  // Helper function to get discount percentage
+  const getDiscountPercentage = (product: Product): number => {
+    return product.discountPercentage || 0;
+  };
+
   const discoverImageOverrides: Record<string, string> = {
     men: homepageSettings.discoverYourFitMen || '',
     women: homepageSettings.discoverYourFitWomen || '',
@@ -1119,6 +1129,8 @@ const getBundleProductHref = (bundle: Bundle): string => {
                   const productImage = getProductImage(product);
                   const productPrice = getProductPrice(product);
                   const nameLines = splitProductName(productName.toUpperCase());
+                  const hasProductDiscount = hasDiscount(product);
+                  const discountPercentage = getDiscountPercentage(product);
 
                   return (
                     <Link
@@ -1142,6 +1154,22 @@ const getBundleProductHref = (bundle: Bundle): string => {
                           target.src = '/placeholder.svg';
                 }}
               />
+
+              {/* Discount Badges */}
+              {hasProductDiscount && (
+                <>
+                  {/* SALE Tag - Top Left */}
+                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+                    SALE
+                  </div>
+                  
+                  {/* Discount Percentage - Top Right */}
+                  <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
+                    {discountPercentage}% OFF
+                  </div>
+                </>
+              )}
+              
               <div 
                 className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
                 style={{

@@ -205,6 +205,16 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
     return recommended.slice(0, 4)
   }
 
+  // Helper function to check if product has discount
+  const hasDiscount = (product: Product) => {
+    return product.discountPercentage && product.discountPercentage > 0
+  }
+
+  // Helper function to get discount percentage
+  const getDiscountPercentage = (product: Product) => {
+    return product.discountPercentage || 0
+  }
+
   const filteredProducts = getFilteredProducts()
 
   return (
@@ -362,6 +372,8 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 const nameParts = product.name.split(' ').filter(Boolean)
                 const firstLine = nameParts.slice(0, Math.ceil(nameParts.length / 2)).join(' ')
                 const secondLine = nameParts.slice(Math.ceil(nameParts.length / 2)).join(' ') || ''
+                const hasProductDiscount = hasDiscount(product)
+                const discountPercentage = getDiscountPercentage(product)
                 
                 return (
                   <Link key={product.id} href={`/product/${product.id}`} className="block cursor-pointer">
@@ -383,6 +395,22 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           target.src = "/3.png"
                 }}
               />
+
+              {/* Discount Badges */}
+              {hasProductDiscount && (
+                <>
+                  {/* SALE Tag - Top Left */}
+                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+                    SALE
+                  </div>
+                  
+                  {/* Discount Percentage - Top Right */}
+                  <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
+                    {discountPercentage}% OFF
+                  </div>
+                </>
+              )}
+              
               <div 
                 className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
                 style={{
@@ -493,6 +521,8 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 const nameParts = product.name.split(' ').filter(Boolean)
                 const firstLine = nameParts.slice(0, Math.ceil(nameParts.length / 2)).join(' ')
                 const secondLine = nameParts.slice(Math.ceil(nameParts.length / 2)).join(' ') || ''
+                const hasProductDiscount = hasDiscount(product)
+                const discountPercentage = getDiscountPercentage(product)
                 
                 return (
                   <Link key={product.id} href={`/product/${product.id}`} className="block cursor-pointer">
@@ -514,6 +544,22 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           target.src = "/3.png"
                 }}
               />
+
+              {/* Discount Badges */}
+              {hasProductDiscount && (
+                <>
+                  {/* SALE Tag - Top Left */}
+                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+                    SALE
+                  </div>
+                  
+                  {/* Discount Percentage - Top Right */}
+                  <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
+                    {discountPercentage}% OFF
+                  </div>
+                </>
+              )}
+              
               <div 
                 className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
                 style={{

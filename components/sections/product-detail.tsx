@@ -183,18 +183,34 @@ export default function ProductDetail({ product }: { product: Product }) {
     }
   }, [selectedSize, selectedColor, product.variants]);
 
-  // Function to get variant-specific price
-  const getVariantPrice = (variant: any): number => {
+  // CORRECTED: Function to get base price (without discount)
+  const getBasePrice = (variant: any): number => {
     if (variant?.priceOverride && variant.priceOverride > 0) {
       return variant.priceOverride;
     }
-    return (product as any).basePrice || parseFloat(product.price.replace(/[^0-9.]/g, ''));
+    // Use originalPrice if available, otherwise use basePrice or parse from product.price
+    const originalPrice = (product as any).originalPrice || (product as any).basePrice || product.price;
+    if (typeof originalPrice === 'number') {
+      return originalPrice;
+    }
+    if (typeof originalPrice === 'string') {
+      return parseFloat(originalPrice.replace(/[^0-9.]/g, ''));
+    }
+    return 0;
   };
 
-  // Calculate current price based on selected variant
-  const currentPrice = getVariantPrice(selectedVariation);
-  const discountAmount = (currentPrice * (product.discountPercentage || 0)) / 100;
-  const finalPrice = currentPrice - discountAmount;
+  // CORRECTED: Function to get discounted price
+  const getDiscountedPrice = (variant: any): number => {
+    const basePrice = getBasePrice(variant);
+    const discountPercentage = product.discountPercentage || 0;
+    const discountAmount = (basePrice * discountPercentage) / 100;
+    return basePrice - discountAmount;
+  };
+
+  // Calculate prices based on selected variant
+  const basePrice = getBasePrice(selectedVariation);
+  const finalPrice = getDiscountedPrice(selectedVariation);
+  const discountAmount = (basePrice * (product.discountPercentage || 0)) / 100;
 
   const remainingBundles = bundles;
 
@@ -587,13 +603,11 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
   }
 
   const handleAddToCart = () => {
-    // Use variant-specific price
-    const variantPrice = getVariantPrice(selectedVariation);
-    
+    // Use final price (with discount)
     addToCart({
       id: product.id,
       name: product.name,
-      price: variantPrice,
+      price: finalPrice, // CORRECTED: Use finalPrice instead of variantPrice
       image: currentImages.length > 0 ? getFullImageUrl(currentImages[0]) : (product.images && product.images.length > 0 ? getFullImageUrl(product.images[0]) : "/placeholder.svg"),
       color: selectedColor,
       size: selectedSize,
@@ -603,11 +617,10 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
   }
 
   const handleWishlistToggle = () => {
-    const variantPrice = getVariantPrice(selectedVariation);
     const wishlistItem = {
       id: product.id,
       name: product.name,
-      price: variantPrice,
+      price: finalPrice, // CORRECTED: Use finalPrice
       image: product.images && product.images.length > 0 ? getFullImageUrl(product.images[0]) : "/placeholder.svg",
       color: selectedColor,
       size: selectedSize,
@@ -907,7 +920,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   
                   {/* Price - Responsive and Right Aligned */}
                   <div className="flex flex-col items-start md:items-end md:text-right mt-0" style={{ paddingTop: '0px', width: '100%', maxWidth: '100%' }}>
-                    {selectedVariation?.originalPrice || (product as any).originalPrice ? (
+                    {/* CORRECTED: Show original price only if there's a discount */}
+                    {product.discountPercentage > 0 && basePrice > finalPrice && (
                       <span 
                         className="line-through md:w-full md:text-right"
                         style={{
@@ -926,9 +940,9 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                           width: '100%'
                         }}
                       >
-                        {formatCurrency(parseFloat((selectedVariation?.originalPrice || (product as any).originalPrice || product.originalPrice || "0").replace(/[^0-9.]/g, '')))}
+                        {formatCurrency(basePrice)}
                     </span>
-                    ) : null}
+                    )}
                     <span 
                       className="text-black md:w-full md:text-right"
                       style={{
