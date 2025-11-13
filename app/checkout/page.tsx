@@ -125,9 +125,9 @@ export default function CheckoutPage() {
   };
   
   // This function will save the address to the user's profile.
-  const autoSaveAddress = async () => {
+  const autoSaveAddress = async (isSaving: boolean) => {
     // Only save if the user is logged in, has checked the box, and the form is valid.
-    if (isLoggedIn && saveInfo && isFormValid()) {
+    if (isLoggedIn && isSaving && isFormValid()) {
       const token = localStorage.getItem("token");
       if (!token) return;
 
@@ -489,9 +489,10 @@ export default function CheckoutPage() {
                       className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                       checked={saveInfo}
                       onChange={(e) => {
-                        const isChecked = e.target.checked;
-                        setSaveInfo(isChecked);
-                        if (isChecked) { autoSaveAddress(); }
+                        const isSaving = e.target.checked;
+                        setSaveInfo(isSaving);
+                        // Immediately try to save if the box is checked and form is valid
+                        autoSaveAddress(isSaving);
                       }}
                     />
                     <label htmlFor="remember" className="text-sm">Save my information for a faster checkout</label>
@@ -503,7 +504,7 @@ export default function CheckoutPage() {
                 <button 
                   onClick={handleSubmit} 
                   disabled={isSubmitting || !isFormValid()} 
-                  className={`w-full py-4 px-6 rounded-md font-semibold text-lg ${
+                  className={`w-full py-4 px-6 rounded-md font-semibold text-lg transition-colors ${
                     isFormValid() && !isSubmitting 
                       ? "bg-black text-white hover:bg-gray-800" 
                       : "bg-gray-400 text-gray-600 cursor-not-allowed"
