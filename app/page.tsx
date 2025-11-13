@@ -803,17 +803,17 @@ const getBundleProductHref = (bundle: Bundle): string => {
 
         {/* Hero Box - Below the text (Exact Figma Properties) */}
         <div 
-          className="bg-white relative mx-auto overflow-hidden"
+          className="bg-white relative w-full overflow-hidden"
           style={{
             // Position - Exact Figma Properties
             position: 'relative',
             marginTop: 'clamp(20px, 4vw, 40px)', // Spacing after text
-             marginLeft: 'auto',
-             marginRight: 'auto',
+             // marginLeft: 'auto', // Removed for full width
+             // marginRight: 'auto', // Removed for full width
             
             // Dimensions - Exact Figma Properties - Adjusted to prevent overflow
-            width: 'clamp(90vw, calc(100vw - 110px), 1311px)', // Desktop: 1311px, max width with margins
-            maxWidth: '1311px', // Prevent overflow
+            width: '100vw', // Full viewport width
+            maxWidth: '100%', // Ensure it doesn't exceed parent
             height: 'clamp(300px, 50vw, 645px)', // Desktop: 645px
             minHeight: 'clamp(300px, 50vw, 645px)',
             

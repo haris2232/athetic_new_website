@@ -508,7 +508,7 @@ export default function Header() {
                 </Button>
               ) : (
                 <Button variant="ghost" size="icon" className="hover:bg-[#141619] text-white group" asChild>
-                  <Link href="/login">
+                  <Link href="/profile">
                     <User className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
                   </Link>
                 </Button>

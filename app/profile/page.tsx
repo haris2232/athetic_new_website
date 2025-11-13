@@ -229,6 +229,12 @@ export default function ProfilePage() {
                   <DollarSign className="h-4 w-4" />
                   <span>Total spent: {formatCurrency(profileData.stats.totalSpent)}</span>
                 </div>
+                <div className="border-t pt-4">
+                  <Button variant="destructive" className="w-full" onClick={handleLogout}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </div>

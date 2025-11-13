@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image"; // For product images
+import Image from "next/image";
+import Link from "next/link";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 import { useCart } from "@/lib/cart-context";
@@ -51,6 +52,15 @@ export default function CheckoutPage() {
   const [couponLoading, setCouponLoading] = useState(false);
 
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+  // This effect runs once on component mount to merge carts if a user just logged in.
+  useEffect(() => {
+    const justLoggedIn = sessionStorage.getItem('justLoggedIn');
+    if (justLoggedIn === 'true') {
+      sessionStorage.removeItem('justLoggedIn'); // Clean up the flag
+      // The useCart context should handle the merging logic automatically.
+    }
+  }, []);
   
   const [shippingInfo, setShippingInfo] = useState<any>(null);
   const [shippingLoading, setShippingLoading] = useState(false);
@@ -82,10 +92,16 @@ export default function CheckoutPage() {
             });
             if (response.ok) {
               const data = await response.json();
-              setPreviousAddresses(data.data || []);
+              const addresses = data.data || [];
+              setPreviousAddresses(addresses);
+              // If addresses exist, auto-fill the form with the first one (most recent)
+              if (addresses.length > 0) {
+                handleSelectPreviousAddress(addresses[0]);
+              }
             }
           } catch (error) {
             console.error("Failed to fetch previous addresses:", error);
+            setPreviousAddresses([]); // Ensure it's an empty array on error
           }
         };
 
@@ -103,7 +119,7 @@ export default function CheckoutPage() {
       ...prev,
       firstName: addressDetails.name?.split(' ')[0] || prev.firstName,
       lastName: addressDetails.name?.split(' ').slice(1).join(' ') || prev.lastName,
-      phone: addressDetails.phone || prev.phone,
+      phone: String(addressDetails.phone || prev.phone), // Ensure phone is a string
       address: addressDetails.address || prev.address,
     }));
   };
@@ -395,7 +411,9 @@ export default function CheckoutPage() {
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold">Contact</h2>
                     {!isLoggedIn && (
-                      <a href="https://athlekt.com/login" className="text-blue-600 hover:underline">Log in</a>
+                      <Link href="/login?redirect=/checkout" className="text-blue-600 hover:underline">
+                        Log in
+                      </Link>
                     )}
                   </div>
                   <input type="email" placeholder="Email" required value={customer.email} onChange={(e) => setCustomer({...customer, email: e.target.value})} className="w-full p-3 border border-gray-300 rounded-md"/>
