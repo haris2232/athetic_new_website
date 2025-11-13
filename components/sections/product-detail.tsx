@@ -966,11 +966,11 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             {/* Product Info - Figma Exact Spacing */}
             <div className="w-full md:w-auto md:flex-1 flex-shrink-0 flex flex-col md:justify-between md:self-stretch">
               {/* Top Section - Aligned with Image Top */}
-              <div className="flex flex-col md:flex-shrink-0">
+              <div className="flex flex-col md:flex-shrink-0 w-full">
                 {/* Product Name & Price Row - Figma Exact */}
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4">
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4 w-full">
                   <h1 
-                    className="uppercase text-black mb-0"
+                    className="uppercase text-black mb-0 w-full md:w-auto"
                     style={{
                       fontFamily: "'Bebas Neue', sans-serif",
                       fontSize: 'clamp(28px, 3.2vw, 48px)', // Further reduced from 36px-56px to 28px-48px
@@ -980,7 +980,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       color: '#000000',
                       margin: 0,
                       padding: 0,
-                      whiteSpace: 'pre-line'
+                      whiteSpace: 'pre-line',
+                      width: '100%'
                     }}
                   >
                     {(() => {
@@ -997,7 +998,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   </h1>
                   
                   {/* Price - Responsive and Right Aligned */}
-                  <div className="flex flex-col items-start md:items-end md:text-right mt-0" style={{ paddingTop: '0px', width: '100%', maxWidth: '100%' }}>
+                  <div className="flex flex-col items-start md:items-end md:text-right mt-0 w-full md:w-auto" style={{ paddingTop: '0px', width: '100%' }}>
                     {/* CORRECTED: Show original price only if there's a discount */}
                     {product.discountPercentage > 0 && basePrice > finalPrice && (
                       <span 
@@ -1044,7 +1045,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
 
                 {/* Description - Figma Exact Spacing */}
                 <p 
-                  className="text-black mb-6"
+                  className="text-black mb-6 w-full"
                   style={{
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                     fontSize: 'clamp(12px, 1.1vw, 14px)', // Further reduced from 13px-16px to 12px-14px
@@ -1052,8 +1053,12 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     lineHeight: '1.4',
                     letterSpacing: '0px',
                     color: '#000000',
-                    maxWidth: 'clamp(280px, 30vw, 300px)', // Reduced max width
-                    margin: 0
+                    maxWidth: '100%', // Changed from clamp to full width
+                    margin: 0,
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3, // Show only 3 lines
+                    WebkitBoxOrient: 'vertical'
                   }}
                 >
                   {product.description || "Designed for a boxy, oversized look—size down if you prefer a closer fit."}
@@ -1061,11 +1066,11 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   </div>
 
               {/* Middle Section - Centered between Top and Bottom */}
-              <div className="flex flex-col md:justify-center md:py-4">
+              <div className="flex flex-col md:justify-center md:py-4 w-full">
 
               {/* Size Selection - Figma Exact Alignment */}
-              <div className="mb-6">
-                <div className="flex items-center justify-between">
+              <div className="mb-6 w-full">
+                <div className="flex items-center justify-between w-full">
                   <div className="flex items-center" style={{ gap: '12px' }}>
                     <span 
                       className="uppercase text-black"
@@ -1133,7 +1138,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               </div>
 
               {/* Color Selection - Figma Exact Alignment */}
-              <div className="mb-6">
+              <div className="mb-6 w-full">
                 <div className="flex items-center" style={{ gap: '12px' }}>
                   <span 
                     className="uppercase text-black"
@@ -1177,10 +1182,10 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               </div>
 
               {/* Bottom Section - Aligned with Image Bottom */}
-              <div className="flex flex-col md:flex-shrink-0">
+              <div className="flex flex-col md:flex-shrink-0 w-full">
 
               {/* Quantity Selection & Action Buttons - Figma Exact Spacing */}
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch">
+              <div className="flex flex-col sm:flex-row gap-3 items-stretch w-full">
                 {/* Quantity Selector - Figma Exact */}
                 <div 
                   className="flex items-center justify-between"
@@ -1236,7 +1241,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               </div>
 
                 {/* Action Buttons - Figma Exact */}
-                <div className="flex gap-3 flex-1">
+                <div className="flex gap-3 flex-1 w-full">
                 <Button
                   size="lg"
                     className="uppercase font-semibold transition-all duration-300"
