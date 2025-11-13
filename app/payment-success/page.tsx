@@ -92,20 +92,73 @@ function PaymentSuccessContent() {
             </p>
 
             {orderStatus && (
-              <div className="bg-gray-50 rounded-lg p-6 mb-6">
+              <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left">
                 <h2 className="text-lg font-semibold mb-4">Order Details</h2>
-                <div className="space-y-2 text-sm">
-                  <p><strong>Order Number:</strong> {orderStatus.orderNumber}</p>
-                  <p><strong>Amount:</strong> AED {orderStatus.total}</p>
-                  <p><strong>Status:</strong> 
+                <div className="space-y-3 text-sm">
+                  <div>
+                    <strong>Order Number:</strong> {orderStatus.orderNumber}
+                  </div>
+                  <div>
+                    <strong>Order Date:</strong> {new Date(orderStatus.createdAt || Date.now()).toLocaleDateString()}
+                  </div>
+                  <div>
+                    <strong>Amount:</strong> AED {orderStatus.total}
+                  </div>
+                  <div>
+                    <strong>Payment Status:</strong> 
                     <span className={`ml-2 px-2 py-1 rounded text-xs ${
                       orderStatus.paymentStatus === 'paid' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-yellow-100 text-yellow-800'
                     }`}>
-                      {orderStatus.paymentStatus === 'paid' ? 'Paid' : 'Processing'}
+                      {orderStatus.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
                     </span>
-                  </p>
+                  </div>
+                  
+                  {orderStatus.customer?.address && orderStatus.customer.address.street && (
+                    <div className="mt-4 pt-4 border-t">
+                      <h3 className="font-semibold mb-2">Shipping Address</h3>
+                      <p>{orderStatus.customer.address.street}</p>
+                      <p>{orderStatus.customer.address.city}, {orderStatus.customer.address.state} {orderStatus.customer.address.zipCode}</p>
+                      <p>{orderStatus.customer.address.country || 'United Arab Emirates'}</p>
+                    </div>
+                  )}
+
+                  {orderStatus.items && orderStatus.items.length > 0 && (
+                    <div className="mt-4 pt-4 border-t">
+                      <h3 className="font-semibold mb-2">Order Items</h3>
+                      <div className="space-y-2">
+                        {orderStatus.items.map((item: any, index: number) => (
+                          <div key={index} className="text-sm">
+                            <div className="font-medium">{item.productName}</div>
+                            {item.isBundle && item.bundleDetails && (
+                              <div className="text-gray-600 ml-2 mt-1">
+                                {item.bundleDetails.selectedPack && (
+                                  <div>Pack: {item.bundleDetails.selectedPack.name} ({item.bundleDetails.selectedPack.quantity} pieces)</div>
+                                )}
+                                {item.bundleDetails.selectedColor?.name && (
+                                  <div>Color: {item.bundleDetails.selectedColor.name}</div>
+                                )}
+                                {item.bundleDetails.selectedSize && (
+                                  <div>Size: {item.bundleDetails.selectedSize}</div>
+                                )}
+                                {item.bundleDetails.selectedLength && (
+                                  <div>Length: {item.bundleDetails.selectedLength}</div>
+                                )}
+                              </div>
+                            )}
+                            {!item.isBundle && item.variant && (
+                              <div className="text-gray-600 ml-2">
+                                {item.variant.size && <span>Size: {item.variant.size}</span>}
+                                {item.variant.color && <span className="ml-2">Color: {item.variant.color}</span>}
+                              </div>
+                            )}
+                            <div className="text-gray-600 ml-2">Qty: {item.quantity} × AED {item.price}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}

@@ -232,15 +232,44 @@ export default function CheckoutPage() {
         return;
       }
 
-      const mappedItems = cartItems.map(item => ({
-        productId: item.id,
-        productName: item.name || "Unknown Product",
-        size: item.size || "Standard",
-        color: item.color || "Default",
-        sku: item.id,
-        quantity: item.quantity || 1,
-        price: item.price || 0
-      }));
+      const mappedItems = cartItems.map(item => {
+        const baseItem = {
+          productId: item.id,
+          productName: item.name || "Unknown Product",
+          size: item.size || "Standard",
+          color: item.color || "Default",
+          sku: item.id,
+          quantity: item.quantity || 1,
+          price: item.price || 0
+        };
+
+        // Add bundle details if it's a bundle
+        if (item.isBundle) {
+          return {
+            ...baseItem,
+            isBundle: true,
+            bundleId: item.bundleId,
+            bundleDetails: {
+              selectedPack: item.bundlePack ? {
+                name: item.bundlePack.name,
+                quantity: item.bundlePack.quantity,
+                totalPrice: item.bundlePack.totalPrice,
+                pricePerItem: item.bundlePack.pricePerItem,
+                tag: item.bundlePack.tag
+              } : undefined,
+              selectedSize: item.bundleSize,
+              selectedLength: item.bundleLength,
+              selectedColor: item.bundleColorName ? {
+                name: item.bundleColorName,
+                description: item.bundleColorDescription
+              } : undefined,
+              dealTag: item.bundleDealTag
+            }
+          };
+        }
+
+        return baseItem;
+      });
 
       const orderData = {
         customer: {

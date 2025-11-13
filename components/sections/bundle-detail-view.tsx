@@ -136,16 +136,19 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
   const descriptionParagraphs =
     bundle.description?.split(/\n+/).filter((paragraph) => paragraph.trim().length > 0) ?? []
 
-  // Default values for sections
-  const defaultPurpose = "Designed to support high-intensity training, everyday movement, and casual wear without sacrificing comfort."
-  const defaultFeatures = "Boxy, oversized look—size down if you prefer a closer fit."
-  const defaultMaterials = "65% Cotton, 35% Polyester - This lightweight, drapey fabric is smooth on the outside and looped on the inside."
-  const defaultCare = "Machine wash cold\nTumble dry low"
-
-  const purposeItems = bundle.purpose ? bundle.purpose.split('\n') : [defaultPurpose]
-  const featuresItems = bundle.features ? bundle.features.split('\n') : [defaultFeatures]
-  const materialsItems = bundle.materials ? bundle.materials.split('\n') : [defaultMaterials]
-  const careItems = bundle.care ? bundle.care.split('\n') : defaultCare.split('\n')
+  // Use dynamic fields from bundle, split by newlines if present
+  const purposeItems = bundle.purpose 
+    ? bundle.purpose.split('\n').filter(item => item.trim().length > 0)
+    : []
+  const featuresItems = bundle.featuresAndFit 
+    ? bundle.featuresAndFit.split('\n').filter(item => item.trim().length > 0)
+    : []
+  const materialsItems = bundle.materialAndCare 
+    ? bundle.materialAndCare.split('\n').filter(item => item.trim().length > 0)
+    : []
+  const careItems = bundle.care 
+    ? bundle.care.split('\n').filter(item => item.trim().length > 0)
+    : []
 
   const handleColorSelect = (color: BundleColorOption) => {
     setSelection((prev) => ({ ...prev, color }))
@@ -487,164 +490,137 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
               
               {/* Column 1: DESCRIPTION */}
               <div className="border-b border-black pb-8 md:border-b-0 md:pb-0 md:pr-8 space-y-6">
-                <div>
-                  <h2 
-                    className="uppercase text-black mb-3"
-                    style={{
-                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(16px, 1.6vw, 18px)',
-                      fontWeight: 700,
-                      letterSpacing: '0px'
-                    }}
-                  >
-                    DESCRIPTION
-                  </h2>
-                  <div className="space-y-3">
-                    {descriptionParagraphs.map((paragraph, index) => (
-                      <p 
-                        key={`description-${index}`}
-                        className="text-black"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: 'clamp(13px, 1.3vw, 15px)',
-                          fontWeight: 400,
-                          lineHeight: '1.4',
-                          letterSpacing: '0px',
-                          margin: 0,
-                          maxWidth: 'clamp(400px, 45vw, 460px)'
-                        }}
-                      >
-                        {paragraph}
-                      </p>
-                    ))}
+                {descriptionParagraphs.length > 0 && (
+                  <div>
+                    <h2 
+                      className="uppercase text-black mb-3"
+                      style={{
+                        fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(16px, 1.6vw, 18px)',
+                        fontWeight: 700,
+                        letterSpacing: '0px'
+                      }}
+                    >
+                      DESCRIPTION
+                    </h2>
+                    <div className="space-y-3">
+                      {descriptionParagraphs.map((paragraph, index) => (
+                        <p 
+                          key={`description-${index}`}
+                          className="text-black"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: 'clamp(13px, 1.3vw, 15px)',
+                            fontWeight: 400,
+                            lineHeight: '1.4',
+                            letterSpacing: '0px',
+                            margin: 0,
+                            maxWidth: 'clamp(400px, 45vw, 460px)'
+                          }}
+                        >
+                          {paragraph}
+                        </p>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* PURPOSE Section */}
-                <div>
-                  <h3
-                    className="uppercase text-black mb-3"
-                    style={{
-                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(16px, 1.6vw, 18px)',
-                      fontWeight: 700,
-                      letterSpacing: '0px'
-                    }}
-                  >
-                    PURPOSE
-                  </h3>
-                  <ul className="space-y-2">
-                    {purposeItems.map((item, index) => (
-                      <li
-                        key={`purpose-${index}`}
-                        className="text-black"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: 'clamp(13px, 1.3vw, 15px)',
-                          fontWeight: 400,
-                          lineHeight: '1.4',
-                          letterSpacing: '0px',
-                          margin: 0,
-                          maxWidth: 'clamp(400px, 45vw, 460px)'
-                        }}
-                      >
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {purposeItems.length > 0 && (
+                  <div>
+                    <h3
+                      className="uppercase text-black mb-3"
+                      style={{
+                        fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(16px, 1.6vw, 18px)',
+                        fontWeight: 700,
+                        letterSpacing: '0px'
+                      }}
+                    >
+                      PURPOSE
+                    </h3>
+                    <ul className="space-y-2">
+                      {purposeItems.map((item, index) => (
+                        <li
+                          key={`purpose-${index}`}
+                          className="text-black"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: 'clamp(13px, 1.3vw, 15px)',
+                            fontWeight: 400,
+                            lineHeight: '1.4',
+                            letterSpacing: '0px',
+                            margin: 0,
+                            maxWidth: 'clamp(400px, 45vw, 460px)'
+                          }}
+                        >
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
 
               {/* Column 2: FEATURES & FIT and MATERIAL & CARE */}
               <div className="space-y-1 border-b border-black pb-6 md:border-b-0 md:pb-0 md:pr-6">
                 
                 {/* FEATURES & FIT */}
-                <div>
-                  <h2 
-                    className="uppercase text-black mb-3"
-                    style={{
-                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(16px, 1.6vw, 18px)',
-                      fontWeight: 700,
-                      letterSpacing: '0px'
-                    }}
-                  >
-                    FEATURES & FIT
-                  </h2>
-                  <ul className="space-y-2">
-                    {featuresItems.map((item, index) => (
-                      <li
-                        key={`fit-${index}`}
-                        className="text-black"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: 'clamp(13px, 1.3vw, 15px)',
-                          fontWeight: 400,
-                          lineHeight: '1.4',
-                          letterSpacing: '0px',
-                          margin: 0,
-                          maxWidth: 'clamp(280px, 32vw, 340px)'
-                        }}
-                      >
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* MATERIAL & CARE */}
-                <div className="pt-6">
-                  <h2 
-                    className="uppercase text-black mb-3"
-                    style={{
-                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(16px, 1.6vw, 18px)',
-                      fontWeight: 700,
-                      letterSpacing: '0px'
-                    }}
-                  >
-                    MATERIAL & CARE
-                  </h2>
-                  <div className="space-y-4">
-                    {materialsItems.length > 0 && (
-                      <ul className="space-y-2">
-                        {materialsItems.map((item, index) => (
-                          <li
-                            key={`material-${index}`}
-                            className="text-black"
-                            style={{
-                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: 'clamp(13px, 1.3vw, 15px)',
-                              fontWeight: 400,
-                              lineHeight: '1.4',
-                              letterSpacing: '0px',
-                              margin: 0,
-                              maxWidth: 'clamp(400px, 45vw, 460px)'
-                            }}
-                          >
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    
-                    {careItems.length > 0 && (
-                      <div>
-                        <h4
-                          className="uppercase text-black mb-2"
+                {featuresItems.length > 0 && (
+                  <div>
+                    <h2 
+                      className="uppercase text-black mb-3"
+                      style={{
+                        fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(16px, 1.6vw, 18px)',
+                        fontWeight: 700,
+                        letterSpacing: '0px'
+                      }}
+                    >
+                      FEATURES & FIT
+                    </h2>
+                    <ul className="space-y-2">
+                      {featuresItems.map((item, index) => (
+                        <li
+                          key={`fit-${index}`}
+                          className="text-black"
                           style={{
-                            fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                             fontSize: 'clamp(13px, 1.3vw, 15px)',
-                            fontWeight: 700,
-                            letterSpacing: '0.5px'
+                            fontWeight: 400,
+                            lineHeight: '1.4',
+                            letterSpacing: '0px',
+                            margin: 0,
+                            maxWidth: 'clamp(280px, 32vw, 340px)'
                           }}
                         >
-                          CARE
-                        </h4>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* MATERIAL & CARE */}
+                {(materialsItems.length > 0 || careItems.length > 0) && (
+                  <div className="pt-6">
+                    <h2 
+                      className="uppercase text-black mb-3"
+                      style={{
+                        fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(16px, 1.6vw, 18px)',
+                        fontWeight: 700,
+                        letterSpacing: '0px'
+                      }}
+                    >
+                      MATERIAL & CARE
+                    </h2>
+                    <div className="space-y-4">
+                      {materialsItems.length > 0 && (
                         <ul className="space-y-2">
-                          {careItems.map((item, index) => (
+                          {materialsItems.map((item, index) => (
                             <li
-                              key={`care-${index}`}
+                              key={`material-${index}`}
                               className="text-black"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
@@ -660,10 +636,45 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
                             </li>
                           ))}
                         </ul>
-                      </div>
-                    )}
+                      )}
+                      
+                      {careItems.length > 0 && (
+                        <div>
+                          <h4
+                            className="uppercase text-black mb-2"
+                            style={{
+                              fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                              fontSize: 'clamp(13px, 1.3vw, 15px)',
+                              fontWeight: 700,
+                              letterSpacing: '0.5px'
+                            }}
+                          >
+                            CARE
+                          </h4>
+                          <ul className="space-y-2">
+                            {careItems.map((item, index) => (
+                              <li
+                                key={`care-${index}`}
+                                className="text-black"
+                                style={{
+                                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                                  fontSize: 'clamp(13px, 1.3vw, 15px)',
+                                  fontWeight: 400,
+                                  lineHeight: '1.4',
+                                  letterSpacing: '0px',
+                                  margin: 0,
+                                  maxWidth: 'clamp(400px, 45vw, 460px)'
+                                }}
+                              >
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Column 3: REVIEWS */}
