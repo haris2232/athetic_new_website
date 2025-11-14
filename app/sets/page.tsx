@@ -7,11 +7,19 @@ import ProductCard from "@/components/ui/product-card"
 import type { Product } from "@/lib/types"
 
 // --- Reusable Product Grid Component ---
-const ProductGrid = ({ products, loading }: { products: Product[]; loading: boolean }) => {
+const ProductGrid = ({ 
+  products, 
+  loading, 
+  title 
+}: { 
+  products: Product[]; 
+  loading: boolean;
+  title: string;
+}) => {
   if (loading) {
     return (
       <div className="text-center py-16">
-        <p className="text-white text-lg">Loading products...</p>
+        <p className="text-black text-lg">Loading {title.toLowerCase()}...</p>
       </div>
     );
   }
@@ -19,32 +27,38 @@ const ProductGrid = ({ products, loading }: { products: Product[]; loading: bool
   if (products.length === 0) {
     return (
       <div className="text-center py-16">
-        <h3 className="text-white text-xl font-semibold mb-2">No Sets Found</h3>
-        <p className="text-gray-300">It looks like there are no sets to display right now. Please check back later!</p>
+        <h3 className="text-black text-xl font-semibold mb-2">No {title} Found</h3>
+        <p className="text-gray-600">Check back later for new {title.toLowerCase()}!</p>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8">
-      {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          id={product.id}
-          name={product.name}
-          price={product.price}
-          originalPrice={product.originalPrice}
-          discount={product.isOnSale ? product.discountPercentage : undefined}
-          image={product.image}
-        />
-      ))}
+    <div className="mb-12">
+      <h3 className="text-2xl font-bold uppercase tracking-wide text-black text-center mb-6">
+        {title}
+      </h3>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8">
+        {products.map((product) => (
+          <ProductCard
+            key={product.id}
+            id={product.id}
+            name={product.name}
+            price={product.price}
+            originalPrice={product.originalPrice}
+            discount={product.isOnSale ? product.discountPercentage : undefined}
+            image={product.image}
+          />
+        ))}
+      </div>
     </div>
   );
 };
 
 // --- Sets Page Component ---
 export default function SetsPage() {
-  const [setsProducts, setSetsProducts] = useState<Product[]>([])
+  const [menSets, setMenSets] = useState<Product[]>([])
+  const [womenSets, setWomenSets] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -56,11 +70,20 @@ export default function SetsPage() {
         if (response.ok) {
           const data = await response.json()
           if (data.success && Array.isArray(data.data)) {
-            // Filter products where category is "sets"
-            const filteredProducts = data.data.filter((product: Product) => 
-              product.category?.toLowerCase() === 'sets'
+            // Filter men's sets - category "Men" and subcategory "Sets"
+            const menProducts = data.data.filter((product: Product) => 
+              product.category?.toLowerCase() === 'men' && 
+              product.subCategory?.toLowerCase() === 'sets'
             );
-            setSetsProducts(filteredProducts);
+            
+            // Filter women's sets - category "Women" and subcategory "Sets"  
+            const womenProducts = data.data.filter((product: Product) => 
+              product.category?.toLowerCase() === 'women' && 
+              product.subCategory?.toLowerCase() === 'sets'
+            );
+
+            setMenSets(menProducts);
+            setWomenSets(womenProducts);
           }
         } else {
           console.error("API response was not ok:", response.status)
@@ -85,7 +108,20 @@ export default function SetsPage() {
           <h2 className="text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-10">
             Sets Collection
           </h2>
-          <ProductGrid products={setsProducts} loading={loading} />
+          
+          {/* Men's Sets */}
+          <ProductGrid 
+            products={menSets} 
+            loading={loading} 
+            title="Men's Sets" 
+          />
+          
+          {/* Women's Sets */}
+          <ProductGrid 
+            products={womenSets} 
+            loading={loading} 
+            title="Women's Sets" 
+          />
         </div>
       </section>
 

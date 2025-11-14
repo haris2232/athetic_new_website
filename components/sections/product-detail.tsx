@@ -1091,9 +1091,9 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                           fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                           fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
                           fontWeight: 600,
-                          width: 'clamp(40px, 4vw, 48px)', // Increased width
-                          height: 'clamp(40px, 4vw, 48px)', // Increased height
-                          borderRadius: '8px',
+                          width: 'clamp(50px, 5vw, 75px)', // Increased width
+                          height: 'clamp(40px, 4vw, 38px)', // Increased height
+                          borderRadius: '30px',
                           border: '2px solid #000000',
                           backgroundColor: selectedSize === size ? '#000000' : '#FFFFFF', // Black background when selected
                           color: selectedSize === size ? '#FFFFFF' : '#000000', // White text when selected
