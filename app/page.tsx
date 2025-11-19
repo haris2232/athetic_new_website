@@ -803,7 +803,7 @@ export default function HomePage() {
           <div className="container mx-auto px-4">
             {/* MOVE WITH PURPOSE - Left Aligned */}
             <h1 
-              className="text-black uppercase text-left"
+              className="text-black uppercase text-center"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontSize: 'clamp(2rem, 8vw, 5.125rem)',
@@ -822,7 +822,7 @@ export default function HomePage() {
             
             {/* Performance-driven text - Left Aligned */}
             <p 
-              className="text-black text-left"
+              className="text-black text-center"
               style={{
                 fontFamily: "'Gilroy', 'Arial', sans-serif",
                 fontSize: 'clamp(0.75rem, 3vw, 1.125rem)',
@@ -832,7 +832,6 @@ export default function HomePage() {
                 color: '#000000',
                 margin: '0',
                 padding: '0',
-                maxWidth: 'clamp(260px, 88vw, 936px)'
               }}
             >
               Performance-driven activewear designed for <em className="italic" style={{ fontStyle: 'italic' }}>every body, every day</em>
