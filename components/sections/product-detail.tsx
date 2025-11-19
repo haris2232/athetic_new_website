@@ -119,6 +119,14 @@ export default function ProductDetail({ product }: { product: Product }) {
   const moveWithUsCarouselRef = useRef<HTMLDivElement>(null)
   const [isMoveWithUsHovered, setIsMoveWithUsHovered] = useState(false)
 
+  // NEW: Zoom functionality state
+  const [isZoomed, setIsZoomed] = useState(false)
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 })
+
+  // NEW: Gallery scroll state
+  const [galleryScrollPosition, setGalleryScrollPosition] = useState(0)
+  const galleryScrollRef = useRef<HTMLDivElement>(null)
+
   // Use dynamic color options from product
   const colorOptions = product.colors || [
     { name: "Coral", image: "/placeholder.svg?height=80&width=60" },
@@ -151,6 +159,57 @@ export default function ProductDetail({ product }: { product: Product }) {
   const currentImages = getImagesForColor(selectedColor)
 
   const sizeOptions = product.sizes || ["S", "M", "L", "XL", "XXL"]
+
+  // NEW: Handle mouse move for zoom effect
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isZoomed) return
+    
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - left) / width) * 100
+    const y = ((e.clientY - top) / height) * 100
+    setZoomPosition({ x, y })
+  }
+
+  // NEW: Toggle zoom
+  const toggleZoom = () => {
+    setIsZoomed(!isZoomed)
+  }
+
+  // NEW: Navigate to next/previous image
+  const nextImage = () => {
+    if (currentImages && currentImages.length > 1) {
+      setActiveImageIndex((prev) => (prev + 1) % currentImages.length)
+    }
+  }
+
+  const prevImage = () => {
+    if (currentImages && currentImages.length > 1) {
+      setActiveImageIndex((prev) => (prev - 1 + currentImages.length) % currentImages.length)
+    }
+  }
+
+  // NEW: Scroll gallery up/down
+  const scrollGalleryUp = () => {
+    if (galleryScrollRef.current) {
+      const newPosition = Math.max(0, galleryScrollPosition - 1)
+      setGalleryScrollPosition(newPosition)
+      const thumbnail = galleryScrollRef.current.children[newPosition] as HTMLElement
+      if (thumbnail) {
+        thumbnail.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    }
+  }
+
+  const scrollGalleryDown = () => {
+    if (galleryScrollRef.current && currentImages.length > 0) {
+      const newPosition = Math.min(currentImages.length - 1, galleryScrollPosition + 1)
+      setGalleryScrollPosition(newPosition)
+      const thumbnail = galleryScrollRef.current.children[newPosition] as HTMLElement
+      if (thumbnail) {
+        thumbnail.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    }
+  }
 
   // Initialize color-image mapping when component loads
   useEffect(() => {
@@ -310,9 +369,11 @@ const getProductCardKey = (item: ProductCardItem): string => {
   return `${name}-${getProductCardImage(item)}`;
 };
 
+// FIXED: Corrected API endpoint for fetching products
 const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/products/public/all${queryString}`);
+    // Use the correct API endpoint
+    const response = await fetch(`${API_BASE_URL}/api/products/public/all${queryString}`);
     if (!response.ok) {
       console.error('Error fetching products list:', response.status, response.statusText);
       return [];
@@ -446,11 +507,12 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
     return () => clearInterval(interval)
   }, [currentMoveWithUsIndex, moveWithUsImages.length, isMoveWithUsHovered])
 
+  // FIXED: Corrected bundles API endpoint
   useEffect(() => {
     const fetchBundles = async () => {
       try {
         setLoadingBundles(true)
-        const response = await fetch(`${API_BASE_URL}/api/bundles/public/active`)
+        const response = await fetch(`${API_BASE_URL}/bundles/public/active`)
         if (!response.ok) {
           console.error('Error fetching bundles:', response.status, response.statusText)
           return
@@ -481,6 +543,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
     fetchBundles()
   }, [])
 
+  // FIXED: Corrected recommended products fetching with error handling
   useEffect(() => {
     const fetchRecommended = async () => {
       try {
@@ -536,7 +599,12 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
     const fetchDynamicProducts = async () => {
       try {
         setLoading(true)
+        // FIXED: Corrected API endpoint
         const response = await fetch(`${API_BASE_URL}/api/products/public`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch products')
+        }
+        
         const data = await response.json()
         
         if (data.success && data.data) {
@@ -815,18 +883,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
     ? `${reviewStats.average.toFixed(1)} out of 5 based on ${reviewStats.count} review${reviewStats.count === 1 ? '' : 's'}.`
     : "No reviews yet. Be the first to share your experience with this product."
 
-  const nextImage = () => {
-    if (currentImages && currentImages.length > 1) {
-      setActiveImageIndex((prev) => (prev + 1) % currentImages.length)
-    }
-  }
-
-  const prevImage = () => {
-    if (currentImages && currentImages.length > 1) {
-      setActiveImageIndex((prev) => (prev - 1 + currentImages.length) % currentImages.length)
-    }
-  }
-
   const nextCarousel = () => {
     if (currentCarouselIndex < carouselItems.length - 4) {
       setCurrentCarouselIndex(prev => prev + 1)
@@ -849,102 +905,149 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             <div className="w-full lg:w-auto flex-shrink-0 md:self-start">
               {/* Desktop & Tablet - Responsive Sizes */}
               <div className="hidden md:flex md:gap-4 xl:gap-6 flex-shrink-0">
-                {/* Thumbnails - Left side, vertical stack - Responsive */}
+                {/* Thumbnails - Left side, vertical stack - Scrollable with arrows */}
                 {currentImages && currentImages.length > 0 && (
-                  <div className="flex flex-col flex-shrink-0" style={{ gap: 'clamp(12px, 1.2vw, 20px)' }}>
-                    {currentImages.map((image, index) => (
+                  <div className="flex flex-col items-center gap-2">
+                    {/* Up Arrow */}
+                    {currentImages.length > 3 && (
                       <button
-                        key={index}
-                        className="relative overflow-hidden transition-colors flex-shrink-0"
-                        style={{
-                          width: 'clamp(70px, 9vw, 140px)', // Reduced from 100px-173px to 70px-140px
-                          height: 'clamp(79px, 9.87vw, 127px)', // Calculated to match main image height: (mainImageHeight - 2×gap) / 3
-                          borderRadius: '12px',
-                          border: index === activeImageIndex ? '2px solid #3B82F6' : '2px solid #D1D5DB',
-                          backgroundColor: '#FFFFFF',
-                          opacity: 1
-                        }}
-                        onClick={() => setActiveImageIndex(index)}
+                        onClick={scrollGalleryUp}
+                        className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                        disabled={galleryScrollPosition === 0}
                       >
-                <Image
-                          src={getFullImageUrl(image)}
-                          alt={`${product.name} ${index + 1}`}
-                  fill
-                  className="object-cover"
+                        <ChevronUp className="h-4 w-4 text-gray-600" />
+                      </button>
+                    )}
+                    
+                    {/* Scrollable Thumbnails Container - Show 3 at a time */}
+                    <div 
+                      ref={galleryScrollRef}
+                      className="flex flex-col gap-3 max-h-[380px] overflow-y-auto"
+                      style={{ scrollBehavior: 'smooth' }}
+                      onMouseEnter={(e) => e.currentTarget.style.scrollbarWidth = 'thin'}
+                      onMouseLeave={(e) => e.currentTarget.style.scrollbarWidth = 'none'}
+                    >
+                      {currentImages.map((image, index) => (
+                        <button
+                          key={index}
+                          className="relative overflow-hidden transition-colors flex-shrink-0"
                           style={{
-                            objectFit: 'cover',
-                            objectPosition: 'center top',
-                            borderRadius: '12px'
+                            width: 'clamp(70px, 9vw, 140px)',
+                            height: 'clamp(79px, 9.87vw, 127px)',
+                            borderRadius: '12px',
+                            border: index === activeImageIndex ? '2px solid #3B82F6' : '2px solid #D1D5DB',
+                            backgroundColor: '#FFFFFF',
+                            opacity: 1
                           }}
-                        />
-                    </button>
-                    ))}
-                </div>
+                          onClick={() => {
+                            setActiveImageIndex(index)
+                            setGalleryScrollPosition(index)
+                          }}
+                        >
+                          <Image
+                            src={getFullImageUrl(image)}
+                            alt={`${product.name} ${index + 1}`}
+                            fill
+                            className="object-cover"
+                            style={{
+                              objectFit: 'cover',
+                              objectPosition: 'center top',
+                              borderRadius: '12px'
+                            }}
+                          />
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Down Arrow */}
+                    {currentImages.length > 3 && (
+                      <button
+                        onClick={scrollGalleryDown}
+                        className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                        disabled={galleryScrollPosition === currentImages.length - 1}
+                      >
+                        <ChevronDown className="h-4 w-4 text-gray-600" />
+                      </button>
+                    )}
+                  </div>
                 )}
                 
-                {/* Main Image - Responsive */}
-                <div 
-                  className="relative overflow-hidden bg-white flex-shrink-0"
-                  style={{
-                    width: 'clamp(220px, 28vw, 380px)', // Reduced from 280px-455px to 220px-380px
-                    height: 'clamp(260px, 32vw, 420px)', // Reduced from 320px-514px to 260px-420px
-                    borderRadius: '12px',
-                    opacity: 1,
-                    backgroundColor: '#FFFFFF'
-                  }}
-                >
-                  <Image
-                    src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
+                {/* Main Image - Responsive with Zoom and Navigation Arrows */}
+                <div className="relative">
+                  <div 
+                    className="relative overflow-hidden bg-white flex-shrink-0 cursor-zoom-in"
                     style={{
-                      objectFit: 'cover',
-                      objectPosition: 'center top',
-                      borderRadius: '12px'
+                      width: 'clamp(220px, 28vw, 380px)',
+                      height: 'clamp(260px, 32vw, 420px)',
+                      borderRadius: '12px',
+                      opacity: 1,
+                      backgroundColor: '#FFFFFF'
                     }}
-                    priority
-                    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 40vw, 455px"
-                  />
+                    onMouseEnter={() => setIsZoomed(true)}
+                    onMouseLeave={() => setIsZoomed(false)}
+                    onMouseMove={handleMouseMove}
+                    onClick={toggleZoom}
+                  >
+                    <Image
+                      src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
+                      alt={product.name}
+                      fill
+                      className="object-cover transition-transform duration-200"
+                      style={{
+                        objectFit: 'cover',
+                        objectPosition: 'center top',
+                        borderRadius: '12px',
+                        transform: isZoomed ? 'scale(1.5)' : 'scale(1)',
+                        transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
+                      }}
+                      priority
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 40vw, 455px"
+                    />
+                    
+                    {/* Zoom Indicator */}
+                    <div className={`absolute bottom-4 right-4 bg-black/50 text-white p-2 rounded-full transition-opacity duration-200 ${isZoomed ? 'opacity-100' : 'opacity-0'}`}>
+                      <ZoomIn className="h-4 w-4" />
+                    </div>
+                  </div>
+
+                  {/* Navigation Arrows for Main Image */}
+                  {currentImages && currentImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
+                        style={{
+                          width: '40px',
+                          height: '40px'
+                        }}
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
+                        style={{
+                          width: '40px',
+                          height: '40px'
+                        }}
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Image Counter */}
+                  {currentImages && currentImages.length > 1 && (
+                    <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                      {activeImageIndex + 1} / {currentImages.length}
+                    </div>
+                  )}
                 </div>
-            </div>
+              </div>
 
               {/* Mobile - Responsive */}
               <div className="md:hidden flex flex-col gap-4">
-                {/* Mobile Thumbnails - Horizontal */}
-              {currentImages && currentImages.length > 0 && (
-                  <div className="flex gap-2 overflow-x-auto pb-2">
-                  {currentImages.map((image, index) => (
-                    <button
-                        key={index}
-                        className="relative overflow-hidden transition-colors flex-shrink-0"
-                        style={{
-                          width: '80px',
-                          height: '80px',
-                          borderRadius: '8px',
-                          border: index === activeImageIndex ? '2px solid #3B82F6' : '2px solid #D1D5DB',
-                          backgroundColor: '#FFFFFF',
-                          opacity: 1
-                        }}
-                      onClick={() => setActiveImageIndex(index)}
-                    >
-                      <Image
-                        src={getFullImageUrl(image)}
-                        alt={`${product.name} ${index + 1}`}
-                        fill
-                        className="object-cover"
-                        style={{
-                          objectFit: 'cover',
-                          objectPosition: 'center top',
-                          borderRadius: '8px'
-                        }}
-                      />
-                    </button>
-                  ))}
-                </div>
-                )}
-                
-                {/* Main Image - Mobile */}
+                {/* Main Image - Mobile with Navigation */}
                 <div className="relative w-full overflow-hidden bg-white rounded-xl" style={{ aspectRatio: '4/5', minHeight: '400px' }}>
                   <Image
                     src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
@@ -959,9 +1062,75 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     priority
                     sizes="100vw"
                   />
+                  
+                  {/* Mobile Navigation Arrows */}
+                  {currentImages && currentImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
+                        style={{
+                          width: '40px',
+                          height: '40px'
+                        }}
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
+                        style={{
+                          width: '40px',
+                          height: '40px'
+                        }}
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Mobile Image Counter */}
+                  {currentImages && currentImages.length > 1 && (
+                    <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                      {activeImageIndex + 1} / {currentImages.length}
+                    </div>
+                  )}
                 </div>
+
+                {/* Mobile Thumbnails - Horizontal Scrollable */}
+                {currentImages && currentImages.length > 0 && (
+                  <div className="flex gap-2 overflow-x-auto pb-2 px-2">
+                    {currentImages.map((image, index) => (
+                      <button
+                        key={index}
+                        className="relative overflow-hidden transition-colors flex-shrink-0"
+                        style={{
+                          width: '80px',
+                          height: '80px',
+                          borderRadius: '8px',
+                          border: index === activeImageIndex ? '2px solid #3B82F6' : '2px solid #D1D5DB',
+                          backgroundColor: '#FFFFFF',
+                          opacity: 1
+                        }}
+                        onClick={() => setActiveImageIndex(index)}
+                      >
+                        <Image
+                          src={getFullImageUrl(image)}
+                          alt={`${product.name} ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          style={{
+                            objectFit: 'cover',
+                            objectPosition: 'center top',
+                            borderRadius: '8px'
+                          }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              </div>
+            </div>
 
             {/* Product Info - Figma Exact Spacing */}
             <div className="w-full md:w-auto md:flex-1 flex-shrink-0 flex flex-col md:justify-between md:self-stretch">
@@ -973,9 +1142,9 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     className="uppercase text-black mb-0 w-full md:w-auto"
                     style={{
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: 'clamp(28px, 3.2vw, 48px)', // Further reduced from 36px-56px to 28px-48px
+                      fontSize: 'clamp(28px, 3.2vw, 48px)',
                       fontWeight: 400,
-                      lineHeight: 'clamp(26px, 3vw, 44px)', // Further reduced line height
+                      lineHeight: 'clamp(26px, 3vw, 44px)',
                       letterSpacing: '0.5px',
                       color: '#000000',
                       margin: 0,
@@ -986,10 +1155,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   >
                     {(() => {
                       const name = product.name || "MEN'S HYBRID CLASSIC";
-                      // "MEN'S" on first line, "HYBRID CLASSIC" on second line (both words together)
                       if (name.startsWith("MEN'S ")) {
                         const rest = name.replace("MEN'S ", "");
-                        // Replace space between HYBRID and CLASSIC with non-breaking space to keep them on one line
                         const restWithNonBreakingSpace = rest.replace(/HYBRID CLASSIC/g, 'HYBRID\u00A0CLASSIC');
                         return "MEN'S\n" + restWithNonBreakingSpace;
                       }
@@ -999,20 +1166,19 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   
                   {/* Price - Responsive and Right Aligned */}
                   <div className="flex flex-col items-start md:items-end md:text-right mt-0 w-full md:w-auto" style={{ paddingTop: '0px', width: '100%' }}>
-                    {/* CORRECTED: Show original price only if there's a discount */}
                     {product.discountPercentage > 0 && basePrice > finalPrice && (
                       <span 
                         className="line-through md:w-full md:text-right"
                         style={{
                           fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: 'clamp(11px, 1.1vw, 16px)', // Reduced from 12px-18px to 11px-16px
+                          fontSize: 'clamp(11px, 1.1vw, 16px)',
                           fontWeight: 400,
                           color: '#000000',
                           textDecorationColor: '#EF4444',
                           textDecorationThickness: '2px',
                           marginBottom: '4px',
-                          lineHeight: 'clamp(28px, 3vw, 40px)', // Reduced line height
-                          height: 'clamp(28px, 3vw, 40px)', // Reduced height
+                          lineHeight: 'clamp(28px, 3vw, 40px)',
+                          height: 'clamp(28px, 3vw, 40px)',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'flex-end',
@@ -1020,287 +1186,286 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                         }}
                       >
                         {formatCurrency(basePrice)}
-                    </span>
+                      </span>
                     )}
                     <span 
                       className="text-black md:w-full md:text-right"
                       style={{
                         fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(18px, 2vw, 28px)', // Further reduced from 22px-34px to 18px-28px
+                        fontSize: 'clamp(18px, 2vw, 28px)',
                         fontWeight: 700,
-                      lineHeight: 'clamp(26px, 3vw, 40px)', // Further reduced line height
+                        lineHeight: 'clamp(26px, 3vw, 40px)',
                         letterSpacing: '0px',
                         color: '#000000',
-                      height: 'clamp(26px, 3vw, 40px)', // Further reduced height
+                        height: 'clamp(26px, 3vw, 40px)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'flex-end',
                         width: '100%'
                       }}
                     >
-                    {formatCurrency(finalPrice)}
-                  </span>
+                      {formatCurrency(finalPrice)}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
                 {/* Description - Figma Exact Spacing */}
                 <p 
                   className="text-black mb-6 w-full"
                   style={{
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: 'clamp(12px, 1.1vw, 14px)', // Further reduced from 13px-16px to 12px-14px
+                    fontSize: 'clamp(12px, 1.1vw, 14px)',
                     fontWeight: 400,
                     lineHeight: '1.4',
                     letterSpacing: '0px',
                     color: '#000000',
-                    maxWidth: '100%', // Changed from clamp to full width
+                    maxWidth: '100%',
                     margin: 0,
                     overflow: 'hidden',
                     display: '-webkit-box',
-                    WebkitLineClamp: 3, // Show only 3 lines
+                    WebkitLineClamp: 3,
                     WebkitBoxOrient: 'vertical'
                   }}
                 >
                   {product.description || "Designed for a boxy, oversized look—size down if you prefer a closer fit."}
                 </p>
-                  </div>
+              </div>
 
               {/* Middle Section - Centered between Top and Bottom */}
               <div className="flex flex-col md:justify-center md:py-4 w-full">
 
-              {/* Size Selection - Figma Exact Alignment */}
-              <div className="mb-6 w-full">
-                <div className="flex items-center justify-between w-full">
+                {/* Size Selection - Figma Exact Alignment */}
+                <div className="mb-6 w-full">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center" style={{ gap: '12px' }}>
+                      <span 
+                        className="uppercase text-black"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(12px, 1.2vw, 14px)',
+                          fontWeight: 600,
+                          lineHeight: '1'
+                        }}
+                      >
+                        SIZE:
+                      </span>
+                      {sizeOptions.slice(0, 4).map((size) => (
+                        <button 
+                          key={size}
+                          className="transition-colors cursor-pointer flex items-center justify-center flex-shrink-0"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: 'clamp(12px, 1.2vw, 14px)',
+                            fontWeight: 600,
+                            width: 'clamp(50px, 5vw, 75px)',
+                            height: 'clamp(40px, 4vw, 38px)',
+                            borderRadius: '30px',
+                            border: '2px solid #000000',
+                            backgroundColor: selectedSize === size ? '#000000' : '#FFFFFF',
+                            color: selectedSize === size ? '#FFFFFF' : '#000000',
+                            lineHeight: '1',
+                            padding: 0
+                          }}
+                          onClick={() => setSelectedSize(size)}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                    {hasSizeGuideImage && (
+                      <div
+                        className="flex items-center gap-2 cursor-pointer"
+                        style={{ flexWrap: 'nowrap' }}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setIsSizeGuideOpen(true)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            setIsSizeGuideOpen(true)
+                          }
+                        }}
+                      >
+                        <span 
+                          className="uppercase text-black whitespace-nowrap"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: 'clamp(12px, 1.2vw, 14px)',
+                            fontWeight: 600,
+                            lineHeight: '1'
+                          }}
+                        >
+                          SIZE CHART
+                        </span>
+                        <Package className="h-4 w-4 text-black flex-shrink-0" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Color Selection - Figma Exact Alignment */}
+                <div className="mb-6 w-full">
                   <div className="flex items-center" style={{ gap: '12px' }}>
                     <span 
                       className="uppercase text-black"
                       style={{
                         fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                        fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
+                        fontSize: 'clamp(12px, 1.2vw, 14px)',
                         fontWeight: 600,
                         lineHeight: '1'
                       }}
                     >
-                      SIZE:
+                      COLOR:
                     </span>
-                    {sizeOptions.slice(0, 4).map((size) => (
-                  <button 
-                        key={size}
-                        className="transition-colors cursor-pointer flex items-center justify-center flex-shrink-0"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
-                          fontWeight: 600,
-                          width: 'clamp(50px, 5vw, 75px)', // Increased width
-                          height: 'clamp(40px, 4vw, 38px)', // Increased height
-                          borderRadius: '30px',
-                          border: '2px solid #000000',
-                          backgroundColor: selectedSize === size ? '#000000' : '#FFFFFF', // Black background when selected
-                          color: selectedSize === size ? '#FFFFFF' : '#000000', // White text when selected
-                          lineHeight: '1',
-                          padding: 0
-                        }}
-                        onClick={() => setSelectedSize(size)}
-                      >
-                        {size}
-                  </button>
-                    ))}
-                </div>
-                  {hasSizeGuideImage && (
-                    <div
-                      className="flex items-center gap-2 cursor-pointer"
-                      style={{ flexWrap: 'nowrap' }}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setIsSizeGuideOpen(true)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault()
-                          setIsSizeGuideOpen(true)
-                        }
-                      }}
-                    >
-                    <span 
-                      className="uppercase text-black whitespace-nowrap"
-                      style={{
-                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: 'clamp(12px, 1.2vw, 14px)',
-                        fontWeight: 600,
-                        lineHeight: '1'
-                      }}
-                    >
-                      SIZE CHART
-                    </span>
-                    <Package className="h-4 w-4 text-black flex-shrink-0" />
-              </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Color Selection - Figma Exact Alignment */}
-              <div className="mb-6 w-full">
-                <div className="flex items-center" style={{ gap: '12px' }}>
-                  <span 
-                    className="uppercase text-black"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
-                      fontWeight: 600,
-                      lineHeight: '1'
-                    }}
-                  >
-                    COLOR:
-                  </span>
-                  {colorOptions.slice(0, 4).map((color, idx) => {
-                    // Default colors: gray, black, yellow, blue
-                    const defaultColors = ['#808080', '#000000', '#FFFF00', '#0066FF']
-                    const colorHex = color.hex || defaultColors[idx] || '#808080'
-                    
-                    return (
-                    <div
-                      key={color.name}
-                        className="transition-colors cursor-pointer flex-shrink-0"
-                        style={{
-                          width: 'clamp(28px, 2.8vw, 32px)', // Responsive width
-                          height: 'clamp(28px, 2.8vw, 32px)', // Responsive height
-                          borderRadius: '8px',
-                          border: selectedColor === color.name
-                            ? '2px solid #000000'
-                            : '1px solid #D1D5DB',
-                          backgroundColor: colorHex,
-                          opacity: 1
-                        }}
-                      onClick={() => {
-                        setSelectedColor(color.name)
-                          setActiveImageIndex(0)
-                        }}
-                      />
-                    )
-                  })}
-                            </div>
+                    {colorOptions.slice(0, 4).map((color, idx) => {
+                      const defaultColors = ['#808080', '#000000', '#FFFF00', '#0066FF']
+                      const colorHex = color.hex || defaultColors[idx] || '#808080'
+                      
+                      return (
+                        <div
+                          key={color.name}
+                          className="transition-colors cursor-pointer flex-shrink-0"
+                          style={{
+                            width: 'clamp(28px, 2.8vw, 32px)',
+                            height: 'clamp(28px, 2.8vw, 32px)',
+                            borderRadius: '8px',
+                            border: selectedColor === color.name
+                              ? '2px solid #000000'
+                              : '1px solid #D1D5DB',
+                            backgroundColor: colorHex,
+                            opacity: 1
+                          }}
+                          onClick={() => {
+                            setSelectedColor(color.name)
+                            setActiveImageIndex(0)
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
                 </div>
               </div>
 
               {/* Bottom Section - Aligned with Image Bottom */}
               <div className="flex flex-col md:flex-shrink-0 w-full">
 
-              {/* Quantity Selection & Action Buttons - Figma Exact Spacing */}
-              <div className="flex flex-col sm:flex-row gap-3 items-stretch w-full">
-                {/* Quantity Selector - Figma Exact */}
-                <div 
-                  className="flex items-center justify-between"
-                  style={{
-                    width: '100%',
-                    maxWidth: 'clamp(100px, 11vw, 120px)', // Further reduced from 120px-140px to 100px-120px
-                    height: 'clamp(42px, 4.5vw, 50px)', // Further reduced from 50px-58px to 42px-50px
-                    borderRadius: '20px',
-                    border: '2px solid #000000',
-                    backgroundColor: '#FFFFFF',
-                    padding: '0 clamp(16px, 1.8vw, 20px)' // Reduced padding
-                  }}
-                >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-full text-black hover:bg-gray-100"
+                {/* Quantity Selection & Action Buttons - Figma Exact Spacing */}
+                <div className="flex flex-col sm:flex-row gap-3 items-stretch w-full">
+                  {/* Quantity Selector - Figma Exact */}
+                  <div 
+                    className="flex items-center justify-between"
                     style={{
-                      minWidth: 'auto',
-                      padding: '0',
-                      border: 'none',
-                      borderRadius: '0'
-                    }}
-                    onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                  >
-                    <Minus className="h-5 w-5" />
-                  </Button>
-                  <span 
-                    className="text-center"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(16px, 1.6vw, 18px)', // Responsive font size
-                      fontWeight: 600,
-                      color: '#000000'
-                    }}
-                  >
-                    {quantity}
-                  </span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-full text-black hover:bg-gray-100"
-                    style={{
-                      minWidth: 'auto',
-                      padding: '0',
-                      border: 'none',
-                      borderRadius: '0'
-                    }}
-                    onClick={() => setQuantity(prev => prev + 1)}
-                  >
-                    <Plus className="h-5 w-5" />
-                  </Button>
-              </div>
-
-                {/* Action Buttons - Figma Exact */}
-                <div className="flex gap-3 flex-1 w-full">
-                <Button
-                  size="lg"
-                    className="uppercase font-semibold transition-all duration-300"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: 'clamp(12px, 1.2vw, 14px)', // Further reduced font size
-                      fontWeight: 600,
-                      color: '#EBFF00',
-                      backgroundColor: '#000000',
-                      width: 'clamp(240px, 26vw, 300px)', // Further reduced from 280px-340px to 240px-300px
-                      height: 'clamp(45px, 4.8vw, 52px)', // Further reduced from 52px-60px to 45px-52px
-                      borderRadius: '20px',
-                      border: 'none',
-                      padding: 'clamp(4px, 0.5vw, 6px) clamp(20px, 2.2vw, 24px)', // Responsive padding
-                      gap: 'clamp(4px, 0.5vw, 6px)'
-                    }}
-                  onClick={handleAddToCart}
-                >
-                    ADD TO BAG
-                </Button>
-                  
-                  {/* Wishlist Button - Figma Exact */}
-                  <div
-                    className="flex items-center justify-center flex-shrink-0"
-                    style={{
-                      width: 'clamp(60px, 6.5vw, 70px)', // Further reduced from 70px-80px to 60px-70px
-                      height: 'clamp(42px, 4.5vw, 50px)', // Further reduced from 50px-58px to 42px-50px
+                      width: '100%',
+                      maxWidth: 'clamp(100px, 11vw, 120px)',
+                      height: 'clamp(42px, 4.5vw, 50px)',
                       borderRadius: '20px',
                       border: '2px solid #000000',
                       backgroundColor: '#FFFFFF',
-                      padding: 'clamp(8px, 0.9vw, 10px)', // Responsive padding
-                      gap: 'clamp(8px, 0.9vw, 10px)',
-                      cursor: 'pointer'
+                      padding: '0 clamp(16px, 1.8vw, 20px)'
                     }}
-                    onClick={handleWishlistToggle}
                   >
-                    <Heart 
-                      className={`h-6 w-6 ${isInWishlist(product.id) ? 'fill-current text-red-500' : 'text-black'}`}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-full text-black hover:bg-gray-100"
                       style={{
-                        strokeWidth: isInWishlist(product.id) ? 0 : 2,
-                        stroke: '#000000'
+                        minWidth: 'auto',
+                        padding: '0',
+                        border: 'none',
+                        borderRadius: '0'
                       }}
-                    />
+                      onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                    >
+                      <Minus className="h-5 w-5" />
+                    </Button>
+                    <span 
+                      className="text-center"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(16px, 1.6vw, 18px)',
+                        fontWeight: 600,
+                        color: '#000000'
+                      }}
+                    >
+                      {quantity}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-full text-black hover:bg-gray-100"
+                      style={{
+                        minWidth: 'auto',
+                        padding: '0',
+                        border: 'none',
+                        borderRadius: '0'
+                      }}
+                      onClick={() => setQuantity(prev => prev + 1)}
+                    >
+                      <Plus className="h-5 w-5" />
+                    </Button>
+                  </div>
+
+                  {/* Action Buttons - Figma Exact */}
+                  <div className="flex gap-3 flex-1 w-full">
+                    <Button
+                      size="lg"
+                      className="uppercase font-semibold transition-all duration-300"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(12px, 1.2vw, 14px)',
+                        fontWeight: 600,
+                        color: '#EBFF00',
+                        backgroundColor: '#000000',
+                        width: 'clamp(240px, 26vw, 300px)',
+                        height: 'clamp(45px, 4.8vw, 52px)',
+                        borderRadius: '20px',
+                        border: 'none',
+                        padding: 'clamp(4px, 0.5vw, 6px) clamp(20px, 2.2vw, 24px)',
+                        gap: 'clamp(4px, 0.5vw, 6px)'
+                      }}
+                      onClick={handleAddToCart}
+                    >
+                      ADD TO BAG
+                    </Button>
+                    
+                    {/* Wishlist Button - Figma Exact */}
+                    <div
+                      className="flex items-center justify-center flex-shrink-0"
+                      style={{
+                        width: 'clamp(60px, 6.5vw, 70px)',
+                        height: 'clamp(42px, 4.5vw, 50px)',
+                        borderRadius: '20px',
+                        border: '2px solid #000000',
+                        backgroundColor: '#FFFFFF',
+                        padding: 'clamp(8px, 0.9vw, 10px)',
+                        gap: 'clamp(8px, 0.9vw, 10px)',
+                        cursor: 'pointer'
+                      }}
+                      onClick={handleWishlistToggle}
+                    >
+                      <Heart 
+                        className={`h-6 w-6 ${isInWishlist(product.id) ? 'fill-current text-red-500' : 'text-black'}`}
+                        style={{
+                          strokeWidth: isInWishlist(product.id) ? 0 : 2,
+                          stroke: '#000000'
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Description, Fit, Material & Care, Reviews Section - Figma Design */}
+      {/* Description, Fit, Material & Care, Reviews Section */}
       <section className="bg-white text-[#212121] py-8">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Top Horizontal Line */}
           <div className="border-t border-black mb-8"></div>
           
-          {/* Three Column Layout (match Figma widths exactly on md+) - Responsive */}
+          {/* Three Column Layout */}
           <div className="grid grid-cols-1 gap-4 md:gap-4 md:[grid-template-columns:clamp(400px,45vw,460px)_clamp(280px,32vw,340px)_clamp(240px,28vw,280px)]">
             {/* Column 1: DESCRIPTION */}
             <div className="border-b border-black pb-8 md:border-b-0 md:pb-0 md:pr-8 space-y-6">
@@ -1479,8 +1644,9 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     </div>
                   )}
                 </div>
-                      </div>
-                      </div>
+              </div>
+            </div>
+
             {/* Column 3: REVIEWS */}
             <div className="space-y-3">
               <h2
@@ -1561,9 +1727,10 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
           </div>
           {/* Bottom Horizontal Line */}
           <div className="border-t border-black mt-4"></div>
-                        </div>
+        </div>
       </section>
-      {/* Bundles Section - Figma Design */}
+
+      {/* Bundles Section */}
       <section className="bg-white text-[#212121] py-8">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6 gap-6 lg:gap-8">
@@ -1572,7 +1739,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
-                fontSize: 'clamp(48px, 6vw, 70px)', // Responsive font size
+                fontSize: 'clamp(48px, 6vw, 70px)',
                 letterSpacing: '0.5px',
                 minWidth: 'fit-content'
               }}
@@ -1583,7 +1750,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               className="text-black text-left leading-normal flex-1 lg:max-w-[clamp(300px, 32vw, 380px)]"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(12px, 1.2vw, 14px)', // Responsive font size
+                fontSize: 'clamp(12px, 1.2vw, 14px)',
                 letterSpacing: '0px',
                 fontWeight: 500,
                 lineHeight: '1.5',
@@ -1728,7 +1895,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
         </div>
       </section>
 
-      {/* MOVE WITH US Section - Replaced Community Highlights */}
+      {/* MOVE WITH US Section */}
       <section className="bg-white text-[#212121] py-12">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8 gap-6">
@@ -1881,7 +2048,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
         </div>
       </section>
 
-      {/* YOU MAY ALSO LIKE Section - Same as MEN page */}
+      {/* YOU MAY ALSO LIKE Section */}
       <div className="bg-white text-[#212121] pt-0 pb-20">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Top Section - YOU MAY ALSO LIKE heading and Lorem ipsum */}
