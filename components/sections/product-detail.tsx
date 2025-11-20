@@ -1,56 +1,46 @@
 "use client"
 
-import { useState, useRef, useEffect, type WheelEvent } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import Header from "@/components/layout/header"
-import Footer from "@/components/layout/footer"
 import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight, Star } from "lucide-react"
-import { useCurrency } from "@/lib/currency-context"
+import { Badge } from "@/components/ui/badge" 
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Star, Heart, Share2, Package, ZoomIn, X, Plus, Minus } from "lucide-react"
+import { useCart } from "@/lib/cart-context"
+import { useWishlist } from "@/lib/wishlist-context"
+import { formatCurrency } from "@/lib/utils"
+import { Product } from "@/lib/types"
+import ProductReviews from "@/components/sections/product-reviews"
+import { submitForm } from "@/lib/api"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew';
 
-interface HomepageSettings {
-  homepageImage1?: string;
-  homepageImage1Type?: 'image' | 'video';
-  homepageImage2?: string;
-  homepageImage3?: string;
-  discoverYourFitMen?: string;
-  discoverYourFitWomen?: string;
-  discoverYourFitNewArrivals?: string;
-  discoverYourFitSets?: string;
-}
-
-interface Product {
-  _id: string;
+interface BundleProduct {
+  _id?: string;
   id?: string;
   name?: string;
-  title: string;
-  price?: string;
+  title?: string;
+  price?: string | number;
   basePrice?: number;
-  originalPrice?: string;
   image?: string;
   images?: string[];
-  category?: string;
-  createdAt?: string;
-  isOnSale?: boolean;
-  discountPercentage?: number;
-  purchaseCount?: number;
+  slug?: string;
 }
 
 interface Bundle {
-  _id: string;
+  _id?: string;
   id?: string;
-  name: string;
-  description?: string;
+  name?: string;
+  title?: string;
   shortDescription?: string;
   badgeText?: string;
   heroImage?: string;
   galleryImages?: string[];
-  products?: Product[];
-  originalPrice: number;
-  bundlePrice: number;
+  description?: string;
+  products?: BundleProduct[];
+  originalPrice?: number | string;
+  bundlePrice?: number | string;
   bundleType?: string;
   category?: 'men' | 'women' | 'mixed';
   startDate?: string;
@@ -61,783 +51,267 @@ interface Bundle {
   images?: string[];
 }
 
-interface Category {
-  _id: string;
-  name: string;
-  description?: string;
-  image?: string;
-  carouselImage?: string;
-  isActive: boolean;
-  displaySection?: string;
-  sectionOrder?: number;
-  createdAt?: string;
-}
+type ProductCardItem = BundleProduct;
 
-interface Blog {
-  _id: string;
-  adminName: string;
-  url: string;
-  content: string;
-  coverImage?: string;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-type HeroContent =
-  | { type: 'image'; src: string; alt: string }
-  | { type: 'video'; src: string; alt: string };
-
-const normalizeBlogHref = (blog: Blog): string => {
-  const rawUrl = blog.url?.trim()
-  if (rawUrl) {
-    if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
-      return rawUrl
-    }
-    if (rawUrl.startsWith("/")) {
-      const cleaned = rawUrl.replace(/\/{2,}/g, "/")
-      if (cleaned.toLowerCase().startsWith("/blog/")) {
-        return cleaned
-      }
-      return `/blog${cleaned}`
-    }
-    const sanitized = rawUrl.replace(/^\/+/, "").trim()
-    return `/blog/${encodeURIComponent(sanitized)}`
+const getFullImageUrl = (url: string | undefined): string => {
+  if (!url) {
+      return "/placeholder.svg";
   }
-  return `/blog/${blog._id}`
-}
+  if (url.startsWith('http')) {
+      return url;
+  }
+  // If it's a local public image (starts with /), return as-is
+  if (url.startsWith('/') && !url.includes('backendnew') && !url.includes('api')) {
+      return url;
+  }
+  return `${API_BASE_URL}${url.startsWith('/') ? url : `/${url}`}`;
+};
 
-export default function HomePage() {
+const DEFAULT_COMMUNITY_HIGHLIGHTS = [
+  "/10.png",
+  "/11.png",
+  "/12.png",
+  "/13.png",
+  "/10.png",
+  "/11.png",
+  "/12.png",
+  "/13.png",
+  "/10.png",
+];
+
+export default function ProductDetail({ product }: { product: Product }) {
+  const { addToCart, showNotification, cartItems } = useCart()
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
+  const [selectedSize, setSelectedSize] = useState<string>(product.sizes && product.sizes.length > 0 ? product.sizes[0] : "M")
+  const [quantity, setQuantity] = useState(1)
+  const [selectedColor, setSelectedColor] = useState<string>(product.colors && product.colors.length > 0 ? product.colors[0].name : "Coral")
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+  // Color to image mapping - this will be populated from product data
+  const [colorImageMapping, setColorImageMapping] = useState<Record<string, string[]>>({})
+  const [loading, setLoading] = useState(true)
+  const [shopTheLookItems, setShopTheLookItems] = useState<any[]>([])
+  const [carouselItems, setCarouselItems] = useState<any[]>([])
+  const [highlightedProduct, setHighlightedProduct] = useState<any>(null)
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
-  const carouselRef = useRef<HTMLDivElement>(null)
-  const [homepageSettings, setHomepageSettings] = useState<HomepageSettings>({})
-  const [homepageSettingsLoaded, setHomepageSettingsLoaded] = useState(false)
-  const [recentProducts, setRecentProducts] = useState<Product[]>([])
-  const [loadingProducts, setLoadingProducts] = useState(true)
-  const whatsNewCarouselRef = useRef<HTMLDivElement>(null)
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitMessage, setSubmitMessage] = useState('')
+  const [zoomImage, setZoomImage] = useState<string | null>(null)
+  const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false)
+  const [showReviewForm, setShowReviewForm] = useState(false)
   const [bundles, setBundles] = useState<Bundle[]>([])
   const [loadingBundles, setLoadingBundles] = useState(true)
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loadingCategories, setLoadingCategories] = useState(true)
-  const [blogs, setBlogs] = useState<Blog[]>([])
-  const [loadingBlogs, setLoadingBlogs] = useState(true)
-  const [carouselImages, setCarouselImages] = useState<string[]>([])
-  const [loadingCarouselImages, setLoadingCarouselImages] = useState(true)
-  const [lightboxOpen, setLightboxOpen] = useState(false)
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
-  const { formatPrice } = useCurrency()
-  
-  // ULTRA FAST Video loading states
-  const [videoLoaded, setVideoLoaded] = useState(false)
-  const [videoError, setVideoError] = useState(false)
-  const [videoCanPlay, setVideoCanPlay] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  
-  // Community favorites products state
-  const [communityFavorites, setCommunityFavorites] = useState<Product[]>([])
-  const [loadingCommunityFavorites, setLoadingCommunityFavorites] = useState(true)
+  const [recommendedProducts, setRecommendedProducts] = useState<ProductCardItem[]>([])
+  const [loadingRecommended, setLoadingRecommended] = useState(true)
+  const [communityHighlights, setCommunityHighlights] = useState<string[]>(DEFAULT_COMMUNITY_HIGHLIGHTS)
+  const hasSizeGuideImage = Boolean(product.sizeGuideImage)
+  const sizeGuideImagePath = hasSizeGuideImage ? product.sizeGuideImage! : ""
 
-  // Blog slider state variables
-  const [currentBlogIndex, setCurrentBlogIndex] = useState(0)
-  const blogCarouselRef = useRef<HTMLDivElement>(null)
+  // MOVE WITH US carousel state
+  const [moveWithUsImages, setMoveWithUsImages] = useState<string[]>([])
+  const [loadingMoveWithUs, setLoadingMoveWithUs] = useState(true)
+  const [currentMoveWithUsIndex, setCurrentMoveWithUsIndex] = useState(0)
+  const moveWithUsCarouselRef = useRef<HTMLDivElement>(null)
+  const [isMoveWithUsHovered, setIsMoveWithUsHovered] = useState(false)
 
-  // Bundle slider state variables
-  const [currentBundleIndex, setCurrentBundleIndex] = useState(0)
-  const bundleCarouselRef = useRef<HTMLDivElement>(null)
+  // NEW: Zoom functionality state
+  const [isZoomed, setIsZoomed] = useState(false)
+  const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 })
 
-  // Community favorites slider state
-  const [currentCommunityIndex, setCurrentCommunityIndex] = useState(0)
-  const communityCarouselRef = useRef<HTMLDivElement>(null)
+  // NEW: Gallery scroll state
+  const [galleryScrollPosition, setGalleryScrollPosition] = useState(0)
+  const galleryScrollRef = useRef<HTMLDivElement>(null)
 
-  // Auto-scroll pause state
-  const [isCarouselHovered, setIsCarouselHovered] = useState(false)
+  // Use dynamic color options from product
+  const colorOptions = product.colors || [
+    { name: "Coral", image: "/placeholder.svg?height=80&width=60" },
+    { name: "Red", image: "/placeholder.svg?height=80&width=60" },
+    { name: "Pink", image: "/placeholder.svg?height=80&width=60" },
+    { name: "Navy", image: "/placeholder.svg?height=80&width=60" },
+    { name: "Light Pink", image: "/placeholder.svg?height=80&width=60" },
+    { name: "Cream", image: "/placeholder.svg?height=80&width=60" },
+    { name: "Black", image: "/placeholder.svg?height=80&width=60" },
+  ]
 
-  // ULTRA FAST Video preloading - runs immediately
-  useEffect(() => {
-    if (homepageSettings.homepageImage1Type === 'video' && homepageSettings.homepageImage1) {
-      const videoUrl = getImageUrl(homepageSettings.homepageImage1);
-      
-      // Create and preload video immediately
-      const video = document.createElement('video');
-      video.src = videoUrl;
-      video.preload = 'auto';
-      video.load(); // Force immediate loading
-      
-      // Multiple event listeners for fastest possible loading
-      const handleCanPlay = () => {
-        console.log('🎬 Video can play through');
-        setVideoCanPlay(true);
-      };
-      
-      const handleLoadedData = () => {
-        console.log('🎬 Video data loaded');
-        setVideoLoaded(true);
-      };
-      
-      const handleCanPlayThrough = () => {
-        console.log('🎬 Video can play through entirely');
-        setVideoLoaded(true);
-        setVideoCanPlay(true);
-      };
-      
-      const handleProgress = (e: Event) => {
-        const video = e.target as HTMLVideoElement;
-        if (video.buffered.length > 0) {
-          const bufferedEnd = video.buffered.end(video.buffered.length - 1);
-          const duration = video.duration;
-          if (duration > 0 && bufferedEnd / duration > 0.1) { // 10% buffered
-            setVideoCanPlay(true);
-          }
-        }
-      };
-
-      video.addEventListener('canplay', handleCanPlay);
-      video.addEventListener('loadeddata', handleLoadedData);
-      video.addEventListener('canplaythrough', handleCanPlayThrough);
-      video.addEventListener('progress', handleProgress);
-      video.addEventListener('error', () => {
-        console.error('🎬 Video preload failed');
-        setVideoError(true);
-      });
-
-      // Timeout fallback - if video takes too long, show error
-      const timeoutId = setTimeout(() => {
-        if (!videoLoaded && !videoCanPlay) {
-          console.warn('🎬 Video loading timeout - falling back to image');
-          setVideoError(true);
-        }
-      }, 3000); // 3 second timeout
-
-      return () => {
-        video.removeEventListener('canplay', handleCanPlay);
-        video.removeEventListener('loadeddata', handleLoadedData);
-        video.removeEventListener('canplaythrough', handleCanPlayThrough);
-        video.removeEventListener('progress', handleProgress);
-        clearTimeout(timeoutId);
-      };
+  // Function to get images for selected color
+  const getImagesForColor = (colorName: string): string[] => {
+    // First, try to get color-specific images from the product data
+    const selectedColorOption = product.colors?.find(color => color.name === colorName)
+    if (selectedColorOption?.images && selectedColorOption.images.length > 0) {
+      return selectedColorOption.images
     }
-  }, [homepageSettings.homepageImage1, homepageSettings.homepageImage1Type]);
-
-  // Lightbox helpers
-  const openLightbox = (index: number) => {
-    setLightboxIndex(index)
-    setLightboxOpen(true)
+    
+    // If color-specific images exist in mapping, return them
+    if (colorImageMapping[colorName] && colorImageMapping[colorName].length > 0) {
+      return colorImageMapping[colorName]
+    }
+    
+    // Otherwise, return all product images
+    return product.images || []
   }
-  const closeLightbox = () => {
-    setLightboxOpen(false)
-    setLightboxIndex(null)
+
+  // Current images based on selected color
+  const currentImages = getImagesForColor(selectedColor)
+
+  const sizeOptions = product.sizes || ["S", "M", "L", "XL", "XXL"]
+
+  // NEW: Handle mouse move for zoom effect
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isZoomed) return
+    
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect()
+    const x = ((e.clientX - left) / width) * 100
+    const y = ((e.clientY - top) / height) * 100
+    setZoomPosition({ x, y })
   }
-  // prevent body scroll when lightbox open
-  useEffect(() => {
-    if (lightboxOpen) {
-      document.body.style.overflow = "hidden"
-    } else {
-      document.body.style.overflow = ""
+
+  // NEW: Toggle zoom
+  const toggleZoom = () => {
+    setIsZoomed(!isZoomed)
+  }
+
+  // NEW: Navigate to next/previous image
+  const nextImage = () => {
+    if (currentImages && currentImages.length > 1) {
+      setActiveImageIndex((prev) => (prev + 1) % currentImages.length)
     }
-    return () => {
-      document.body.style.overflow = ""
+  }
+
+  const prevImage = () => {
+    if (currentImages && currentImages.length > 1) {
+      setActiveImageIndex((prev) => (prev - 1 + currentImages.length) % currentImages.length)
     }
-  }, [lightboxOpen])
-  // keyboard navigation (Esc, ArrowLeft, ArrowRight)
-  useEffect(() => {
-    if (!lightboxOpen) return
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeLightbox()
-      if (e.key === "ArrowRight") {
-        setLightboxIndex((i) => {
-          if (i == null) return 0
-          return Math.min(carouselImages.length - 1, i + 1)
-        })
-      }
-      if (e.key === "ArrowLeft") {
-        setLightboxIndex((i) => {
-          if (i == null) return 0
-          return Math.max(0, i - 1)
-        })
+  }
+
+  // NEW: Scroll gallery up/down
+  const scrollGalleryUp = () => {
+    if (galleryScrollRef.current) {
+      const newPosition = Math.max(0, galleryScrollPosition - 1)
+      setGalleryScrollPosition(newPosition)
+      const thumbnail = galleryScrollRef.current.children[newPosition] as HTMLElement
+      if (thumbnail) {
+        thumbnail.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
       }
     }
-    window.addEventListener("keydown", handler)
-    return () => window.removeEventListener("keydown", handler)
-  }, [lightboxOpen, carouselImages.length])
-
-  // Community favorites carousel scrolling functions
-  const scrollCommunityCarousel = (direction: 'left' | 'right') => {
-    if (!communityCarouselRef.current) return
-
-    const gap = 24
-    const cardWidth = Math.min(280, window.innerWidth * 0.8)
-    const scrollAmount = cardWidth + gap
-    const currentScroll = communityCarouselRef.current.scrollLeft
-    
-    const newScroll = direction === 'left' 
-      ? Math.max(0, currentScroll - scrollAmount)
-      : currentScroll + scrollAmount
-    
-    const newIndex = direction === 'left' 
-      ? Math.max(0, currentCommunityIndex - 1)
-      : Math.min(communityFavorites.length - 1, currentCommunityIndex + 1)
-    
-    setCurrentCommunityIndex(newIndex)
-    communityCarouselRef.current.scrollTo({
-      left: newScroll,
-      behavior: 'smooth'
-    })
   }
 
-  const scrollToCommunitySlide = (index: number) => {
-    if (!communityCarouselRef.current) return
-
-    const gap = 24
-    const cardWidth = Math.min(280, window.innerWidth * 0.8)
-    const scrollPosition = index * (cardWidth + gap)
-    
-    setCurrentCommunityIndex(index)
-    communityCarouselRef.current.scrollTo({
-      left: scrollPosition,
-      behavior: 'smooth'
-    })
+  const scrollGalleryDown = () => {
+    if (galleryScrollRef.current && currentImages.length > 0) {
+      const newPosition = Math.min(currentImages.length - 1, galleryScrollPosition + 1)
+      setGalleryScrollPosition(newPosition)
+      const thumbnail = galleryScrollRef.current.children[newPosition] as HTMLElement
+      if (thumbnail) {
+        thumbnail.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      }
+    }
   }
 
-  // Blog carousel scrolling functions
-  const scrollBlogCarousel = (direction: 'left' | 'right') => {
-    if (!blogCarouselRef.current) return
-
-    const gap = 24
-    const cardWidth = Math.min(280, window.innerWidth * 0.8)
-    const scrollAmount = cardWidth + gap
-    const currentScroll = blogCarouselRef.current.scrollLeft
-    
-    const newScroll = direction === 'left' 
-      ? Math.max(0, currentScroll - scrollAmount)
-      : currentScroll + scrollAmount
-    
-    const newIndex = direction === 'left' 
-      ? Math.max(0, currentBlogIndex - 1)
-      : Math.min(blogs.length - 1, currentBlogIndex + 1)
-    
-    setCurrentBlogIndex(newIndex)
-    blogCarouselRef.current.scrollTo({
-      left: newScroll,
-      behavior: 'smooth'
-    })
-  }
-
-  const scrollToBlogSlide = (index: number) => {
-    if (!blogCarouselRef.current) return
-
-    const gap = 24
-    const cardWidth = Math.min(280, window.innerWidth * 0.8)
-    const scrollPosition = index * (cardWidth + gap)
-    
-    setCurrentBlogIndex(index)
-    blogCarouselRef.current.scrollTo({
-      left: scrollPosition,
-      behavior: 'smooth'
-    })
-  }
-
-  // Bundle carousel scrolling functions
-  const scrollBundleCarousel = (direction: 'left' | 'right') => {
-    if (!bundleCarouselRef.current) return
-
-    const gap = 24
-    const cardWidth = Math.min(280, window.innerWidth * 0.8)
-    const scrollAmount = cardWidth + gap
-    const currentScroll = bundleCarouselRef.current.scrollLeft
-    
-    const newScroll = direction === 'left' 
-      ? Math.max(0, currentScroll - scrollAmount)
-      : currentScroll + scrollAmount
-    
-    const newIndex = direction === 'left' 
-      ? Math.max(0, currentBundleIndex - 1)
-      : Math.min(bundles.length - 1, currentBundleIndex + 1)
-    
-    setCurrentBundleIndex(newIndex)
-    bundleCarouselRef.current.scrollTo({
-      left: newScroll,
-      behavior: 'smooth'
-    })
-  }
-
-  const scrollToBundleSlide = (index: number) => {
-    if (!bundleCarouselRef.current) return
-
-    const gap = 24
-    const cardWidth = Math.min(280, window.innerWidth * 0.8)
-    const scrollPosition = index * (cardWidth + gap)
-    
-    setCurrentBundleIndex(index)
-    bundleCarouselRef.current.scrollTo({
-      left: scrollPosition,
-      behavior: 'smooth'
-    })
-  }
-
-  // MOVE WITH US carousel scrolling functions
-  const scrollCarousel = (direction: 'left' | 'right') => {
-    if (carouselRef.current) {
-      const gap = 24
-      const imageWidth = Math.max(160, Math.min(240, carouselRef.current.clientWidth * 0.4))
-      const scrollAmount = imageWidth + gap
-      const currentScroll = carouselRef.current.scrollLeft
-      const newScroll = direction === 'left' 
-        ? Math.max(0, currentScroll - scrollAmount)
-        : currentScroll + scrollAmount
+  // Initialize color-image mapping when component loads
+  useEffect(() => {
+    if (product && product.colors && product.images) {
+      const mapping: Record<string, string[]> = {}
       
-      const newIndex = direction === 'left' 
-        ? Math.max(0, currentCarouselIndex - 1)
-        : Math.min(carouselImages.length - 1, currentCarouselIndex + 1)
-      
-      setCurrentCarouselIndex(newIndex)
-      carouselRef.current.scrollTo({
-        left: newScroll,
-        behavior: 'smooth'
+      // Check if colors have specific images assigned
+      product.colors.forEach(color => {
+        if (color.images && color.images.length > 0) {
+          mapping[color.name] = color.images
+        } else {
+          // Fallback: assign all images to colors that don't have specific images
+          mapping[color.name] = product.images || []
+        }
       })
-    }
-  }
-
-  // Auto-scroll effect for community favorites slider
-  useEffect(() => {
-    if (communityFavorites.length === 0) return
-
-    const interval = setInterval(() => {
-      const nextIndex = (currentCommunityIndex + 1) % communityFavorites.length
-      scrollToCommunitySlide(nextIndex)
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [currentCommunityIndex, communityFavorites.length])
-
-  // Auto-scroll effect for blog slider (optional)
-  useEffect(() => {
-    if (blogs.length === 0) return
-
-    const interval = setInterval(() => {
-      const nextIndex = (currentBlogIndex + 1) % blogs.length
-      scrollToBlogSlide(nextIndex)
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [currentBlogIndex, blogs.length])
-
-  // Auto-scroll effect for bundle slider (optional)
-  useEffect(() => {
-    if (bundles.length === 0) return
-
-    const interval = setInterval(() => {
-      const nextIndex = (currentBundleIndex + 1) % bundles.length
-      scrollToBundleSlide(nextIndex)
-    }, 5000)
-
-    return () => clearInterval(interval)
-  }, [currentBundleIndex, bundles.length])
-
-  // Auto-scroll effect for MOVE WITH US carousel
-  useEffect(() => {
-    if (carouselImages.length === 0 || isCarouselHovered) return
-
-    const interval = setInterval(() => {
-      const nextIndex = (currentCarouselIndex + 1) % carouselImages.length
-      setCurrentCarouselIndex(nextIndex)
       
-      if (carouselRef.current) {
-        const gap = 24
-        const imageWidth = Math.max(160, Math.min(240, carouselRef.current.clientWidth * 0.4))
-        const scrollPosition = nextIndex * (imageWidth + gap)
-        
-        carouselRef.current.scrollTo({
-          left: scrollPosition,
-          behavior: 'smooth'
-        })
-      }
-    }, 4000)
-
-    return () => clearInterval(interval)
-  }, [currentCarouselIndex, carouselImages.length, isCarouselHovered])
-
-  // Fetch homepage images from API - PRIORITIZE THIS
-  useEffect(() => {
-    const fetchHomepageImages = async () => {
-      try {
-        console.log('🚀 FAST: Fetching homepage settings...');
-        const response = await fetch(`${API_BASE_URL}/settings/public`, {
-          priority: 'high'
-        });
-        if (response.ok) {
-          const settings = await response.json();
-          console.log('🚀 FAST: Homepage settings received');
-          setHomepageSettings({
-            homepageImage1: settings.homepageImage1 || '',
-            homepageImage1Type: settings.homepageImage1Type || 'image',
-            homepageImage2: settings.homepageImage2 || '',
-            homepageImage3: settings.homepageImage3 || '',
-            discoverYourFitMen: settings.discoverYourFitMen || '',
-            discoverYourFitWomen: settings.discoverYourFitWomen || '',
-            discoverYourFitNewArrivals: settings.discoverYourFitNewArrivals || '',
-            discoverYourFitSets: settings.discoverYourFitSets || '',
-          });
-        } else {
-          console.error('❌ Failed to fetch homepage images');
-        }
-      } catch (error) {
-        console.error('❌ Failed to fetch homepage images:', error);
-      } finally {
-        setHomepageSettingsLoaded(true);
-      }
-    };
-    fetchHomepageImages();
-  }, []);
-
-  // Fetch recent products from API
-  useEffect(() => {
-    const fetchRecentProducts = async () => {
-      try {
-        setLoadingProducts(true);
-        const response = await fetch(`${API_BASE_URL}/products/public/all`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && Array.isArray(data.data)) {
-            // Sort products by createdAt (most recent first)
-            const sortedProducts = [...data.data].sort((a: Product, b: Product) => {
-              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-              return dateB - dateA; // Most recent first
-            });
-            // Keep up to 20 most recent products for the slider
-            setRecentProducts(sortedProducts.slice(0, 20));
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch recent products:', error);
-      } finally {
-        setLoadingProducts(false);
-      }
-    };
-    fetchRecentProducts();
-  }, []);
-
-  // Fetch community favorites (products sorted by purchase count)
-  useEffect(() => {
-    const fetchCommunityFavorites = async () => {
-      try {
-        setLoadingCommunityFavorites(true);
-        const response = await fetch(`${API_BASE_URL}/products/public/all`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && Array.isArray(data.data)) {
-            // Sort products by purchaseCount (highest first), fallback to createdAt
-            const sortedProducts = [...data.data].sort((a: Product, b: Product) => {
-              const purchaseCountA = a.purchaseCount || 0;
-              const purchaseCountB = b.purchaseCount || 0;
-              if (purchaseCountB !== purchaseCountA) {
-                return purchaseCountB - purchaseCountA;
-              }
-              // If purchase counts are equal, sort by creation date (newest first)
-              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-              return dateB - dateA;
-            });
-            // Take top 8 products for community favorites
-            setCommunityFavorites(sortedProducts.slice(0, 8));
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch community favorites:', error);
-      } finally {
-        setLoadingCommunityFavorites(false);
-      }
-    };
-    fetchCommunityFavorites();
-  }, []);
-
-  // Fetch blogs from API
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        setLoadingBlogs(true);
-        const response = await fetch(`${API_BASE_URL}/blogs/public/active`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && Array.isArray(data.data)) {
-            setBlogs(data.data.slice(0, 4));
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch blogs:', error);
-      } finally {
-        setLoadingBlogs(false);
-      }
-    };
-    fetchBlogs();
-  }, []);
-
-  // Fetch categories from API for DISCOVER YOUR FIT section
-  useEffect(() => {
-    const mainCategoryNames = ["Men", "Women", "New Arrivals", "Sets"];
-    const placeholderCategories: Category[] = mainCategoryNames.map((name, index) => ({
-      _id: `placeholder-${name.toLowerCase().replace(/\s+/g, "-")}`,
-      name,
-      isActive: true,
-      sectionOrder: index,
-    }));
-
-    const fetchCategories = async () => {
-      try {
-        setLoadingCategories(true);
-        const response = await fetch(`${API_BASE_URL}/categories`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.data && Array.isArray(data.data)) {
-            const normalizedMap = new Map<string, Category>();
-            data.data.forEach((cat: Category) => {
-              if (!cat?.name) return;
-              const key = cat.name.trim().toLowerCase();
-              if (cat.isActive) {
-                normalizedMap.set(key, cat);
-              }
-            });
-
-            const orderedCategories = mainCategoryNames.map((name, index) => {
-              const key = name.toLowerCase();
-              return normalizedMap.get(key) || placeholderCategories[index];
-            });
-
-            setCategories(orderedCategories);
-          } else {
-            setCategories(placeholderCategories);
-          }
-        } else {
-          setCategories(placeholderCategories);
-        }
-      } catch (error) {
-        console.error('Failed to fetch categories:', error);
-        setCategories(placeholderCategories);
-      } finally {
-        setLoadingCategories(false);
-      }
-    };
-    fetchCategories();
-  }, []);
-
-  // Fetch bundles from API
-  useEffect(() => {
-    const fetchBundles = async () => {
-      try {
-        setLoadingBundles(true);
-        const apiUrl = `${API_BASE_URL}/bundles/public/active`;
-        
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          let bundlesArray: Bundle[] = [];
-          
-          if (data.success && Array.isArray(data.data)) {
-            bundlesArray = data.data;
-          } else if (Array.isArray(data.data)) {
-            bundlesArray = data.data;
-          } else if (Array.isArray(data)) {
-            bundlesArray = data;
-          }
-          
-          // Filter only active bundles and take first 4
-          const activeBundles = bundlesArray
-            .filter((bundle: Bundle) => {
-              const isActive = bundle.isActive !== false;
-              return isActive;
-            })
-            .slice(0, 4);
-          
-          setBundles(activeBundles);
-        } else {
-          const errorText = await response.text();
-          console.error('❌ Bundle response not ok:', response.status, response.statusText);
-        }
-      } catch (error) {
-        console.error('❌ Failed to fetch bundles:', error);
-      } finally {
-        setLoadingBundles(false);
-      }
-    };
-    fetchBundles();
-  }, []);
-
-  // Fetch carousel images from API for MOVE WITH US section
-  useEffect(() => {
-    const fetchCarouselImages = async () => {
-      try {
-        setLoadingCarouselImages(true);
-        const response = await fetch(`${API_BASE_URL}/carousel-images/public/active`);
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && Array.isArray(data.data)) {
-            // Sort by order and extract image URLs
-            const sortedImages = data.data
-              .sort((a: any, b: any) => a.order - b.order)
-              .map((img: any) => img.imageUrl);
-            setCarouselImages(sortedImages);
-          }
-        } else {
-          // Fallback to static images if API fails
-          setCarouselImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
-        }
-      } catch (error) {
-        console.error('Failed to fetch carousel images:', error);
-        // Fallback to static images on error
-        setCarouselImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
-      } finally {
-        setLoadingCarouselImages(false);
-      }
-    };
-    fetchCarouselImages();
-  }, []);
-
-  // Helper function to get full image URL
-  const getImageUrl = (url: string | undefined): string => {
-    if (!url) return '';
-    if (url.startsWith('http')) {
-      return url;
+      setColorImageMapping(mapping)
     }
-    // Remove /api from API_BASE_URL for image URLs
-    const baseUrl = API_BASE_URL.replace('/api', '');
-    if (url.startsWith('/')) {
-      return `${baseUrl}${url}`;
+  }, [product])
+
+  // Add this state to track the selected variation
+  const [selectedVariation, setSelectedVariation] = useState(() => {
+    // Find the default variation based on initial selectedSize and selectedColor
+    return product.variants?.find(
+      v => v.size === selectedSize && v.color.name === selectedColor
+    ) || null;
+  });
+
+  // Update selectedVariation when size or color changes
+  useEffect(() => {
+    if (product.variants) {
+      const variation = product.variants.find(
+        v => v.size === selectedSize && v.color.name === selectedColor
+      );
+      setSelectedVariation(variation || null);
     }
-    return `${baseUrl}/${url}`;
-  };
+  }, [selectedSize, selectedColor, product.variants]);
 
-  // Helper function to get product image
-  const getProductImage = (product: Product): string => {
-    if (product.image) return getImageUrl(product.image);
-    if (product.images && product.images.length > 0) return getImageUrl(product.images[0]);
-    return '/placeholder.svg';
-  };
-
-  // Helper function to get product name
-  const getProductName = (product: Product): string => {
-    return product.name || product.title || 'Product';
-  };
-
-  // Helper function to get product price
-  const getProductPrice = (product: Product): number => {
-    if (product.price) {
-      const priceStr = product.price.replace(/[^0-9.]/g, '');
-      return parseFloat(priceStr) || 0;
+  // CORRECTED: Function to get base price (without discount)
+  const getBasePrice = (variant: any): number => {
+    if (variant?.priceOverride && variant.priceOverride > 0) {
+      return variant.priceOverride;
     }
-    if (product.basePrice) return product.basePrice;
+    // Use originalPrice if available, otherwise use basePrice or parse from product.price
+    const originalPrice = (product as any).originalPrice || (product as any).basePrice || product.price;
+    if (typeof originalPrice === 'number') {
+      return originalPrice;
+    }
+    if (typeof originalPrice === 'string') {
+      return parseFloat(originalPrice.replace(/[^0-9.]/g, ''));
+    }
     return 0;
   };
 
-  // Helper function to split product name into two lines
-  const splitProductName = (name: string): { line1: string; line2: string } => {
-    const words = name.split(' ');
-    const midPoint = Math.ceil(words.length / 2);
+  // CORRECTED: Function to get discounted price
+  const getDiscountedPrice = (variant: any): number => {
+    const basePrice = getBasePrice(variant);
+    const discountPercentage = product.discountPercentage || 0;
+    const discountAmount = (basePrice * discountPercentage) / 100;
+    return basePrice - discountAmount;
+  };
+
+  // Calculate prices based on selected variant
+  const basePrice = getBasePrice(selectedVariation);
+  const finalPrice = getDiscountedPrice(selectedVariation);
+  const discountAmount = (basePrice * (product.discountPercentage || 0)) / 100;
+
+  const remainingBundles = bundles;
+
+  const splitBundleName = (name: string): { line1: string; line2?: string } => {
+    const words = name?.trim().split(/\s+/) ?? [];
+    if (words.length === 0) {
+      return { line1: '' };
+    }
+    const midpoint = Math.ceil(words.length / 2);
     return {
-      line1: words.slice(0, midPoint).join(' '),
-      line2: words.slice(midPoint).join(' ') || ''
+      line1: words.slice(0, midpoint).join(' '),
+      line2: words.slice(midpoint).join(' ') || undefined,
     };
   };
 
-  // Helper function to get category URL
-  const getCategoryUrl = (category: Category): string => {
-    const name = category.name.toLowerCase();
-    if (name === 'men') return '/categories?gender=men';
-    if (name === 'women') return '/categories?gender=women';
-    if (name === 'new arrivals') return '/new-arrival';
-    if (name === 'sets') return '/sets';
-    const slug = name.trim().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || category._id;
-    return `/categories/${slug}`;
-  };
-
-  // Helper function to check if product has discount
-  const hasDiscount = (product: Product): boolean => {
-    return (product.discountPercentage && product.discountPercentage > 0) || product.isOnSale === true;
-  };
-
-  // Helper function to get discount percentage
-  const getDiscountPercentage = (product: Product): number => {
-    return product.discountPercentage || 0;
-  };
-
-  const discoverImageOverrides: Record<string, string> = {
-    men: homepageSettings.discoverYourFitMen || '',
-    women: homepageSettings.discoverYourFitWomen || '',
-    "new arrivals": homepageSettings.discoverYourFitNewArrivals || '',
-    sets: homepageSettings.discoverYourFitSets || '',
-  };
-
-  const getDiscoverBackgroundImage = (name: string, category?: Category): string => {
-    const normalized = name.trim().toLowerCase();
-    const override = discoverImageOverrides[normalized];
-
-    if (override) {
-      const overrideUrl = getImageUrl(override);
-      if (overrideUrl) {
-        return overrideUrl;
-      }
+  const getBundlePriceValue = (bundle: Bundle): number => {
+    const price = bundle.bundlePrice ?? bundle.originalPrice ?? 0;
+    if (typeof price === 'number') return price;
+    if (typeof price === 'string') {
+      const numeric = parseFloat(price.replace(/[^0-9.]/g, ''));
+      return Number.isFinite(numeric) ? numeric : 0;
     }
-
-    if (category?.image) {
-      const imageUrl = getImageUrl(category.image);
-      if (imageUrl) {
-        return imageUrl;
-      }
-    }
-
-    if (category?.carouselImage) {
-      const imageUrl = getImageUrl(category.carouselImage);
-      if (imageUrl) {
-        return imageUrl;
-      }
-    }
-
-    return '/6.png';
+    return 0;
   };
 
-  // Helper function to format category name for display
-  const formatCategoryName = (name: string): { line1: string; line2?: string } => {
-    const words = name.trim().toUpperCase().split(/\s+/);
-    if (words.length === 1) {
-      return { line1: words[0] };
-    }
-    if (words.length === 2) {
-      return { line1: words[0], line2: words[1] };
-    }
-    return {
-      line1: words.slice(0, 2).join(' '),
-      line2: words.slice(2).join(' ')
-    };
-  };
-
-  // Helper function to get bundle image
   const getBundleImage = (bundle: Bundle): string => {
-    if (bundle.heroImage) return getImageUrl(bundle.heroImage);
-    if (bundle.galleryImages && bundle.galleryImages.length > 0) return getImageUrl(bundle.galleryImages[0]);
-    if (bundle.image) return getImageUrl(bundle.image);
-    if (bundle.images && bundle.images.length > 0) return getImageUrl(bundle.images[0]);
-    // If bundle has products, use first product's image
-    if (bundle.products && bundle.products.length > 0) {
-      const firstProduct = bundle.products[0];
-      return getProductImage(firstProduct);
+    if (bundle.heroImage) return getFullImageUrl(bundle.heroImage);
+    if (bundle.galleryImages && bundle.galleryImages.length > 0) return getFullImageUrl(bundle.galleryImages[0]);
+    if (bundle.image) return getFullImageUrl(bundle.image);
+    if (bundle.images && bundle.images.length > 0) return getFullImageUrl(bundle.images[0]);
+    const firstProduct = bundle.products && bundle.products.length > 0 ? bundle.products[0] : undefined;
+    if (firstProduct) {
+      if (firstProduct.image) return getFullImageUrl(firstProduct.image);
+      if (firstProduct.images && firstProduct.images.length > 0) return getFullImageUrl(firstProduct.images[0]);
     }
-    return '/placeholder.svg';
-  };
-
-  const handleWhatsNewWheel = (event: WheelEvent<HTMLDivElement>) => {
-    if (!whatsNewCarouselRef.current) return;
-
-    event.preventDefault();
-    whatsNewCarouselRef.current.scrollBy({
-      left: event.deltaY + event.deltaX,
-      behavior: 'smooth',
-    });
+    return "/placeholder.svg";
   };
 
   const getBundleProductHref = (bundle: Bundle): string => {
@@ -848,1204 +322,1643 @@ export default function HomePage() {
     return '/bundles';
   };
 
-  // Content for the hero box - can be image or video
-  const heroContent: HeroContent | null = homepageSettings.homepageImage1
-    ? {
-        type: homepageSettings.homepageImage1Type === 'video' ? 'video' : 'image',
-        src: getImageUrl(homepageSettings.homepageImage1),
-        alt: 'Hero content'
-      }
-    : homepageSettingsLoaded
-      ? {
-          type: 'image',
-          src: '/10.png',
-          alt: 'Hero content'
+const parsePriceToNumber = (price: string | number | undefined, fallback?: number): number => {
+  if (typeof price === 'number' && Number.isFinite(price)) {
+    return price;
+  }
+  if (typeof price === 'string') {
+    const numeric = parseFloat(price.replace(/[^0-9.]/g, ''));
+    if (Number.isFinite(numeric)) {
+      return numeric;
+    }
+  }
+  if (typeof fallback === 'number' && Number.isFinite(fallback)) {
+    return fallback;
+  }
+  return 0;
+};
+
+const getProductCardPrice = (item: ProductCardItem): number => {
+  return parsePriceToNumber(item.price, item.basePrice);
+};
+
+const getProductCardImage = (item: ProductCardItem): string => {
+  if (item.image) return getFullImageUrl(item.image);
+  if (item.images && item.images.length > 0) return getFullImageUrl(item.images[0]);
+  return "/placeholder.svg";
+};
+
+const getProductCardHref = (item: ProductCardItem): string => {
+  const slugOrId = (item as any).slug || item.id || item._id;
+  if (slugOrId) {
+    return `/product/${slugOrId}`;
+  }
+  return '/product';
+};
+
+const getProductCardId = (item: ProductCardItem): string | undefined => {
+  return (item.id || item._id) ?? undefined;
+};
+
+const getProductCardKey = (item: ProductCardItem): string => {
+  const id = getProductCardId(item);
+  if (id) {
+    return id;
+  }
+  const name = (item.name || item.title || 'product').toLowerCase();
+  return `${name}-${getProductCardImage(item)}`;
+};
+
+// FIXED: Corrected API endpoint for fetching products
+const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> => {
+  try {
+    // Use the correct API endpoint
+    const response = await fetch(`${API_BASE_URL}/api/products/public/all${queryString}`);
+    if (!response.ok) {
+      console.error('Error fetching products list:', response.status, response.statusText);
+      return [];
+    }
+
+    const data = await response.json();
+    if (data?.success && Array.isArray(data.data)) {
+      return data.data;
+    }
+    if (Array.isArray(data?.data)) {
+      return data.data;
+    }
+    if (Array.isArray(data)) {
+      return data;
+    }
+
+    console.warn('Unexpected products response format', data);
+    return [];
+  } catch (error) {
+    console.error('Failed to fetch products list:', error);
+    return [];
+  }
+};
+
+  // Set highlighted product for current product (if it has highlight image)
+  useEffect(() => {
+    console.log('Product highlight check:', {
+      hasHighlightImage: !!product.highlightImage,
+      highlightImage: product.highlightImage,
+      productId: product.id,
+      productName: product.name
+    })
+    
+    if (product.highlightImage) {
+      setHighlightedProduct({
+        id: product.id,
+        name: product.name,
+        image: product.highlightImage
+      })
+    }
+  }, [product.highlightImage, product.id, product.name])
+
+  // Fetch MOVE WITH US carousel images
+  useEffect(() => {
+    const fetchMoveWithUsImages = async () => {
+      try {
+        setLoadingMoveWithUs(true);
+        const response = await fetch(`${API_BASE_URL}/carousel-images/public/active`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && Array.isArray(data.data)) {
+            // Sort by order and extract image URLs
+            const sortedImages = data.data
+              .sort((a: any, b: any) => a.order - b.order)
+              .map((img: any) => img.imageUrl);
+            setMoveWithUsImages(sortedImages);
+          }
+        } else {
+          // Fallback to static images if API fails
+          setMoveWithUsImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
         }
-      : null
+      } catch (error) {
+        console.error('Failed to fetch MOVE WITH US images:', error);
+        // Fallback to static images on error
+        setMoveWithUsImages(["/10.png", "/11.png", "/12.png", "/13.png"]);
+      } finally {
+        setLoadingMoveWithUs(false);
+      }
+    };
+    fetchMoveWithUsImages();
+  }, []);
+
+  // MOVE WITH US carousel scrolling functions
+  const scrollMoveWithUsCarousel = (direction: 'left' | 'right') => {
+    if (!moveWithUsCarouselRef.current) return;
+
+    const gap = 24
+    const imageWidth = Math.max(160, Math.min(240, moveWithUsCarouselRef.current.clientWidth * 0.4))
+    const scrollAmount = imageWidth + gap
+    const currentScroll = moveWithUsCarouselRef.current.scrollLeft
+    
+    const newScroll = direction === 'left' 
+      ? Math.max(0, currentScroll - scrollAmount)
+      : currentScroll + scrollAmount
+    
+    const newIndex = direction === 'left' 
+      ? Math.max(0, currentMoveWithUsIndex - 1)
+      : Math.min(moveWithUsImages.length - 1, currentMoveWithUsIndex + 1)
+    
+    setCurrentMoveWithUsIndex(newIndex)
+    moveWithUsCarouselRef.current.scrollTo({
+      left: newScroll,
+      behavior: 'smooth'
+    })
+  }
+
+  const scrollToMoveWithUsSlide = (index: number) => {
+    if (!moveWithUsCarouselRef.current) return;
+
+    const gap = 24
+    const imageWidth = Math.max(160, Math.min(240, moveWithUsCarouselRef.current.clientWidth * 0.4))
+    const scrollPosition = index * (imageWidth + gap)
+    
+    setCurrentMoveWithUsIndex(index)
+    moveWithUsCarouselRef.current.scrollTo({
+      left: scrollPosition,
+      behavior: 'smooth'
+    })
+  }
+
+  // Auto-scroll effect for MOVE WITH US carousel
+  useEffect(() => {
+    if (moveWithUsImages.length === 0 || isMoveWithUsHovered) return;
+
+    const interval = setInterval(() => {
+      const nextIndex = (currentMoveWithUsIndex + 1) % moveWithUsImages.length
+      setCurrentMoveWithUsIndex(nextIndex)
+      
+      if (moveWithUsCarouselRef.current) {
+        const gap = 24
+        const imageWidth = Math.max(160, Math.min(240, moveWithUsCarouselRef.current.clientWidth * 0.4))
+        const scrollPosition = nextIndex * (imageWidth + gap)
+        
+        moveWithUsCarouselRef.current.scrollTo({
+          left: scrollPosition,
+          behavior: 'smooth'
+        })
+      }
+    }, 4000) // Auto-scroll every 4 seconds
+
+    return () => clearInterval(interval)
+  }, [currentMoveWithUsIndex, moveWithUsImages.length, isMoveWithUsHovered])
+
+  // FIXED: Corrected bundles API endpoint
+  useEffect(() => {
+    const fetchBundles = async () => {
+      try {
+        setLoadingBundles(true)
+        const response = await fetch(`${API_BASE_URL}/bundles/public/active`)
+        if (!response.ok) {
+          console.error('Error fetching bundles:', response.status, response.statusText)
+          return
+        }
+
+        const data = await response.json()
+        let bundlesArray: Bundle[] = []
+
+        if (data?.success && Array.isArray(data.data)) {
+          bundlesArray = data.data
+        } else if (Array.isArray(data?.data)) {
+          bundlesArray = data.data
+        } else if (Array.isArray(data)) {
+          bundlesArray = data
+        } else {
+          console.warn('Unexpected bundles response format', data)
+        }
+
+        const activeBundles = bundlesArray.filter((bundle) => bundle.isActive !== false)
+        setBundles(activeBundles)
+      } catch (error) {
+        console.error('Failed to fetch bundles:', error)
+      } finally {
+        setLoadingBundles(false)
+      }
+    }
+
+    fetchBundles()
+  }, [])
+
+  // FIXED: Corrected recommended products fetching with error handling
+  useEffect(() => {
+    const fetchRecommended = async () => {
+      try {
+        setLoadingRecommended(true)
+
+        const currentProductId = product.id || (product as any)._id
+        const seenKeys = new Set<string>()
+
+        const primaryQuery = product.category ? `?category=${encodeURIComponent(product.category)}` : ''
+        const primaryProducts = await fetchProductList(primaryQuery)
+        const recommendations: ProductCardItem[] = []
+
+        const addUniqueProducts = (items: ProductCardItem[]) => {
+          items.forEach((item) => {
+            const candidateId = getProductCardId(item)
+            if (candidateId && candidateId === currentProductId) {
+              return
+            }
+
+            const key = getProductCardKey(item)
+            if (!seenKeys.has(key)) {
+              seenKeys.add(key)
+              recommendations.push(item)
+            }
+          })
+        }
+
+        addUniqueProducts(primaryProducts)
+
+        if (recommendations.length < 4) {
+          const fallbackProducts = await fetchProductList()
+          addUniqueProducts(fallbackProducts)
+        }
+
+        if (recommendations.length < 4 && primaryProducts.length > 0) {
+          addUniqueProducts(primaryProducts)
+        }
+
+        setRecommendedProducts(recommendations.slice(0, 4))
+      } catch (error) {
+        console.error('Failed to fetch recommended products:', error)
+        setRecommendedProducts([])
+      } finally {
+        setLoadingRecommended(false)
+      }
+    }
+
+    fetchRecommended()
+  }, [product.category, product.id, (product as any)._id])
+
+  // Fetch dynamic products for Shop the Look, Carousel, and Highlighted Products
+  useEffect(() => {
+    const fetchDynamicProducts = async () => {
+      try {
+        setLoading(true)
+        // FIXED: Corrected API endpoint
+        const response = await fetch(`${API_BASE_URL}/api/products/public`)
+        if (!response.ok) {
+          throw new Error('Failed to fetch products')
+        }
+        
+        const data = await response.json()
+        
+        if (data.success && data.data) {
+          const products = data.data
+          
+          // Set Shop the Look items (first 5 products)
+          setShopTheLookItems(products.slice(0, 5).map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            originalPrice: product.originalPrice,
+            image: product.image,
+            isNew: Math.random() > 0.7 // Randomly mark some as new
+          })))
+          
+          // Set Carousel items (next 4 products)
+          setCarouselItems(products.slice(5, 9).map((product: any) => ({
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            discount: Math.floor(Math.random() * 30) + 10 // Random discount 10-40%
+          })))
+        }
+      } catch (error) {
+        console.error('Error fetching dynamic products:', error)
+        // Fallback to static data
+        setShopTheLookItems([
+          {
+            id: 1,
+            name: "Essential Oversized Tee - Pearl White",
+            price: "$28.00",
+            originalPrice: "$44.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
+            isNew: false,
+          },
+          {
+            id: 2,
+            name: "Athletic Training Shirt - Coral",
+            price: "$48.00",
+            originalPrice: "$72.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
+            isNew: true,
+          },
+          {
+            id: 3,
+            name: "Zip-Up Hoodie - Coral Pink",
+            price: "$72.00",
+            originalPrice: "$96.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
+            isNew: false,
+          },
+          {
+            id: 4,
+            name: "SQUATWOLF Athletic Socks - White",
+            price: "$26.00",
+            originalPrice: "$36.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
+            isNew: false,
+          },
+          {
+            id: 5,
+            name: "Essential Oversized Tee - Pearl White",
+            price: "$28.00",
+            originalPrice: "$44.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=250"),
+            isNew: false,
+          },
+        ])
+
+        setCarouselItems([
+          {
+            id: 1,
+            name: "SQUATWOLF Baseball Cap - Pink",
+            price: "$36.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=300"),
+            discount: 30,
+          },
+          {
+            id: 2,
+            name: "Athletic Training Shirt - Coral",
+            price: "$48.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=300"),
+            discount: 30,
+          },
+          {
+            id: 3,
+            name: "Zip-Up Hoodie - Coral Pink",
+            price: "$72.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=300"),
+            discount: 50,
+          },
+          {
+            id: 4,
+            name: "SQUATWOLF Athletic Socks - White",
+            price: "$26.00",
+            image: getFullImageUrl("/placeholder.svg?height=300&width=300"),
+            discount: 30,
+          },
+        ])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDynamicProducts()
+  }, [product.id])
+
+  useEffect(() => {
+    const fetchCommunityHighlights = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/settings/public`)
+        if (response.ok) {
+          const data = await response.json()
+          const settingsData = data?.data && typeof data.data === "object" ? data.data : data
+          const images = DEFAULT_COMMUNITY_HIGHLIGHTS.map((fallback, index) => {
+            const field = `communityHighlight${index + 1}` as const
+            const value = settingsData?.[field]
+            return value ? getFullImageUrl(value) : fallback
+          })
+          setCommunityHighlights(images)
+        }
+      } catch (error) {
+        console.error("Failed to fetch community highlights:", error)
+      }
+    }
+
+    fetchCommunityHighlights()
+  }, [])
+
+  const [openSections, setOpenSections] = useState({
+    purpose: false,
+    features: false,
+    materials: false,
+    reviews: false,
+  })
+
+  const toggleSection = (section: string) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [section]: !prev[section as keyof typeof prev],
+    }))
+  }
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    // Using the existing notification system from the cart context
+    showNotification("Link copied to clipboard!");
+  }
+
+  const handleAddToCart = () => {
+    // Use final price (with discount)
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: finalPrice, // CORRECTED: Use finalPrice instead of variantPrice
+      image: currentImages.length > 0 ? getFullImageUrl(currentImages[0]) : (product.images && product.images.length > 0 ? getFullImageUrl(product.images[0]) : "/placeholder.svg"),
+      color: selectedColor,
+      size: selectedSize,
+      quantity: quantity,
+      fit: "REGULAR FIT"
+    })
+  }
+
+  const handleWishlistToggle = () => {
+    const wishlistItem = {
+      id: product.id,
+      name: product.name,
+      price: finalPrice, // CORRECTED: Use finalPrice
+      image: product.images && product.images.length > 0 ? getFullImageUrl(product.images[0]) : "/placeholder.svg",
+      color: selectedColor,
+      size: selectedSize,
+      fit: "REGULAR FIT"
+    }
+
+    if (isInWishlist(product.id)) {
+      removeFromWishlist(product.id)
+    } else {
+      addToWishlist(wishlistItem)
+    }
+  }
+
+  // Form submission handler
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitMessage('')
+
+    // ADDED: Simple client-side validation
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.phone) {
+      setSubmitMessage('Please fill out all fields.')
+      setIsSubmitting(false)
+      return
+    }
+
+    try {
+      const response = await submitForm(formData)
+      
+      if (response.success) {
+        setSubmitMessage('Thank you for joining the Athlekt family! Check your email for a welcome message.')
+        // Reset form
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: ''
+        })
+      } else {
+        setSubmitMessage(response.message || 'Something went wrong. Please try again.')
+      }
+    } catch (error) {
+      console.error('Form submission error:', error)
+      setSubmitMessage('Something went wrong. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  // Handle form input changes
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const defaultDescription = "The Athlekt Classic Hybrid Tee is designed to move with you wherever the day takes you. Lightweight, breathable, and stretchable, it delivers all-day comfort whether you're training, on the move, or unwinding after a long day. Its adaptive fit complements every body type from athletes to dads with dad bods offering a clean, confident silhouette without compromising comfort. Perfect for both lifestyle and gym, this tee keeps you cool, sharp, and ready for anything from your morning session to your evening plans. One tee. Every moment. Athlekt."
+  const defaultFit = "Boxy, oversized look—size down if you prefer a closer fit."
+  const defaultPurpose = [
+    "Designed to support high-intensity training, everyday movement, and casual wear without sacrificing comfort.",
+  ]
+  const defaultMaterials = [
+    "This lightweight, drapey fabric is smooth on the outside and looped on the inside with a slightly faded, vintage-looking finish",
+    "65% Cotton, 35% Polyester",
+  ]
+  const defaultCare = ["Machine wash cold", "Tumble dry low"]
+
+  const getParagraphs = (value?: string, fallback?: string) => {
+    const text = value?.trim() ? value : fallback?.trim() ? fallback : ""
+    if (!text) return []
+
+    return text
+      .split(/\r?\n+/)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean)
+  }
+
+  const getListItems = (value?: string, fallback: string[] = []) => {
+    const source = value?.trim()
+      ? value
+          .split(/\r?\n+/)
+          .map((item) => item.replace(/^[\s\u2022•\-]+/, '').trim())
+          .filter(Boolean)
+      : fallback
+
+    return source
+  }
+
+  const descriptionParagraphs = getParagraphs(product.fullDescription || product.description, defaultDescription)
+  const purposeParagraphs = getListItems(product.purpose, defaultPurpose)
+  const fitItems = getListItems(product.features, [defaultFit])
+  const materialsItems = getListItems(product.materials, defaultMaterials)
+  const careItems = getListItems(product.care, defaultCare)
+  const initialRating = Number(product.rating ?? (product as any).reviewRating ?? 0)
+  const initialCount = Number(product.reviewCount ?? (product as any).reviewCount ?? 0)
+  const [reviewStats, setReviewStats] = useState({
+    average: Number.isFinite(initialRating) ? initialRating : 0,
+    count: Number.isFinite(initialCount) ? initialCount : 0,
+  })
+
+  const roundedRating = Math.round(reviewStats.average)
+  const clampedRating = Math.min(5, Math.max(0, roundedRating))
+  const hasReviews = reviewStats.count > 0
+  const reviewSummary = hasReviews
+    ? `${reviewStats.average.toFixed(1)} out of 5 based on ${reviewStats.count} review${reviewStats.count === 1 ? '' : 's'}.`
+    : "No reviews yet. Be the first to share your experience with this product."
+
+  const nextCarousel = () => {
+    if (currentCarouselIndex < carouselItems.length - 4) {
+      setCurrentCarouselIndex(prev => prev + 1)
+    }
+  }
+
+  const prevCarousel = () => {
+    if (currentCarouselIndex > 0) {
+      setCurrentCarouselIndex(prev => prev - 1)
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-white overflow-x-hidden">
-      <Header />
-      
-      {/* Section 1: MOVE WITH PURPOSE Header - ULTRA FAST VIDEO LOADING */}
-      <section className="relative w-full overflow-x-hidden">
-        {/* Top Black Bar */}
-        <div className="w-full h-3 bg-black"></div>
-        
-        {/* Hero Box - ULTRA FAST BANNER */}
-        <div 
-          className="bg-white relative w-full overflow-hidden mx-auto"
-          style={{
-            position: 'relative',
-            marginTop: 'clamp(1rem, 3vw, 2.5rem)',
-            width: '100%',
-            maxWidth: '100%',
-            height: 'clamp(300px, 70vh, 700px)',
-            opacity: 1,
-            borderRadius: '0px',
-            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-            backgroundPosition: '0 0',
-            backgroundColor: '#FFFFFF',
-            transform: 'rotate(0deg)'
-          }}
-        >
-          {/* Image or Video Content - ULTRA FAST LOADING */}
-          {heroContent ? (
-            heroContent.type === 'image' ? (
-              <div className="relative w-full h-full" style={{ 
-                height: 'clamp(300px, 70vh, 700px)',
-              }}>
-                <Image
-                  src={heroContent.src}
-                  alt={heroContent.alt}
-                  fill
-                  className="object-cover"
-                  style={{
-                    objectFit: 'cover',
-                    objectPosition: 'center center',
-                    width: '100%',
-                    height: '100%'
-                  }}
-                  priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
-                />
-              </div>
-            ) : (
-              // ULTRA FAST VIDEO COMPONENT
-              <div className="relative w-full h-full" style={{ 
-                height: 'clamp(300px, 70vh, 700px)',
-              }}>
-                {/* INSTANT Loading placeholder - minimal delay */}
-                {!videoCanPlay && !videoError && (
-                  <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-10 animate-pulse">
-                    <div className="text-gray-400 text-sm">Loading...</div>
+    <div className="bg-white overflow-x-hidden">
+      {/* Main Product Section - Figma Design */}
+      <section className="py-4 md:py-6 lg:py-8 xl:py-10 bg-white text-[#212121]">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          <div className="flex flex-col md:flex-row gap-4 md:gap-5 lg:gap-6 xl:gap-8 items-start">
+            {/* Product Images - Fully Responsive */}
+            <div className="w-full lg:w-auto flex-shrink-0 md:self-start">
+              {/* Desktop & Tablet - Responsive Sizes */}
+              <div className="hidden md:flex md:gap-4 xl:gap-6 flex-shrink-0">
+                {/* Thumbnails - Left side, vertical stack - Scrollable with arrows */}
+                {currentImages && currentImages.length > 0 && (
+                  <div className="flex flex-col items-center gap-2">
+                    {/* Up Arrow */}
+                    {currentImages.length > 3 && (
+                      <button
+                        onClick={scrollGalleryUp}
+                        className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                        disabled={galleryScrollPosition === 0}
+                      >
+                        <ChevronUp className="h-4 w-4 text-gray-600" />
+                      </button>
+                    )}
+                    
+                    {/* Scrollable Thumbnails Container - Show 3 at a time */}
+                    <div 
+                      ref={galleryScrollRef}
+                      className="flex flex-col gap-3 max-h-[380px] overflow-y-auto"
+                      style={{ scrollBehavior: 'smooth' }}
+                      onMouseEnter={(e) => e.currentTarget.style.scrollbarWidth = 'thin'}
+                      onMouseLeave={(e) => e.currentTarget.style.scrollbarWidth = 'none'}
+                    >
+                      {currentImages.map((image, index) => (
+                        <button
+                          key={index}
+                          className="relative overflow-hidden transition-colors flex-shrink-0"
+                          style={{
+                            width: 'clamp(70px, 9vw, 140px)',
+                            height: 'clamp(79px, 9.87vw, 127px)',
+                            borderRadius: '12px',
+                            border: index === activeImageIndex ? '2px solid #3B82F6' : '2px solid #D1D5DB',
+                            backgroundColor: '#FFFFFF',
+                            opacity: 1
+                          }}
+                          onClick={() => {
+                            setActiveImageIndex(index)
+                            setGalleryScrollPosition(index)
+                          }}
+                        >
+                          <Image
+                            src={getFullImageUrl(image)}
+                            alt={`${product.name} ${index + 1}`}
+                            fill
+                            className="object-cover"
+                            style={{
+                              objectFit: 'cover',
+                              objectPosition: 'center top',
+                              borderRadius: '12px'
+                            }}
+                          />
+                        </button>
+                      ))}
+                    </div>
+
+                    {/* Down Arrow */}
+                    {currentImages.length > 3 && (
+                      <button
+                        onClick={scrollGalleryDown}
+                        className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 transition-colors"
+                        disabled={galleryScrollPosition === currentImages.length - 1}
+                      >
+                        <ChevronDown className="h-4 w-4 text-gray-600" />
+                      </button>
+                    )}
                   </div>
                 )}
                 
-                {/* QUICK Error fallback */}
-                {videoError && (
-                  <div className="absolute inset-0 bg-gray-100 flex items-center justify-center z-20">
+                {/* Main Image - Responsive with Zoom and Navigation Arrows */}
+                <div className="relative">
+                  <div 
+                    className="relative overflow-hidden bg-white flex-shrink-0 cursor-zoom-in"
+                    style={{
+                      width: 'clamp(220px, 28vw, 380px)',
+                      height: 'clamp(260px, 32vw, 420px)',
+                      borderRadius: '12px',
+                      opacity: 1,
+                      backgroundColor: '#FFFFFF'
+                    }}
+                    onMouseEnter={() => setIsZoomed(true)}
+                    onMouseLeave={() => setIsZoomed(false)}
+                    onMouseMove={handleMouseMove}
+                    onClick={toggleZoom}
+                  >
                     <Image
-                      src="/10.png"
-                      alt="Hero fallback"
+                      src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
+                      alt={product.name}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-200"
                       style={{
                         objectFit: 'cover',
-                        objectPosition: 'center center'
+                        objectPosition: 'center top',
+                        borderRadius: '12px',
+                        transform: isZoomed ? 'scale(1.5)' : 'scale(1)',
+                        transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
                       }}
                       priority
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 40vw, 455px"
                     />
+                    
+                    {/* Zoom Indicator */}
+                    <div className={`absolute bottom-4 right-4 bg-black/50 text-white p-2 rounded-full transition-opacity duration-200 ${isZoomed ? 'opacity-100' : 'opacity-0'}`}>
+                      <ZoomIn className="h-4 w-4" />
+                    </div>
+                  </div>
+
+                  {/* Navigation Arrows for Main Image */}
+                  {currentImages && currentImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
+                        style={{
+                          width: '40px',
+                          height: '40px'
+                        }}
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
+                        style={{
+                          width: '40px',
+                          height: '40px'
+                        }}
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Image Counter */}
+                  {currentImages && currentImages.length > 1 && (
+                    <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                      {activeImageIndex + 1} / {currentImages.length}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Mobile - Responsive */}
+              <div className="md:hidden flex flex-col gap-4">
+                {/* Main Image - Mobile with Navigation */}
+                <div className="relative w-full overflow-hidden bg-white rounded-xl" style={{ aspectRatio: '4/5', minHeight: '400px' }}>
+                  <Image
+                    src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                    style={{
+                      objectFit: 'cover',
+                      objectPosition: 'center top',
+                      borderRadius: '12px'
+                    }}
+                    priority
+                    sizes="100vw"
+                  />
+                  
+                  {/* Mobile Navigation Arrows */}
+                  {currentImages && currentImages.length > 1 && (
+                    <>
+                      <button
+                        onClick={prevImage}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
+                        style={{
+                          width: '40px',
+                          height: '40px'
+                        }}
+                      >
+                        <ChevronLeft className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={nextImage}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
+                        style={{
+                          width: '40px',
+                          height: '40px'
+                        }}
+                      >
+                        <ChevronRight className="h-5 w-5" />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Mobile Image Counter */}
+                  {currentImages && currentImages.length > 1 && (
+                    <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                      {activeImageIndex + 1} / {currentImages.length}
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile Thumbnails - Horizontal Scrollable */}
+                {currentImages && currentImages.length > 0 && (
+                  <div className="flex gap-2 overflow-x-auto pb-2 px-2">
+                    {currentImages.map((image, index) => (
+                      <button
+                        key={index}
+                        className="relative overflow-hidden transition-colors flex-shrink-0"
+                        style={{
+                          width: '80px',
+                          height: '80px',
+                          borderRadius: '8px',
+                          border: index === activeImageIndex ? '2px solid #3B82F6' : '2px solid #D1D5DB',
+                          backgroundColor: '#FFFFFF',
+                          opacity: 1
+                        }}
+                        onClick={() => setActiveImageIndex(index)}
+                      >
+                        <Image
+                          src={getFullImageUrl(image)}
+                          alt={`${product.name} ${index + 1}`}
+                          fill
+                          className="object-cover"
+                          style={{
+                            objectFit: 'cover',
+                            objectPosition: 'center top',
+                            borderRadius: '8px'
+                          }}
+                        />
+                      </button>
+                    ))}
                   </div>
                 )}
-                
-                {/* ULTRA FAST Video element */}
-                <video
-                  ref={videoRef}
-                  src={heroContent.src}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  className={`w-full h-full object-cover transition-opacity duration-300 ${
-                    videoCanPlay ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  style={{
-                    objectFit: 'contain',
-                    objectPosition: 'center center',
-                    width: '100%',
-                    height: '100%'
-                  }}
-                  onCanPlay={() => {
-                    console.log('🎬 Video can play - showing immediately');
-                    setVideoCanPlay(true);
-                  }}
-                  onLoadedData={() => {
-                    console.log('🎬 Video data loaded');
-                    setVideoLoaded(true);
-                  }}
-                  onError={(e) => {
-                    console.error('🎬 Video failed to load:', e);
-                    setVideoError(true);
-                  }}
-                >
-                  {/* Fallback content for browsers that don't support video */}
-                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                    <Image
-                      src="/10.png"
-                      alt="Hero fallback"
-                      fill
-                      className="object-cover"
-                      style={{
-                        objectFit: 'cover',
-                        objectPosition: 'center center'
-                      }}
-                    />
-                  </div>
-                </video>
               </div>
-            )
-          ) : (
-            <div className="w-full h-full bg-gray-100 animate-pulse flex items-center justify-center" style={{ 
-              height: 'clamp(300px, 70vh, 700px)',
-            }}>
-              <div className="text-gray-400">Loading hero content...</div>
             </div>
-          )}
-        </div>
-      </section>
 
-      {/* Rest of your sections remain exactly the same */}
-      {/* Section 2: DISCOVER YOUR FIT */}
-      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8">
-            <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontWeight: 400,
-                fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
-                letterSpacing: '0.5px'
-              }}
-            >
-              DISCOVER YOUR FIT
-            </h1>
-            <p 
-              className="text-black leading-normal text-left"
-              style={{
-                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
-                letterSpacing: '0px',
-                fontWeight: 500
-              }}
-            >
-Explore breathable, real-body fits for runs, lifts, and everything in between we call life.            </p>
-          </div>
-
-          {/* 2x2 Grid of Category Cards */}
-          {loadingCategories ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-8 md:mt-12">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="relative overflow-hidden"
-                  style={{
-                    width: '100%',
-                    aspectRatio: '642/230',
-                    borderRadius: 'clamp(12px, 2vw, 32px)',
-                    backgroundColor: '#E0E0E0',
-                    opacity: 0.5
-                  }}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-gray-400">Loading...</div>
+            {/* Product Info - Figma Exact Spacing */}
+            <div className="w-full md:w-auto md:flex-1 flex-shrink-0 flex flex-col md:justify-between md:self-stretch">
+              {/* Top Section - Aligned with Image Top */}
+              <div className="flex flex-col md:flex-shrink-0 w-full">
+                {/* Product Name & Price Row - Figma Exact */}
+                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4 w-full">
+                  <h1 
+                    className="uppercase text-black mb-0 w-full md:w-auto"
+                    style={{
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      fontSize: 'clamp(28px, 3.2vw, 48px)',
+                      fontWeight: 400,
+                      lineHeight: 'clamp(26px, 3vw, 44px)',
+                      letterSpacing: '0.5px',
+                      color: '#000000',
+                      margin: 0,
+                      padding: 0,
+                      whiteSpace: 'pre-line',
+                      width: '100%'
+                    }}
+                  >
+                    {(() => {
+                      const name = product.name || "MEN'S HYBRID CLASSIC";
+                      if (name.startsWith("MEN'S ")) {
+                        const rest = name.replace("MEN'S ", "");
+                        const restWithNonBreakingSpace = rest.replace(/HYBRID CLASSIC/g, 'HYBRID\u00A0CLASSIC');
+                        return "MEN'S\n" + restWithNonBreakingSpace;
+                      }
+                      return name;
+                    })()}
+                  </h1>
+                  
+                  {/* Price - Responsive and Right Aligned */}
+                  <div className="flex flex-col items-start md:items-end md:text-right mt-0 w-full md:w-auto" style={{ paddingTop: '0px', width: '100%' }}>
+                    {product.discountPercentage > 0 && basePrice > finalPrice && (
+                      <span 
+                        className="line-through md:w-full md:text-right"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(11px, 1.1vw, 16px)',
+                          fontWeight: 400,
+                          color: '#000000',
+                          textDecorationColor: '#EF4444',
+                          textDecorationThickness: '2px',
+                          marginBottom: '4px',
+                          lineHeight: 'clamp(28px, 3vw, 40px)',
+                          height: 'clamp(28px, 3vw, 40px)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'flex-end',
+                          width: '100%'
+                        }}
+                      >
+                        {formatCurrency(basePrice)}
+                      </span>
+                    )}
+                    <span 
+                      className="text-black md:w-full md:text-right"
+                      style={{
+                        fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(18px, 2vw, 28px)',
+                        fontWeight: 700,
+                        lineHeight: 'clamp(26px, 3vw, 40px)',
+                        letterSpacing: '0px',
+                        color: '#000000',
+                        height: 'clamp(26px, 3vw, 40px)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'flex-end',
+                        width: '100%'
+                      }}
+                    >
+                      {formatCurrency(finalPrice)}
+                    </span>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : categories.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-8 md:mt-12">
-              {categories.map((category) => {
-                const categoryName = formatCategoryName(category.name);
-                const categoryImage = getDiscoverBackgroundImage(category.name, category);
-                
-                return (
-                  <Link 
-                    key={category._id}
-                    href={getCategoryUrl(category)}
-                    className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                    style={{
-                      width: '100%',
-                      aspectRatio: '642/230',
-                      borderRadius: 'clamp(12px, 2vw, 32px)',
-                      backgroundImage: `url(${categoryImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundColor: '#E0E0E0',
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/10 to-transparent" />
-                    <div className="absolute inset-0 flex items-start justify-start p-4 md:p-6 lg:p-8">
-                      <div className="z-10">
-                        <h3 
-                          className="text-white uppercase text-left"
-                          style={{
-                            fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 'clamp(1.5rem, 6vw, 4rem)',
-                            fontWeight: 400,
-                            lineHeight: '1',
-                            color: '#FFFFFF',
-                            margin: '0',
-                            padding: '0',
-                            marginBottom: categoryName.line2 ? 'clamp(2px, 0.5vw, 8px)' : '0',
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                          }}
-                        >
-                          {categoryName.line1}
-                        </h3>
-                        {categoryName.line2 && (
-                          <h3 
-                            className="text-white uppercase text-left"
-                            style={{
-                              fontFamily: "'Bebas Neue', sans-serif",
-                              fontSize: 'clamp(1.5rem, 6vw, 4rem)',
-                              fontWeight: 400,
-                              lineHeight: '1',
-                              color: '#FFFFFF',
-                              margin: '0',
-                              padding: '0',
-                              textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                            }}
-                          >
-                            {categoryName.line2}
-                          </h3>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-8 md:mt-12">
-              {["Men", "Women", "New Arrivals", "Sets"].map((label) => {
-                const formatted = formatCategoryName(label)
-                const categoryImage = getDiscoverBackgroundImage(label)
-                return (
-                  <Link 
-                    key={label}
-                    href={getCategoryUrl({ _id: label, name: label, isActive: true } as Category)}
-                    className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                    style={{
-                      width: '100%',
-                      aspectRatio: '642/230',
-                      borderRadius: 'clamp(12px, 2vw, 32px)',
-                      backgroundImage: `url(${categoryImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundColor: '#E0E0E0',
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/10 to-transparent" />
-                    <div className="absolute inset-0 flex items-start justify-start p-4 md:p-6 lg:p-8">
-                      <div className="z-10">
-                        <h3 
-                          className="text-white uppercase text-left"
-                          style={{
-                            fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 'clamp(1.5rem, 6vw, 4rem)',
-                            fontWeight: 400,
-                            lineHeight: '1',
-                            color: '#FFFFFF',
-                            margin: '0',
-                            padding: '0',
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                          }}
-                        >
-                          {formatted.line1}
-                        </h3>
-                        {formatted.line2 && (
-                          <h3
-                            className="text-white uppercase text-left"
-                            style={{
-                              fontFamily: "'Bebas Neue', sans-serif",
-                              fontSize: 'clamp(1.5rem, 6vw, 4rem)',
-                              fontWeight: 400,
-                              lineHeight: '1',
-                              color: '#FFFFFF',
-                              margin: '0',
-                              padding: '0',
-                              textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                            }}
-                          >
-                            {formatted.line2}
-                          </h3>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </section>
 
-      {/* Section 3: WHAT'S NEW */}
-      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8">
-            <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontWeight: 400,
-                fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
-                letterSpacing: '0.5px'
-              }}
-            >
-              NEW ARRIVAL
-            </h1>
-            <p 
-              className="text-black leading-normal text-left"
-              style={{
-                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
-                letterSpacing: '0px',
-                fontWeight: 500
-              }}
-            >
-Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p>
-          </div>
-
-          {/* Product Slider - Recent Products */}
-          {loadingProducts ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mt-8 md:mt-12">
-              {[1, 2, 3, 4].map((i) => (
-                <div 
-                  key={i}
-                  className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
+                {/* Description - Figma Exact Spacing */}
+                <p 
+                  className="text-black mb-6 w-full"
                   style={{
-                    aspectRatio: '307/450',
-                    borderRadius: 'clamp(16px, 2vw, 32px)',
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(12px, 1.1vw, 14px)',
+                    fontWeight: 400,
+                    lineHeight: '1.4',
+                    letterSpacing: '0px',
+                    color: '#000000',
+                    maxWidth: '100%',
+                    margin: 0,
+                    overflow: 'hidden',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: 'vertical'
                   }}
-                />
-              ))}
-            </div>
-          ) : recentProducts.length > 0 ? (
-            <div className="relative mt-8 md:mt-12">
-              <div
-                ref={whatsNewCarouselRef}
-                onWheel={handleWhatsNewWheel}
-                className="whats-new-scroll flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-2"
-              >
-                {recentProducts.map((product, index) => {
-                  const productId = product.id || product._id || `product-${index}`;
-                  const productName = getProductName(product);
-                  const productImage = getProductImage(product);
-                  const productPrice = getProductPrice(product);
-                  const nameLines = splitProductName(productName.toUpperCase());
-                  const hasProductDiscount = hasDiscount(product);
-                  const discountPercentage = getDiscountPercentage(product);
+                >
+                  {product.description || "Designed for a boxy, oversized look—size down if you prefer a closer fit."}
+                </p>
+              </div>
 
-                  return (
-                    <Link
-                      key={productId}
-                      href={`/product/${productId}`}
-                      className="flex-shrink-0 bg-white relative overflow-hidden hover:opacity-90 transition-opacity"
-                      style={{
-                        width: 'min(280px, 70vw)',
-                        aspectRatio: '307/450',
-                      }}
-                    >
-                      <img 
-                        src={productImage}
-                        alt={productName}
-                        className="w-full h-full object-cover"
-                        style={{
-                          borderRadius: 'clamp(16px, 2vw, 32px)',
-                        }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder.svg';
-                        }}
-                      />
+              {/* Middle Section - Centered between Top and Bottom */}
+              <div className="flex flex-col md:justify-center md:py-4 w-full">
 
-                      {/* Discount Badges */}
-                      {hasProductDiscount && (
-                        <>
-                          {/* SALE Tag - Top Left */}
-                          <div className="absolute top-3 md:top-4 left-3 md:left-4 bg-red-600 text-white px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
-                            SALE
-                          </div>
-                          
-                          {/* Discount Percentage - Top Right */}
-                          <div className="absolute top-3 md:top-4 right-3 md:right-4 bg-white text-black px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold rounded-full">
-                            {discountPercentage}% OFF
-                          </div>
-                        </>
-                      )}
-                      
-                      <div 
-                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-3 md:p-4 rounded-b-[32px] flex items-center justify-between"
+                {/* Size Selection - Figma Exact Alignment */}
+                <div className="mb-6 w-full">
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center" style={{ gap: '12px' }}>
+                      <span 
+                        className="uppercase text-black"
                         style={{
-                          height: 'clamp(50px, 8vw, 60px)',
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(12px, 1.2vw, 14px)',
+                          fontWeight: 600,
+                          lineHeight: '1'
                         }}
                       >
-                        <div className="flex flex-col text-left">
-                          <span 
-                            className="uppercase text-white"
-                            style={{
-                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
-                              lineHeight: '1.2',
-                              letterSpacing: '0px',
-                              fontWeight: 500,
-                            }}
-                          >
-                            {nameLines.line1}
-                          </span>
-                          {nameLines.line2 && (
-                            <span 
-                              className="uppercase text-white"
-                              style={{
-                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
-                                lineHeight: '1.2',
-                                letterSpacing: '0px',
-                                fontWeight: 500,
-                              }}
-                            >
-                              {nameLines.line2}
-                            </span>
-                          )}
-                        </div>
-                        <p 
-                          className="text-white font-bold text-right"
+                        SIZE:
+                      </span>
+                      {sizeOptions.map((size) => (
+                        <button 
+                          key={size}
+                          className="transition-colors cursor-pointer flex items-center justify-center flex-shrink-0"
                           style={{
                             fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: 'clamp(1rem, 3vw, 1.375rem)',
-                            lineHeight: '1.2',
-                            letterSpacing: '0px',
+                            fontSize: 'clamp(12px, 1.2vw, 14px)',
                             fontWeight: 600,
+                            width: 'clamp(50px, 5vw, 75px)',
+                            height: 'clamp(40px, 4vw, 38px)',
+                            borderRadius: '30px',
+                            border: '2px solid #000000',
+                            backgroundColor: selectedSize === size ? '#000000' : '#FFFFFF',
+                            color: selectedSize === size ? '#FFFFFF' : '#000000',
+                            lineHeight: '1',
+                            padding: 0
+                          }}
+                          onClick={() => setSelectedSize(size)}
+                        >
+                          {size}
+                        </button>
+                      ))}
+                    </div>
+                    {hasSizeGuideImage && (
+                      <div
+                        className="flex items-center gap-2 cursor-pointer"
+                        style={{ flexWrap: 'nowrap' }}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setIsSizeGuideOpen(true)}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            setIsSizeGuideOpen(true)
+                          }
+                        }}
+                      >
+                        <span 
+                          className="uppercase text-black whitespace-nowrap"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: 'clamp(12px, 1.2vw, 14px)',
+                            fontWeight: 600,
+                            lineHeight: '1'
                           }}
                         >
-                          {formatPrice(productPrice)}
-                        </p>
+                          SIZE CHART
+                        </span>
+                        <Package className="h-4 w-4 text-black flex-shrink-0" />
                       </div>
-                    </Link>
-                  );
-                })}
+                    )}
+                  </div>
+                </div>
+
+                {/* Color Selection - Figma Exact Alignment */}
+                <div className="mb-6 w-full">
+                  <div className="flex items-center" style={{ gap: '12px' }}>
+                    <span 
+                      className="uppercase text-black"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(12px, 1.2vw, 14px)',
+                        fontWeight: 600,
+                        lineHeight: '1'
+                      }}
+                    >
+                      COLOR:
+                    </span>
+                    {colorOptions.map((color, idx) => {
+                      const defaultColors = ['#808080', '#000000', '#FFFF00', '#0066FF']
+                      const colorHex = color.hex || defaultColors[idx] || '#808080'
+                      
+                      return (
+                        <div
+                          key={color.name}
+                          className="transition-colors cursor-pointer flex-shrink-0"
+                          style={{
+                            width: 'clamp(28px, 2.8vw, 32px)',
+                            height: 'clamp(28px, 2.8vw, 32px)',
+                            borderRadius: '8px',
+                            border: selectedColor === color.name
+                              ? '2px solid #000000'
+                              : '1px solid #D1D5DB',
+                            backgroundColor: colorHex,
+                            opacity: 1
+                          }}
+                          onClick={() => {
+                            setSelectedColor(color.name)
+                            setActiveImageIndex(0)
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Section - Aligned with Image Bottom */}
+              <div className="flex flex-col md:flex-shrink-0 w-full">
+
+                {/* Quantity Selection & Action Buttons - Figma Exact Spacing */}
+                <div className="flex flex-col sm:flex-row gap-3 items-stretch w-full">
+                  {/* Quantity Selector - Figma Exact */}
+                  <div 
+                    className="flex items-center justify-between"
+                    style={{
+                      width: '100%',
+                      maxWidth: 'clamp(100px, 11vw, 120px)',
+                      height: 'clamp(42px, 4.5vw, 50px)',
+                      borderRadius: '20px',
+                      border: '2px solid #000000',
+                      backgroundColor: '#FFFFFF',
+                      padding: '0 clamp(16px, 1.8vw, 20px)'
+                    }}
+                  >
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-full text-black hover:bg-gray-100"
+                      style={{
+                        minWidth: 'auto',
+                        padding: '0',
+                        border: 'none',
+                        borderRadius: '0'
+                      }}
+                      onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                    >
+                      <Minus className="h-5 w-5" />
+                    </Button>
+                    <span 
+                      className="text-center"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(16px, 1.6vw, 18px)',
+                        fontWeight: 600,
+                        color: '#000000'
+                      }}
+                    >
+                      {quantity}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-full text-black hover:bg-gray-100"
+                      style={{
+                        minWidth: 'auto',
+                        padding: '0',
+                        border: 'none',
+                        borderRadius: '0'
+                      }}
+                      onClick={() => setQuantity(prev => prev + 1)}
+                    >
+                      <Plus className="h-5 w-5" />
+                    </Button>
+                  </div>
+
+                  {/* Action Buttons - Figma Exact */}
+                  <div className="flex gap-3 flex-1 w-full">
+                    <Button
+                      size="lg"
+                      className="uppercase font-semibold transition-all duration-300"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(12px, 1.2vw, 14px)',
+                        fontWeight: 600,
+                        color: '#EBFF00',
+                        backgroundColor: '#000000',
+                        width: 'clamp(240px, 26vw, 300px)',
+                        height: 'clamp(45px, 4.8vw, 52px)',
+                        borderRadius: '20px',
+                        border: 'none',
+                        padding: 'clamp(4px, 0.5vw, 6px) clamp(20px, 2.2vw, 24px)',
+                        gap: 'clamp(4px, 0.5vw, 6px)'
+                      }}
+                      onClick={handleAddToCart}
+                    >
+                      ADD TO BAG
+                    </Button>
+                    
+                    {/* Wishlist Button - Figma Exact */}
+                    <div
+                      className="flex items-center justify-center flex-shrink-0"
+                      style={{
+                        width: 'clamp(60px, 6.5vw, 70px)',
+                        height: 'clamp(42px, 4.5vw, 50px)',
+                        borderRadius: '20px',
+                        border: '2px solid #000000',
+                        backgroundColor: '#FFFFFF',
+                        padding: 'clamp(8px, 0.9vw, 10px)',
+                        gap: 'clamp(8px, 0.9vw, 10px)',
+                        cursor: 'pointer'
+                      }}
+                      onClick={handleWishlistToggle}
+                    >
+                      <Heart 
+                        className={`h-6 w-6 ${isInWishlist(product.id) ? 'fill-current text-red-500' : 'text-black'}`}
+                        style={{
+                          strokeWidth: isInWishlist(product.id) ? 0 : 2,
+                          stroke: '#000000'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          ) : (
-            <div className="text-center py-8 md:py-12 mt-8 md:mt-12">
-              <p className="text-gray-500">No recent products available</p>
-            </div>
-          )}
-
-          {/* View All Button */}
-          {!loadingProducts && recentProducts.length > 0 && (
-            <div className="flex justify-center items-center mt-6 md:mt-8">
-              <Link
-                href="/collection"
-                className="bg-black text-white uppercase px-6 md:px-8 py-2 md:py-3 rounded-lg hover:opacity-90 transition-opacity font-medium inline-block"
-                style={{
-                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
-                  letterSpacing: '0.5px',
-                  fontWeight: 500,
-                  minWidth: '120px',
-                  textAlign: 'center',
-                }}
-              >
-                view all
-              </Link>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Section 4: FORM MEETS FUNCTION */}
-      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px]">
-          <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontWeight: 400,
-                fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
-                letterSpacing: '0.5px'
-              }}
-            >
-              WHAT MAKE US MOVE
-            </h1>
-          <div 
-            className="relative mx-auto w-full"
-            style={{
-              position: 'relative',
-              width: '100%',
-              aspectRatio: '1440/937',
-              minHeight: 'clamp(300px, 50vw, 600px)',
-              backgroundColor: '#FFFFFF',
-              backgroundImage: homepageSettings.homepageImage2 
-                ? `url(${getImageUrl(homepageSettings.homepageImage2)})` 
-                : 'url(/8.png)',
-              backgroundSize: 'contain',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              opacity: 1,
-              borderRadius: '0px',
-              overflow: 'visible'
-            }}
-          />
-        </div>
-      </section>
-
-      {/* Section 5: COMMUNITY FAVOURITES - Products sorted by purchase count */}
-      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8">
-            <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
-              <h1 
-                className="uppercase text-black leading-none text-left"
-                style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontWeight: 400,
-                  fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
-                  letterSpacing: '0.5px'
-                }}
-              >
-best sellers              </h1>
-              <Star className="w-6 h-6 md:w-8 md:h-8 text-yellow-400 fill-yellow-400" />
-            </div>
-            <p 
-              className="text-black leading-normal text-left"
-              style={{
-                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
-                letterSpacing: '0px',
-                fontWeight: 500
-              }}
-            >
-Loved by all for breathability, performance, and perfect fits, designed to 
-move with you from workouts to weekends.            </p>
           </div>
+        </div>
+      </section>
 
-          {/* Community Favorites Products Slider */}
-          {loadingCommunityFavorites ? (
-            <div className="flex gap-4 md:gap-6 mt-8 md:mt-12 overflow-x-hidden">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex-shrink-0 bg-gray-200 animate-pulse rounded-[32px]" 
-                  style={{ 
-                    width: 'min(280px, 70vw)', 
-                    aspectRatio: '307/450' 
-                  }} 
-                />
-              ))}
-            </div>
-          ) : communityFavorites.length > 0 ? (
-            <div className="relative mt-8 md:mt-12">
-              {/* Navigation Arrows */}
-              <button
-                onClick={() => scrollCommunityCarousel('left')}
-                className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                style={{
-                  width: 'clamp(32px, 8vw, 48px)',
-                  height: 'clamp(32px, 8vw, 48px)',
-                }}
-                aria-label="Previous product"
-              >
-                <ChevronLeft className="text-black w-4 h-4 md:w-6 md:h-6" />
-              </button>
-              
-              <button
-                onClick={() => scrollCommunityCarousel('right')}
-                className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                style={{
-                  width: 'clamp(32px, 8vw, 48px)',
-                  height: 'clamp(32px, 8vw, 48px)',
-                }}
-                aria-label="Next product"
-              >
-                <ChevronRight className="text-black w-4 h-4 md:w-6 md:h-6" />
-              </button>
-
-              {/* Community Favorites Slider Container */}
-              <div
-                ref={communityCarouselRef}
-                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 community-slider"
-                style={{
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none'
-                }}
-              >
-                {communityFavorites.map((product, index) => {
-                  const productId = product.id || product._id || `product-${index}`;
-                  const productName = getProductName(product);
-                  const productImage = getProductImage(product);
-                  const productPrice = getProductPrice(product);
-                  const nameLines = splitProductName(productName.toUpperCase());
-                  const hasProductDiscount = hasDiscount(product);
-                  const discountPercentage = getDiscountPercentage(product);
-                  const purchaseCount = product.purchaseCount || 0;
-
-                  return (
-                    <Link
-                      key={productId}
-                      href={`/product/${productId}`}
-                      className="flex-shrink-0 bg-white relative overflow-hidden hover:opacity-90 transition-opacity"
+      {/* Description, Fit, Material & Care, Reviews Section */}
+      <section className="bg-white text-[#212121] py-8">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          {/* Top Horizontal Line */}
+          <div className="border-t border-black mb-8"></div>
+          
+          {/* Three Column Layout */}
+          <div className="grid grid-cols-1 gap-4 md:gap-4 md:[grid-template-columns:clamp(400px,45vw,460px)_clamp(280px,32vw,340px)_clamp(240px,28vw,280px)]">
+            {/* Column 1: DESCRIPTION */}
+            <div className="border-b border-black pb-8 md:border-b-0 md:pb-0 md:pr-8 space-y-6">
+              <div>
+                <h2 
+                  className="uppercase text-black mb-3"
+                  style={{
+                    fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(16px, 1.6vw, 18px)',
+                    fontWeight: 700,
+                    letterSpacing: '0px'
+                  }}
+                >
+                  DESCRIPTION
+                </h2>
+                <div className="space-y-3">
+                  {descriptionParagraphs.map((paragraph, index) => (
+                    <p 
+                      key={`description-${index}`}
+                      className="text-black"
                       style={{
-                        width: 'min(280px, 70vw)',
-                        aspectRatio: '307/450'
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(13px, 1.3vw, 15px)',
+                        fontWeight: 400,
+                        lineHeight: '1.4',
+                        letterSpacing: '0px',
+                        margin: 0,
+                        maxWidth: 'clamp(400px, 45vw, 460px)'
                       }}
                     >
-                      <img 
-                        src={productImage}
-                        alt={productName}
-                        className="w-full h-full object-cover"
-                        style={{
-                          borderRadius: 'clamp(16px, 2vw, 32px)',
-                        }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder.svg';
-                        }}
-                      />
-
-                      {/* Purchase Count Badge */}
-                      {purchaseCount > 0 && (
-                        <div className="absolute top-3 md:top-4 left-3 md:left-4 bg-green-600 text-white px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
-                          {purchaseCount}+ SOLD
-                        </div>
-                      )}
-
-                      {/* Discount Badges */}
-                      {hasProductDiscount && (
-                        <div className="absolute top-3 md:top-4 right-3 md:right-4 bg-white text-black px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold rounded-full">
-                          {discountPercentage}% OFF
-                        </div>
-                      )}
-                      
-                      <div 
-                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-3 md:p-4 rounded-b-[32px] flex items-center justify-between"
-                        style={{
-                          height: 'clamp(50px, 8vw, 60px)',
-                        }}
-                      >
-                        <div className="flex flex-col text-left">
-                          <span 
-                            className="uppercase text-white"
-                            style={{
-                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
-                              lineHeight: '1.2',
-                              letterSpacing: '0px',
-                              fontWeight: 500,
-                            }}
-                          >
-                            {nameLines.line1}
-                          </span>
-                          {nameLines.line2 && (
-                            <span 
-                              className="uppercase text-white"
-                              style={{
-                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
-                                lineHeight: '1.2',
-                                letterSpacing: '0px',
-                                fontWeight: 500,
-                              }}
-                            >
-                              {nameLines.line2}
-                            </span>
-                          )}
-                        </div>
-                        <p 
-                          className="text-white font-bold text-right"
-                          style={{
-                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: 'clamp(1rem, 3vw, 1.375rem)',
-                            lineHeight: '1.2',
-                            letterSpacing: '0px',
-                            fontWeight: 600,
-                          }}
-                        >
-                          {formatPrice(productPrice)}
-                        </p>
-                      </div>
-                    </Link>
-                  );
-                })}
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
               </div>
 
-              {/* Pagination Dots */}
-              <div className="flex items-center justify-center gap-2 mt-4 md:mt-6">
-                {communityFavorites.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => scrollToCommunitySlide(index)}
-                    className={`transition-all duration-300 rounded-full ${
-                      index === currentCommunityIndex 
-                        ? 'w-2.5 h-2.5 bg-gray-800' 
-                        : 'w-2 h-2 bg-gray-400'
-                    }`}
-                    aria-label={`Go to product ${index + 1}`}
+              {purposeParagraphs.length > 0 && (
+                <div>
+                  <h3
+                    className="uppercase text-black mb-3"
+                    style={{
+                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(16px, 1.6vw, 18px)',
+                      fontWeight: 700,
+                      letterSpacing: '0px'
+                    }}
+                  >
+                    PURPOSE
+                  </h3>
+                  <ul className="space-y-2">
+                    {purposeParagraphs.map((item, index) => (
+                      <li
+                        key={`purpose-${index}`}
+                        className="text-black"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(13px, 1.3vw, 15px)',
+                          fontWeight: 400,
+                          lineHeight: '1.4',
+                          letterSpacing: '0px',
+                          margin: 0,
+                          maxWidth: 'clamp(400px, 45vw, 460px)'
+                        }}
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Column 2: FIT and MATERIAL & CARE */}
+            <div className="space-y-1 border-b border-black pb-6 md:border-b-0 md:pb-0 md:pr-6">
+              {/* FIT */}
+              <div>
+                <h2 
+                  className="uppercase text-black mb-3"
+                  style={{
+                    fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(16px, 1.6vw, 18px)',
+                    fontWeight: 700,
+                    letterSpacing: '0px'
+                  }}
+                >
+                  FEATURES & FIT
+                </h2>
+                <ul className="space-y-2">
+                  {fitItems.map((item, index) => (
+                    <li
+                      key={`fit-${index}`}
+                      className="text-black"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(13px, 1.3vw, 15px)',
+                        fontWeight: 400,
+                        lineHeight: '1.4',
+                        letterSpacing: '0px',
+                        margin: 0,
+                        maxWidth: 'clamp(280px, 32vw, 340px)'
+                      }}
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* MATERIAL & CARE */}
+              <div className="pt-6">
+                <h2 
+                  className="uppercase text-black mb-3"
+                  style={{
+                    fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(16px, 1.6vw, 18px)',
+                    fontWeight: 700,
+                    letterSpacing: '0px'
+                  }}
+                >
+                  MATERIAL & CARE
+                </h2>
+                <div className="space-y-4">
+                  {materialsItems.length > 0 && (
+                    <ul className="space-y-2">
+                      {materialsItems.map((item, index) => (
+                        <li
+                          key={`material-${index}`}
+                          className="text-black"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: 'clamp(13px, 1.3vw, 15px)',
+                            fontWeight: 400,
+                            lineHeight: '1.4',
+                            letterSpacing: '0px',
+                            margin: 0,
+                            maxWidth: 'clamp(400px, 45vw, 460px)'
+                          }}
+                        >
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {careItems.length > 0 && (
+                    <div>
+                      <h4
+                        className="uppercase text-black mb-2"
+                        style={{
+                          fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(13px, 1.3vw, 15px)',
+                          fontWeight: 700,
+                          letterSpacing: '0.5px'
+                        }}
+                      >
+                        CARE
+                      </h4>
+                      <ul className="space-y-2">
+                        {careItems.map((item, index) => (
+                          <li
+                            key={`care-${index}`}
+                            className="text-black"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: 'clamp(13px, 1.3vw, 15px)',
+                              fontWeight: 400,
+                              lineHeight: '1.4',
+                              letterSpacing: '0px',
+                              margin: 0,
+                              maxWidth: 'clamp(400px, 45vw, 460px)'
+                            }}
+                          >
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Column 3: REVIEWS */}
+            <div className="space-y-3">
+              <h2
+                className="uppercase text-black"
+                style={{
+                  fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                  fontSize: 'clamp(16px, 1.6vw, 18px)',
+                  fontWeight: 700,
+                  letterSpacing: '0px'
+                }}
+              >
+                REVIEWS
+              </h2>
+              <div className="flex items-center" style={{ gap: 'clamp(6px, 0.7vw, 8px)' }}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className="h-3 w-3"
+                    style={{
+                      fill: i < clampedRating ? '#c9ff4a' : 'transparent',
+                      stroke: '#000000',
+                      strokeWidth: 1
+                    }}
                   />
                 ))}
               </div>
-            </div>
-          ) : (
-            <div className="text-center py-8 md:py-12 mt-8 md:mt-12">
-              <p className="text-gray-500">No community favorites available</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Section 6: WHY ATHLEKT */}
-      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px]">
-          {/* Mobile Layout */}
-          <div className="flex flex-col items-center gap-6 py-8 lg:hidden">
-            <div className="relative w-full max-w-sm">
-              <div className="absolute inset-x-4 top-8 h-60 rounded-[40px] border border-black bg-gradient-to-b from-[#91ADB9] to-[#3A6685]" />
-              <div className="relative z-10 overflow-hidden rounded-[40px] border border-black bg-white shadow-lg">
-                <img
-                  src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : "/9.png"}
-                  alt="Why Athlekt"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
-            <div className="flex w-full max-w-sm flex-col items-center gap-4 px-4 text-center">
-              <h2
-                className="text-black uppercase text-left w-full"
-                style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: "clamp(2rem, 8vw, 2.875rem)",
-                  lineHeight: 1,
-                  letterSpacing: "-1px",
-                  margin: 0,
-                }}
-              >
-                OUR STORY
-              </h2>
-              <div
-                className="text-black text-left w-full"
+              <p
+                className="text-black"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: "clamp(0.875rem, 3vw, 0.9375rem)",
-                  fontWeight: 500,
-                  lineHeight: "1.4",
-                  letterSpacing: "-0.3px",
+                  fontSize: 'clamp(13px, 1.3vw, 15px)',
+                  fontWeight: 400,
+                  lineHeight: '1.4',
+                  letterSpacing: '0px',
+                  margin: 0,
+                  maxWidth: 'clamp(240px, 28vw, 280px)'
                 }}
               >
-                  <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
-At Athlekt, we started with a simple question, why should activewear only fit a few?                   </p>
-                  <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
-Most athletic brands are built around a single idea of the "ideal" body, leaving everyone else out. We wanted to change that.                   </p>
-                  <p style={{ marginBottom: '' }}>
-Athlekt is made for real people - for dad bods, mums, and everyone finding their own rhythm. Our pieces are crafted to move, breathe, and adapt to your body, not the other way around. Designed in the Gulf, for the Gulf.                    </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Desktop Layout */}
-          <div className="hidden lg:block relative" style={{ paddingTop: 'clamp(100px, 10vw, 150px)', paddingBottom: '0px' }}>
-            {/* Background Rectangle */}
-            <div
-              className="absolute"
-              style={{
-                position: 'absolute',
-                left: 'clamp(0px, 1.28vw, 16px)',
-                top: 'clamp(50px, 7.5vw, 130px)',
-                width: 'clamp(320px, 48.25vw, 682px)',
-                height: 'clamp(200px, 29.75vw, 412px)',
-                background: 'linear-gradient(180deg, #91ADB9 0%, #3A6685 100%)',
-                opacity: 1,
-                borderRadius: 'clamp(40px, 5.5vw, 96px)',
-                border: '1px solid #000000',
-                boxSizing: 'border-box',
-                transform: 'rotate(180deg)',
-                zIndex: 1,
-              }}
-            />
-
-            {/* Main Content */}
-            <div className="relative" style={{ minHeight: '30rem', zIndex: 10 }}>
-              {/* Left Side - Image */}
-              <div
-                className="absolute"
-                style={{
-                  position: 'absolute',
-                  left: 'clamp(50px, 9.5vw, 111px)',
-                  top: 'clamp(-105px, -8vw, -95px)',
-                  width: 'clamp(240px, 35vw, 520px)',
-                  height: 'clamp(250px, 35.5vw, 580px)',
-                  opacity: 1,
-                  borderRadius: 'clamp(18px, 2.8vw, 48px)',
-                  overflow: 'hidden',
-                  zIndex: 10
-                }}
-              >
-                <img 
-                  src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : '/9.png'} 
-                  alt="Why Athlekt" 
-                  className="w-full h-full object-cover"
+                {reviewSummary}
+              </p>
+              {hasReviews ? (
+                <Link
+                  href="#customer-reviews"
+                  className="uppercase text-black underline underline-offset-4"
                   style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    objectPosition: 'center top',
-                    borderRadius: 'clamp(24px, 3vw, 48px)',
-                    display: 'block'
-                  }}
-                />
-              </div>
-
-              {/* Right Side - Text Content */}
-              <div
-                className="absolute"
-                style={{
-                  position: 'absolute',
-                  left: 'clamp(450px, 60vw, 750px)',
-                  top: 'clamp(-25px, -2.5vw, -12px)',
-                  width: 'clamp(250px, 32vw, 490px)',
-                  maxWidth: '490px',
-                  zIndex: 20
-                }}
-              >
-                {/* Heading */}
-                <h2 
-                  className="uppercase text-black text-left"
-                  style={{
-                    position: 'relative',
-                    width: 'clamp(200px, 20vw, 320px)',
-                    height: 'auto',
-                    minHeight: 'clamp(55px, 5.5vw, 85px)',
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: 'clamp(40px, 5vw, 80px)',
-                    fontWeight: 400,
-                    lineHeight: '1',
-                    letterSpacing: 'clamp(-1.5px, -0.23vw, -3.37px)',
-                    color: '#000000',
-                    opacity: 1,
-                    borderRadius: '0px',
-                    textAlign: 'left',
-                    whiteSpace: 'nowrap',
-                    transform: 'rotate(0deg)',
-                    margin: '0',
-                    padding: '0',
-                    marginBottom: 'clamp(5px, 0.8vw, 12px)'
-                  }}
-                >
-                  OUR STORY
-                </h2>
-
-                {/* Body Text */}
-                <div
-                  className="text-black text-left"
-                  style={{
-                    position: 'relative',
-                    width: 'clamp(250px, 32vw, 490px)',
-                    height: 'auto',
-                    minHeight: 'clamp(150px, 13vw, 200px)',
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: 'clamp(13px, 1.4vw, 22px)',
-                    fontWeight: 500,
-                    lineHeight: 'clamp(18px, 1.7vw, 28px)',
-                    letterSpacing: 'clamp(-0.3px, -0.055vw, -0.79px)',
-                    color: '#000000',
-                    opacity: 1,
-                    borderRadius: '0px',
-                    textAlign: 'left',
-                    transform: 'rotate(0deg)',
-                    margin: '0',
-                    padding: '0',
-                    marginBottom: '0'
+                    fontSize: 'clamp(12px, 1.2vw, 14px)',
+                    fontWeight: 600
                   }}
                 >
-                  <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
-At Athlekt, we started with a simple question, why should activewear only fit a few?                   </p>
-                  <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
-Most athletic brands are built around a single idea of the "ideal" body, leaving everyone else out. We wanted to change that.                   </p>
-                  <p style={{ marginBottom: '' }}>
-Athlekt is made for real people - for dad bods, mums, and everyone finding their own rhythm. Our pieces are crafted to move, breathe, and adapt to your body, not the other way around. Designed in the Gulf, for the Gulf.                    </p>
-                </div>
-              </div>
+                  Read all reviews
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowReviewForm(true);
+                    const reviewSection = document.getElementById("customer-reviews");
+                    if (reviewSection) {
+                      reviewSection.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                  }}
+                  className="uppercase text-black underline underline-offset-4"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(12px, 1.2vw, 14px)',
+                    fontWeight: 600,
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Write a Review
+                </button>
+              )}
             </div>
           </div>
+          {/* Bottom Horizontal Line */}
+          <div className="border-t border-black mt-4"></div>
         </div>
       </section>
 
-      {/* Section 7: COMPLETE THE LOOK */}
-      <section className="bg-white text-[#212121] py-2 md:py-28 lg:py-19">
-        <div className="container mx-auto px-2 max-w-[1250px]">
-          <div className="mb-6 md:mb-8">
+      {/* Bundles Section */}
+      <section className="bg-white text-[#212121] py-8">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6 gap-6 lg:gap-8">
             <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
+              className="uppercase text-black leading-none flex-shrink-0"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
-                fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
-                letterSpacing: '0.5px'
+                fontSize: 'clamp(48px, 6vw, 70px)',
+                letterSpacing: '0.5px',
+                minWidth: 'fit-content'
               }}
             >
-              Bundles
+              BUNDLES
             </h1>
             <p 
-              className="text-black leading-normal text-left"
+              className="text-black text-left leading-normal flex-1 lg:max-w-[clamp(300px, 32vw, 380px)]"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
+                fontSize: 'clamp(12px, 1.2vw, 14px)',
                 letterSpacing: '0px',
-                fontWeight: 500
+                fontWeight: 500,
+                lineHeight: '1.5',
+                maxWidth: 'clamp(300px, 32vw, 380px)',
+                width: '100%'
               }}
             >
-Bundle up your favorites, build your Athlekt set, and get more for less.            </p>
+              
+            </p>
           </div>
-
-          {/* Bundle Slider */}
-          {loadingBundles ? (
-            <div className="flex gap-4 md:gap-6 mt-8 md:mt-12 overflow-x-hidden">
-              {[1, 2, 3, 4].map((i) => (
-                <div 
-                  key={i}
-                  className="flex-shrink-0 bg-gray-200 relative overflow-hidden w-full animate-pulse rounded-[32px]"
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            {loadingBundles ? (
+              [1, 2, 3, 4].map((idx) => (
+                <div
+                  key={`bundle-skeleton-${idx}`}
+                  className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
                   style={{
-                    width: 'min(280px, 70vw)',
-                    aspectRatio: '307/450'
+                    aspectRatio: '307/450',
+                    borderRadius: '32px'
                   }}
                 />
-              ))}
-            </div>
-          ) : bundles.length > 0 ? (
-            <div className="relative mt-8 md:mt-12">
-              {/* Navigation Arrows */}
-              <button
-                onClick={() => scrollBundleCarousel('left')}
-                className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                style={{
-                  width: 'clamp(32px, 8vw, 48px)',
-                  height: 'clamp(32px, 8vw, 48px)',
-                }}
-                aria-label="Previous bundle"
-              >
-                <ChevronLeft className="text-black w-4 h-4 md:w-6 md:h-6" />
-              </button>
-              
-              <button
-                onClick={() => scrollBundleCarousel('right')}
-                className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                style={{
-                  width: 'clamp(32px, 8vw, 48px)',
-                  height: 'clamp(32px, 8vw, 48px)',
-                }}
-                aria-label="Next bundle"
-              >
-                <ChevronRight className="text-black w-4 h-4 md:w-6 md:h-6" />
-              </button>
+              ))
+            ) : remainingBundles.length > 0 ? (
+              remainingBundles.map((bundle) => {
+                const bundleName = (bundle.name || bundle.title || 'Bundle').toUpperCase();
+                const nameLines = splitBundleName(bundleName);
+                const bundlePrice = getBundlePriceValue(bundle);
+                const bundleImage = getBundleImage(bundle);
+                const bundleHref = getBundleProductHref(bundle);
 
-              {/* Bundle Slider Container */}
-              <div
-                ref={bundleCarouselRef}
-                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 bundle-slider"
-                style={{
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none'
-                }}
-              >
-                {bundles.slice(0, 4).map((bundle) => {
-                  const bundleId = bundle.id || bundle._id;
-                  const bundleName = bundle.name || 'Bundle';
-                  const bundleImage = getBundleImage(bundle);
-                  const bundlePrice = bundle.bundlePrice || 0;
-                  const nameLines = splitProductName(bundleName.toUpperCase());
-                  const bundleHref = getBundleProductHref(bundle);
-                  
-                  return (
-                    <Link 
-                      key={bundleId}
-                      href={bundleHref}
-                      className="flex-shrink-0 bg-white relative overflow-hidden w-full cursor-pointer hover:opacity-90 transition-opacity"
-                      style={{
-                        width: 'min(280px, 70vw)',
-                        aspectRatio: '307/450'
-                      }}
-                    >
-                      {bundle.badgeText && (
-                        <span
-                          className="absolute top-3 md:top-4 left-3 md:left-4 bg-white/90 text-black uppercase tracking-[0.2em] text-xs font-semibold px-2 md:px-3 py-1 md:py-1 rounded-full shadow-md z-20"
-                          style={{
-                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
-                          }}
-                        >
-                          {bundle.badgeText}
-                        </span>
-                      )}
-                      <img 
-                        src={bundleImage} 
-                        alt={bundleName}
-                        className="w-full h-full object-cover"
+                return (
+                  <Link
+                    key={bundle._id || bundle.id || bundle.name}
+                    href={bundleHref}
+                    className="bg-white relative overflow-hidden w-full"
+                    style={{
+                      aspectRatio: '307/450'
+                    }}
+                  >
+                    {bundle.badgeText && (
+                      <span
+                        className="absolute top-4 left-4 z-30 bg-white/90 text-black uppercase tracking-[0.2em] text-xs font-semibold px-3 py-1 rounded-full shadow-md"
                         style={{
-                          borderRadius: 'clamp(16px, 2vw, 32px)'
-                        }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = '/placeholder.svg';
-                        }}
-                      />
-                      <div 
-                        className="absolute bottom-0 left-0 right-0 bg-black/90 text-white p-3 md:p-4 rounded-b-[32px] flex items-center justify-between gap-4"
-                        style={{
-                          minHeight: 'clamp(60px, 8vw, 72px)',
-                          zIndex: 20
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
                         }}
                       >
-                        <div className="flex flex-col text-left">
+                        {bundle.badgeText}
+                      </span>
+                    )}
+                    <img
+                      src={bundleImage}
+                      alt={bundle.name || 'Bundle Product'}
+                      className="w-full h-full object-cover"
+                      style={{
+                        borderRadius: '32px'
+                      }}
+                      onError={(event) => {
+                        const target = event.target as HTMLImageElement;
+                        target.src = '/placeholder.svg';
+                      }}
+                    />
+                    {bundle.shortDescription && (
+                      <div
+                        className="absolute left-0 right-0 bottom-[72px] bg-gradient-to-t from-black/80 to-transparent text-white px-6 pb-10 pt-6 z-20"
+                        style={{
+                          borderBottomLeftRadius: '32px',
+                          borderBottomRightRadius: '32px'
+                        }}
+                      >
+                        <p
+                          className="text-sm leading-snug"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            letterSpacing: '0px',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                            overflow: 'hidden'
+                          }}
+                        >
+                          {bundle.shortDescription}
+                        </p>
+                      </div>
+                    )}
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                      style={{
+                        height: '72px',
+                        zIndex: 30
+                      }}
+                    >
+                      <div className="flex flex-col text-left">
+                        <span 
+                          className="uppercase text-white"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '13.41px',
+                            lineHeight: '14.6px',
+                            letterSpacing: '0px',
+                            fontWeight: 500
+                          }}
+                        >
+                          {nameLines.line1}
+                        </span>
+                        {nameLines.line2 && (
                           <span 
                             className="uppercase text-white"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
-                              lineHeight: '1.2',
+                              fontSize: '13.41px',
+                              lineHeight: '14.6px',
                               letterSpacing: '0px',
                               fontWeight: 500
                             }}
                           >
-                            {nameLines.line1}
+                            {nameLines.line2}
                           </span>
-                          {nameLines.line2 && (
-                            <span 
-                              className="uppercase text-white"
-                              style={{
-                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
-                                lineHeight: '1.2',
-                                letterSpacing: '0px',
-                                fontWeight: 500
-                              }}
-                            >
-                              {nameLines.line2}
-                            </span>
-                          )}
-                        </div>
-                        <p 
-                          className="text-white font-bold text-right"
-                          style={{
-                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: 'clamp(1rem, 3vw, 1.375rem)',
-                            lineHeight: '1.2',
-                            letterSpacing: '0px',
-                            fontWeight: 600
-                          }}
-                        >
-                          {formatPrice(bundlePrice)}
-                        </p>
+                        )}
                       </div>
-                      {bundle.shortDescription && (
-                        <div
-                          className="absolute left-0 right-0 bottom-[72px] bg-gradient-to-t from-black/80 to-transparent text-white px-4 md:px-6 pb-8 md:pb-10 pt-4 md:pt-6"
-                          style={{
-                            borderBottomLeftRadius: '32px',
-                            borderBottomRightRadius: '32px',
-                            zIndex: 10
-                          }}
-                        >
-                          <p
-                            className="text-sm leading-snug"
-                            style={{
-                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              letterSpacing: '0px',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden'
-                            }}
-                          >
-                            {bundle.shortDescription}
-                          </p>
-                        </div>
-                      )}
-                    </Link>
-                  );
-                })}
+                      <p 
+                        className="text-white font-bold text-right"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: '22px',
+                          lineHeight: '26px',
+                          letterSpacing: '0px',
+                          fontWeight: 600
+                        }}
+                      >
+                        {formatCurrency(bundlePrice)}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">No additional bundles available right now.</p>
               </div>
-
-              {/* Pagination Dots */}
-              <div className="flex items-center justify-center gap-2 mt-4 md:mt-6">
-                {bundles.slice(0, 4).map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => scrollToBundleSlide(index)}
-                    className={`transition-all duration-300 rounded-full ${
-                      index === currentBundleIndex 
-                        ? 'w-2.5 h-2.5 bg-gray-800' 
-                        : 'w-2 h-2 bg-gray-400'
-                    }`}
-                    aria-label={`Go to bundle ${index + 1}`}
-                  />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="text-center py-8 md:py-12 mt-8 md:mt-12">
-              <p className="text-gray-500">No bundles available</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Section 8: MOVE WITH US */}
-      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
+      {/* MOVE WITH US Section */}
+      <section className="bg-white text-[#212121] py-12">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          {/* Heading and Subtitle */}
-          <div className="mb-6 md:mb-8">
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8 gap-6">
             <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
+              className="uppercase text-black leading-none"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
-                fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
-                letterSpacing: 'clamp(-1.5px, -0.23vw, -3.37px)'
+                fontSize: '90px',
+                letterSpacing: '0.5px'
               }}
             >
-              MOVE, TAG, MOTIVATE
+              MOVE WITH US
             </h1>
             <p 
-              className="text-black leading-normal text-left"
+              className="text-black text-left leading-normal lg:max-w-[412px]"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(0.75rem, 3vw, 1.125rem)',
+                fontSize: '14px',
                 letterSpacing: '0px',
-                fontWeight: 500,
-                marginTop: '2px'
+                fontWeight: 500
               }}
             >
-              Your everyday motion can motivate someone else. Post in Athlekt, tag @Athlekt, and we'll feature your move.
+              Real athletes, real movement. Tag us @Athlekt to be featured.
             </p>
           </div>
 
-          {/* Image Carousel with Auto Scroll */}
+          {/* MOVE WITH US Carousel */}
           <div className="relative">
             {/* Navigation Arrows */}
             <button
-              onClick={() => scrollCarousel('left')}
+              onClick={() => scrollMoveWithUsCarousel('left')}
               className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
               style={{
                 left: '-12px',
-                width: 'clamp(32px, 8vw, 48px)',
-                height: 'clamp(32px, 8vw, 48px)',
+                width: 'clamp(32px, 3.5vw, 48px)',
+                height: 'clamp(32px, 3.5vw, 48px)',
                 border: '1px solid #000000',
                 backgroundColor: '#FFFFFF'
               }}
               aria-label="Previous image"
             >
-              <ChevronLeft className="text-black" style={{ width: 'clamp(16px, 4vw, 24px)', height: 'clamp(16px, 4vw, 24px)' }} />
+              <ChevronLeft className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
             </button>
             <button
-              onClick={() => scrollCarousel('right')}
+              onClick={() => scrollMoveWithUsCarousel('right')}
               className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
               style={{
                 right: '-12px',
-                width: 'clamp(32px, 8vw, 48px)',
-                height: 'clamp(32px, 8vw, 48px)',
+                width: 'clamp(32px, 3.5vw, 48px)',
+                height: 'clamp(32px, 3.5vw, 48px)',
                 border: '1px solid #000000',
                 backgroundColor: '#FFFFFF'
               }}
               aria-label="Next image"
             >
-              <ChevronRight className="text-black" style={{ width: 'clamp(16px, 4vw, 24px)', height: 'clamp(16px, 4vw, 24px)' }} />
+              <ChevronRight className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
             </button>
 
             {/* Carousel Container */}
-            {loadingCarouselImages ? (
+            {loadingMoveWithUs ? (
               <div className="flex justify-start items-center gap-4 md:gap-6 px-4" style={{
-                minHeight: 'clamp(240px, 60vw, 380px)',
+                minHeight: 'clamp(240px, 28vw, 380px)',
                 overflowX: 'auto'
               }}>
                 {[1, 2, 3, 4].map((i) => (
@@ -2055,9 +1968,9 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                   }} />
                 ))}
               </div>
-            ) : carouselImages.length > 0 ? (
+            ) : moveWithUsImages.length > 0 ? (
               <div 
-                ref={carouselRef}
+                ref={moveWithUsCarouselRef}
                 className="flex overflow-x-auto scroll-smooth gap-4 md:gap-6 px-4"
                 style={{
                   scrollSnapType: 'x mandatory',
@@ -2065,16 +1978,15 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                   msOverflowStyle: 'none',
                   WebkitOverflowScrolling: 'touch'
                 }}
-                onMouseEnter={() => setIsCarouselHovered(true)}
-                onMouseLeave={() => setIsCarouselHovered(false)}
-                onTouchStart={() => setIsCarouselHovered(true)}
-                onTouchEnd={() => setTimeout(() => setIsCarouselHovered(false), 3000)}
+                onMouseEnter={() => setIsMoveWithUsHovered(true)}
+                onMouseLeave={() => setIsMoveWithUsHovered(false)}
+                onTouchStart={() => setIsMoveWithUsHovered(true)}
+                onTouchEnd={() => setTimeout(() => setIsMoveWithUsHovered(false), 3000)}
               >
-                {carouselImages.map((image, index) => (
+                {moveWithUsImages.map((image, index) => (
                   <div
                     key={index}
                     className="flex-shrink-0 cursor-pointer"
-                    onClick={() => openLightbox(index)}
                     style={{
                       scrollSnapAlign: 'start',
                       width: 'clamp(160px, 40vw, 240px)',
@@ -2088,18 +2000,18 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                       style={{
                         width: '100%',
                         height: '100%',
-                        borderRadius: 'clamp(16px, 3vw, 40px)',
+                        borderRadius: 'clamp(24px, 3vw, 40px)',
                         opacity: 1,
                         overflow: 'hidden'
                       }}
                     >
                       <Image
                         src={image}
-                        alt={`Carousel image ${index + 1}`}
+                        alt={`Move with us image ${index + 1}`}
                         fill
                         className="object-cover"
                         style={{
-                          borderRadius: 'clamp(16px, 3vw, 40px)',
+                          borderRadius: 'clamp(24px, 3vw, 40px)',
                           objectFit: 'cover',
                           objectPosition: 'center top'
                         }}
@@ -2110,33 +2022,21 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 md:py-12 px-4">
+              <div className="text-center py-12 px-4">
                 <p className="text-gray-500">No images available at the moment.</p>
               </div>
             )}
           </div>
 
           {/* Pagination Dots */}
-          {!loadingCarouselImages && carouselImages.length > 0 && (
-            <div className="flex items-center justify-center gap-2 mt-4 md:mt-6">
-              {carouselImages.map((_, index) => (
+          {!loadingMoveWithUs && moveWithUsImages.length > 0 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              {moveWithUsImages.map((_, index) => (
                 <button
                   key={index}
-                  onClick={() => {
-                    setCurrentCarouselIndex(index)
-                    if (carouselRef.current) {
-                      const containerWidth = carouselRef.current.clientWidth
-                      const gap = 24
-                      const imageWidth = Math.max(160, Math.min(240, containerWidth * 0.4))
-                      const scrollPosition = index * (imageWidth + gap)
-                      carouselRef.current.scrollTo({
-                        left: scrollPosition,
-                        behavior: 'smooth'
-                      })
-                    }
-                  }}
+                  onClick={() => scrollToMoveWithUsSlide(index)}
                   className={`transition-all duration-300 rounded-full ${
-                    index === currentCarouselIndex 
+                    index === currentMoveWithUsIndex 
                       ? 'w-2.5 h-2.5 bg-gray-800' 
                       : 'w-2 h-2 bg-gray-400'
                   }`}
@@ -2148,100 +2048,199 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
         </div>
       </section>
 
-      {/* Lightbox / Modal for MOVE WITH US images */}
-      {lightboxOpen && lightboxIndex != null && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70"
-          onClick={(e) => {
-            if (e.currentTarget === e.target) closeLightbox()
-          }}
-        >
-          <div className="relative max-w-[92vw] max-h-[92vh] w-full">
-            <button
-              onClick={closeLightbox}
-              aria-label="Close"
-              className="absolute right-2 top-2 z-50 rounded-full bg-white/90 p-2 text-black shadow"
-            >
-              ✕
-            </button>
-
-            {/* Prev */}
-            {lightboxIndex > 0 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setLightboxIndex((i) => (i == null ? 0 : Math.max(0, i - 1)))
+      {/* YOU MAY ALSO LIKE Section */}
+      <div className="bg-white text-[#212121] pt-0 pb-20">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          {/* Top Section - YOU MAY ALSO LIKE heading and Lorem ipsum */}
+          <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between mb-8 gap-6">
+            {/* Left - YOU MAY ALSO LIKE Heading */}
+            <div className="flex-1 flex flex-col">
+              <h1 
+                className="uppercase mb-6 text-black leading-none"
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontWeight: 400,
+                  fontSize: '90px',
+                  letterSpacing: '0.5px'
                 }}
-                aria-label="Previous"
-                className="absolute left-2 top-1/2 -translate-y-1/2 z-50 rounded-full bg-white/90 p-2 text-black shadow"
               >
-                ‹
-              </button>
-            )}
-
-            {/* Next */}
-            {lightboxIndex < carouselImages.length - 1 && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setLightboxIndex((i) => (i == null ? 0 : Math.min(carouselImages.length - 1, i + 1)))
+                YOU MAY ALSO LIKE
+              </h1>
+            </div>
+            
+            {/* Right - Lorem ipsum text */}
+            <div className="flex-1 lg:max-w-[412px] flex flex-col">
+              <p 
+                className="text-black text-left leading-normal"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: '14px',
+                  letterSpacing: '0px',
+                  fontWeight: 500
                 }}
-                aria-label="Next"
-                className="absolute right-2 top-1/2 -translate-y-1/2 z-50 rounded-full bg-white/90 p-2 text-black shadow"
               >
-                ›
-              </button>
-            )}
+                
+              </p>
+            </div>
+          </div>
 
-            <div className="w-full h-full flex items-center justify-center p-4">
-              <div className="relative max-w-full max-h-full rounded" style={{ width: 'auto', height: 'auto' }}>
-                <Image
-                  src={carouselImages[lightboxIndex]}
-                  alt={`Image ${lightboxIndex + 1}`}
-                  width={1200}
-                  height={900}
-                  className="object-contain max-w-[90vw] max-h-[90vh]"
-                  style={{ objectFit: 'contain' }}
+          {/* Product Grid - 4 Products */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            {loadingRecommended ? (
+              [1, 2, 3, 4].map((idx) => (
+                <div
+                  key={`recommended-skeleton-${idx}`}
+                  className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
+                  style={{
+                    aspectRatio: '307/450',
+                    borderRadius: '32px'
+                  }}
                 />
+              ))
+            ) : recommendedProducts.length > 0 ? (
+              recommendedProducts.map((item) => {
+                const productName = (item.name || item.title || 'Product').toUpperCase()
+                const nameLines = splitBundleName(productName)
+                const priceValue = getProductCardPrice(item)
+                const productHref = getProductCardHref(item)
+                const productImage = getProductCardImage(item)
+                const productId = getProductCardId(item) || productName
+
+                return (
+                  <Link
+                    key={productId}
+                    href={productHref}
+                    className="bg-white relative overflow-hidden w-full"
+                    style={{
+                      aspectRatio: '307/450'
+                    }}
+                  >
+                    <img
+                      src={productImage}
+                      alt={item.name || item.title || 'Product'}
+                      className="w-full h-full object-cover"
+                      style={{
+                        borderRadius: '32px'
+                      }}
+                      onError={(event) => {
+                        const target = event.target as HTMLImageElement;
+                        target.src = '/placeholder.svg';
+                      }}
+                    />
+                    <div 
+                      className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                      style={{
+                        height: '60px'
+                      }}
+                    >
+                      <div className="flex flex-col text-left">
+                        <span 
+                          className="uppercase text-white"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '13.41px',
+                            lineHeight: '14.6px',
+                            letterSpacing: '0px',
+                            fontWeight: 500
+                          }}
+                        >
+                          {nameLines.line1}
+                        </span>
+                        {nameLines.line2 && (
+                          <span 
+                            className="uppercase text-white"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: '13.41px',
+                              lineHeight: '14.6px',
+                              letterSpacing: '0px',
+                              fontWeight: 500
+                            }}
+                          >
+                            {nameLines.line2}
+                          </span>
+                        )}
+                      </div>
+                      <p 
+                        className="text-white font-bold text-right"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: '22px',
+                          lineHeight: '26px',
+                          letterSpacing: '0px',
+                          fontWeight: 600
+                        }}
+                      >
+                        {formatCurrency(priceValue)}
+                      </p>
+                    </div>
+                  </Link>
+                )
+              })
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-500">No recommendations available right now.</p>
               </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+        <div id="customer-reviews">
+          <ProductReviews
+            product={product}
+            onStatsChange={(stats) => setReviewStats(stats)}
+            showReviewForm={showReviewForm}
+            setShowReviewForm={setShowReviewForm}
+          />
+        </div>
+
+      {/* Zoom Modal */}
+      {zoomImage && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="relative max-w-4xl max-h-[90vh] w-full">
+            <button
+              onClick={() => setZoomImage(null)}
+              className="absolute -top-12 right-0 bg-white/20 hover:bg-white/30 text-white rounded-full p-2 transition-colors duration-200"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <div className="relative rounded-lg overflow-hidden shadow-2xl">
+              <Image
+                src={zoomImage}
+                alt="Zoomed pattern"
+                width={800}
+                height={800}
+                className="w-full h-auto max-h-[80vh] object-contain"
+              />
             </div>
           </div>
         </div>
       )}
 
-      <Footer />
-
-      <style jsx>{`
-        .whats-new-scroll {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-
-        .whats-new-scroll::-webkit-scrollbar {
-          width: 0;
-          height: 0;
-        }
-
-        .community-slider {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-
-        .community-slider::-webkit-scrollbar {
-          width: 0;
-          height: 0;
-        }
-
-        .bundle-slider {
-          scrollbar-width: none;
-          -ms-overflow-style: none;
-        }
-
-        .bundle-slider::-webkit-scrollbar {
-          width: 0;
-          height: 0;
-        }
-      `}</style>
+      {/* Size Guide Modal */}
+      {isSizeGuideOpen && hasSizeGuideImage && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4" onClick={() => setIsSizeGuideOpen(false)}>
+          <div className="relative max-w-2xl max-h-[90vh] w-full bg-white rounded-lg p-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setIsSizeGuideOpen(false)}
+              className="absolute -top-4 -right-4 bg-white hover:bg-gray-200 text-black rounded-full p-2 transition-colors duration-200 shadow-lg z-10"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <h2 className="text-xl font-bold text-center mb-4 text-gray-800">Size Guide</h2>
+            <div className="relative rounded-lg overflow-auto max-h-[75vh]">
+              <Image
+                src={getFullImageUrl(sizeGuideImagePath)}
+                alt="Product size guide"
+                width={800}
+                height={1200}
+                className="w-full h-auto object-contain"
+              />
+            </div>
+          </div>
+        </div>
+        )}
     </div>
   )
 }
