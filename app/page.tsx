@@ -884,16 +884,18 @@ export default function HomePage() {
               }}>
                 <video
                   src={heroContent.src}
+                  poster="/placeholder.svg" // Shows an image while video loads
                   autoPlay
                   loop
                   muted
                   playsInline
+                  preload="metadata" // Optimizes loading
                   className="w-full h-full object-cover"
                   style={{
-                    objectFit: 'contain',
+                    objectFit: 'cover', // Changed to cover to fill the container
                     objectPosition: 'center center',
                     width: '100%',
-                    height: '100%'
+                    height: '100%',
                   }}
                 >
                   Your browser does not support the video tag.
