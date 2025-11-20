@@ -173,6 +173,7 @@
     transform: translateY(-10px);
     transition: opacity 300ms ease-in-out, transform 300ms ease-in-out;
   }
+  
 
   /* Progress bar animation */
   @keyframes testimonial-progress {

@@ -7,7 +7,7 @@ import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer"; 
 
 // Using the path specified by the user
-const HERO_IMAGE_PATH = "/images/about.png"; 
+const HERO_IMAGE_PATH = "/images/contact-new.png"; 
 
 // Custom Input/Textarea component for consistent styling and state handling
 const FormField = ({ placeholder, type = 'text', isTextarea = false, halfWidth = false, name, value, onChange }: { 
@@ -111,7 +111,7 @@ export default function ContactUs() {
                                 src={HERO_IMAGE_PATH}
                                 alt="A man wearing a gym cap" 
                                 layout="fill"
-                                objectFit="cover"
+                                objectFit="contain"
                                 objectPosition="center"
                                 className="p-8 rounded-[50px]" 
                                 priority
@@ -127,8 +127,7 @@ export default function ContactUs() {
                                 CONTACT US
                             </h1>
                             <p className="text-lg mb-8 font-medium">
-                                Feel free to contact with us, we don&apos;t spam your email
-                            </p>
+Feel free to contact with us, we don't spam your email                            </p>
 
                             <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-2">
                                 

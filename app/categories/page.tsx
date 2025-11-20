@@ -113,7 +113,7 @@ export default function CategoriesPage() {
     <div className="min-h-screen bg-white">
       <Header />
       {/* Banner Image Section */}
-      <div className="mt-32 mb-16 w-full px-4 sm:px-6 lg:px-10 flex justify-center">
+      <div className="mt-32 mb-16 w-full px-4 sm:px-6 lg:px-10 flex justify-center pt-20">
         <div className="relative w-full max-w-[1400px]">
           <div className="relative w-full overflow-hidden rounded-[80px] bg-[#f2f2f2]">
             <div className="relative w-full" style={{ paddingTop: "18%" }}>

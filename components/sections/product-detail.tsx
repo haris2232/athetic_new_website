@@ -1249,7 +1249,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       >
                         SIZE:
                       </span>
-                      {sizeOptions.slice(0, 4).map((size) => (
+                      {sizeOptions.map((size) => (
                         <button 
                           key={size}
                           className="transition-colors cursor-pointer flex items-center justify-center flex-shrink-0"
@@ -1317,7 +1317,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     >
                       COLOR:
                     </span>
-                    {colorOptions.slice(0, 4).map((color, idx) => {
+                    {colorOptions.map((color, idx) => {
                       const defaultColors = ['#808080', '#000000', '#FFFF00', '#0066FF']
                       const colorHex = color.hex || defaultColors[idx] || '#808080'
                       

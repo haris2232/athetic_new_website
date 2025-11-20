@@ -799,10 +799,10 @@ export default function HomePage() {
         <div className="w-full h-3 bg-black"></div>
         
         {/* Text Section - Above the box */}
-        <div className="w-full py-4 md:py-8 lg:py-12 bg-white relative">
-          <div className="container mx-auto px-4">
+        {/* <div className="w-full py-4 md:py-8 lg:py-12 bg-white relative"> */}
+          {/* <div className="container mx-auto px-4"> */}
             {/* MOVE WITH PURPOSE - Left Aligned */}
-            <h1 
+            {/* <h1 
               className="text-black uppercase text-center"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
@@ -818,10 +818,10 @@ export default function HomePage() {
               }}
             >
               MOVE WITH PURPOSE
-            </h1>
+            </h1> */}
             
             {/* Performance-driven text - Left Aligned */}
-            <p 
+            {/* <p 
               className="text-black text-center"
               style={{
                 fontFamily: "'Gilroy', 'Arial', sans-serif",
@@ -835,9 +835,9 @@ export default function HomePage() {
               }}
             >
               Performance-driven activewear designed for <em className="italic" style={{ fontStyle: 'italic' }}>every body, every day</em>
-            </p>
-          </div>
-        </div>
+            </p> */}
+          {/* </div> */}
+        {/* </div> */}
 
         {/* Hero Box - AUTO ADJUSTING BANNER */}
         <div 
@@ -890,7 +890,7 @@ export default function HomePage() {
                   playsInline
                   className="w-full h-full object-cover"
                   style={{
-                    objectFit: 'cover',
+                    objectFit: 'contain',
                     objectPosition: 'center center',
                     width: '100%',
                     height: '100%'
@@ -932,8 +932,7 @@ export default function HomePage() {
                 fontWeight: 500
               }}
             >
-              Browse by category to find the perfect style for your day, your workout, or your recovery
-            </p>
+Explore breathable, real-body fits for runs, lifts, and everything in between we call life.            </p>
           </div>
 
           {/* 2x2 Grid of Category Cards */}
@@ -1098,7 +1097,7 @@ export default function HomePage() {
                 letterSpacing: '0.5px'
               }}
             >
-              WHAT'S NEW
+              NEW ARRIVAL
             </h1>
             <p 
               className="text-black leading-normal text-left"
@@ -1109,8 +1108,7 @@ export default function HomePage() {
                 fontWeight: 500
               }}
             >
-              Our latest fabric innovations and fresh drops. Limited runs, timeless performance
-            </p>
+Fresh colors. Updated fits. Same all-day comfort. See what’s new.            </p>
           </div>
 
           {/* Product Slider - Recent Products */}
@@ -1300,8 +1298,7 @@ export default function HomePage() {
                   letterSpacing: '0.5px'
                 }}
               >
-                COMMUNITY FAVOURITES
-              </h1>
+best sellers              </h1>
               <Star className="w-6 h-6 md:w-8 md:h-8 text-yellow-400 fill-yellow-400" />
             </div>
             <p 
@@ -1313,8 +1310,8 @@ export default function HomePage() {
                 fontWeight: 500
               }}
             >
-              The core pieces earning the most love. Trusted, proven, essential.
-            </p>
+Loved by all for breathability, performance, and perfect fits, designed to 
+move with you from workouts to weekends.            </p>
           </div>
 
           {/* Community Favorites Products Slider */}
@@ -1514,7 +1511,7 @@ export default function HomePage() {
                   margin: 0,
                 }}
               >
-                WHY ATHLEKT
+                OUR STORY
               </h2>
               <div
                 className="text-black text-left w-full"
@@ -1625,7 +1622,7 @@ export default function HomePage() {
             />
 
             {/* Main Content */}
-            <div className="relative" style={{ minHeight: 'clamp(450px, 70vw, 550px)', zIndex: 10 }}>
+            <div className="relative" style={{ minHeight: '290px', zIndex: 10 }}>
               {/* Left Side - Image */}
               <div
                 className="absolute"
@@ -1715,20 +1712,18 @@ export default function HomePage() {
                     transform: 'rotate(0deg)',
                     margin: '0',
                     padding: '0',
-                    marginBottom: 'clamp(10px, 1.5vw, 22px)'
+                    marginBottom: '0'
                   }}
                 >
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
-                    We believe activewear shouldn't compromise. Comfort meets performance, design meets function.
-                  </p>
-                  <p style={{ marginBottom: '0' }}>
-                    Whether it's lifting, running, stretching, or relaxing.. Whether you're an athlete or rocking a dad-bod.. we've engineered fabrics and fits to support your pace and lifestyle.
-                  </p>
+At Athlekt, we started with a simple question, why should activewear only fit a few?                   </p>
+                  <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
+Most athletic brands are built around a single idea of the “ideal” body, leaving everyone else out. We wanted to change that.                   </p>
+                  <p style={{ marginBottom: '' }}>
+Athlekt is made for real people - for dad bods, mums, and everyone finding their own rhythm. Our pieces are crafted to move, breathe, and adapt to your body, not the other way around. Designed in the Gulf, for the Gulf.                    </p>
                 </div>
 
-                {/* Feature Boxes */}
-                <div className="flex flex-row gap-4" style={{ width: 'clamp(250px, 32vw, 490px)', maxWidth: '490px' }}>
-                  {/* Box 1 - Engineered Fabrics */}
+                {/* <div className="flex flex-row gap-4" style={{ width: 'clamp(250px, 32vw, 490px)', maxWidth: '490px' }}>
                   <div
                     className="border-2 border-black rounded-lg text-center flex flex-col items-center justify-center"
                     style={{
@@ -1755,7 +1750,6 @@ export default function HomePage() {
                     </p>
                   </div>
 
-                  {/* Box 2 - Precision Fit */}
                   <div
                     className="border-2 border-black rounded-lg text-center flex flex-col items-center justify-center"
                     style={{
@@ -1780,7 +1774,6 @@ export default function HomePage() {
                     </p>
                   </div>
 
-                  {/* Box 3 - Sustainable Practices */}
                   <div
                     className="border-2 border-black rounded-lg text-center flex flex-col items-center justify-center"
                     style={{
@@ -1801,9 +1794,9 @@ export default function HomePage() {
                     </div>
                     <p className="text-black font-medium text-center" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: 'clamp(11px, 1.1vw, 16px)', fontWeight: 500, color: '#000000', margin: '0', lineHeight: '1.4' }}>
                       Sustainable<br />Practices
-                    </p>
-                  </div>
-                </div>
+                    </p> */}
+                  {/* </div> */}
+                {/* </div> */}
               </div>
             </div>
           </div>
@@ -1811,8 +1804,8 @@ export default function HomePage() {
       </section>
 
       {/* Section 7: COMPLETE THE LOOK */}
-      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px]">
+      <section className="bg-white text-[#212121] py-2 md:py-28 lg:py-19">
+        <div className="container mx-auto px-2 max-w-[1250px]">
           <div className="mb-6 md:mb-8">
             <h1 
               className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
@@ -1823,7 +1816,7 @@ export default function HomePage() {
                 letterSpacing: '0.5px'
               }}
             >
-              COMPLETE THE LOOK
+              Bundles
             </h1>
             <p 
               className="text-black leading-normal text-left"
@@ -1834,8 +1827,7 @@ export default function HomePage() {
                 fontWeight: 500
               }}
             >
-              Match it. Train it. Wear it. Our curated sets make it simple.
-            </p>
+Bundle up your favorites, build your Athlekt set, and get more for less.            </p>
           </div>
 
           {/* Bundle Slider */}
@@ -2043,7 +2035,7 @@ export default function HomePage() {
                 letterSpacing: 'clamp(-1.5px, -0.23vw, -3.37px)'
               }}
             >
-              MOVE WITH US
+              MOVE, TAG, MOTIVATE
             </h1>
             <p 
               className="text-black leading-normal text-left"
@@ -2055,7 +2047,7 @@ export default function HomePage() {
                 marginTop: '2px'
               }}
             >
-              Real athletes, real movement. Tag us @Athlekt to be featured.
+              Your everyday motion can motivate someone else. Post in Athlekt, tag @Athlekt, and we’ll feature your move.
             </p>
           </div>
 

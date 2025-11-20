@@ -24,15 +24,6 @@ interface Product {
   sizes?: string[]
 }
 
-const categoryTabs = [
-  { id: "all", label: "ALL", active: true },
-  { id: "t-shirts", label: "T-SHIRTS", active: false },
-  { id: "shorts", label: "SHORTS", active: false },
-  { id: "trousers", label: "TROUSERS", active: false },
-  { id: "trainsets", label: "TRAINSETS", active: false },
-  { id: "tanks", label: "TANKS", active: false },
-]
-
 interface CategoriesGridProps {
   selectedGender?: string | null
 }
@@ -42,6 +33,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
   const [viewMode, setViewMode] = useState("grid")
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
+  const [availableSubCategories, setAvailableSubCategories] = useState<string[]>([])
 
   // Normalize gender to lowercase for consistent comparison
   const normalizedGender = selectedGender?.toLowerCase().trim() || null
@@ -77,23 +69,32 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
             console.log(`✅ Showing all ${data.data.length} products (no gender filter)`)
           }
           
-          // Log first few product categories for debugging
-          if (filteredProducts.length > 0) {
-            console.log("📋 Sample categories:", filteredProducts.slice(0, 5).map((p: Product) => p.category))
-          }
-          
+          // Extract unique sub-categories from filtered products
+          const subCategories = Array.from(
+            new Set(
+              filteredProducts
+                .map(product => product.subCategory?.toLowerCase().trim())
+                .filter(Boolean)
+            )
+          ) as string[]
+
+          console.log("📋 Available sub-categories:", subCategories)
+          setAvailableSubCategories(subCategories)
           setProducts(filteredProducts)
         } else {
           console.log("⚠️ No products found in API response")
           setProducts([])
+          setAvailableSubCategories([])
         }
       } else {
         console.error("❌ API response not ok:", response.status)
         setProducts([])
+        setAvailableSubCategories([])
       }
     } catch (error) {
       console.error("❌ Error fetching products:", error)
       setProducts([])
+      setAvailableSubCategories([])
     } finally {
       setLoading(false)
     }
@@ -112,6 +113,60 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
     return "MEN" // Default to MEN
   }
 
+  // Gender-specific content
+  const getGenderContent = () => {
+    if (normalizedGender === "women") {
+      return "Activewear made for every woman.\nBecause not all bodies look the same and they shouldn't have to. Athlekt is designed to move with you, flatter your form, and fit the real you - every curve, every size, every story."
+    } else {
+      return "Activewear made for every man.\nBecause fitness isn't one size fits all. Athlekt is built for real bodies, from lean to broad, from gym regulars to weekend movers. Engineered for comfort, confidence, and performance that fits you right."
+    }
+  }
+
+  // Format sub-category name for display
+  const formatSubCategoryName = (subCategory: string) => {
+    if (!subCategory) return ""
+    
+    const formatted = subCategory
+      .toLowerCase()
+      .split('-')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+    
+    // Special cases
+    if (formatted.toLowerCase().includes('t shirt') || formatted.toLowerCase().includes('tee')) {
+      return 'TEES'
+    }
+    if (formatted.toLowerCase().includes('tank')) {
+      return 'TANK TOP'
+    }
+    if (formatted.toLowerCase().includes('hoodie')) {
+      return 'HOODIE'
+    }
+    
+    return formatted.toUpperCase()
+  }
+
+  // Get display name for sub-category
+  const getSubCategoryDisplayName = (subCategory: string) => {
+    const lowerSubCat = subCategory.toLowerCase()
+    
+    if (lowerSubCat.includes('t-shirt') || lowerSubCat.includes('tee') || lowerSubCat.includes('t shirt')) {
+      return 'TEES'
+    } else if (lowerSubCat.includes('tank')) {
+      return 'TANK TOP'
+    } else if (lowerSubCat.includes('short')) {
+      return 'SHORTS'
+    } else if (lowerSubCat.includes('hoodie')) {
+      return 'HOODIE'
+    } else if (lowerSubCat.includes('trouser') || lowerSubCat.includes('pant')) {
+      return 'TROUSERS'
+    } else if (lowerSubCat.includes('train') || lowerSubCat.includes('twin')) {
+      return 'TRAINSETS'
+    }
+    
+    return formatSubCategoryName(subCategory)
+  }
+
   // Filter products based on selected category
   const getFilteredProducts = () => {
     if (selectedCategory === "all") {
@@ -122,29 +177,25 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
       const productSubCategory = product.subCategory?.toLowerCase().trim()
       const selectedCategoryLower = selectedCategory.toLowerCase().trim()
       
-      if (selectedCategoryLower === "t-shirts" || selectedCategoryLower === "tees") {
-        return productSubCategory === "t-shirts" || 
-               productSubCategory === "t-shirt" || 
-               productSubCategory === "tee" ||
-               productSubCategory === "tees"
+      if (selectedCategoryLower === "tees" || selectedCategoryLower === "t-shirts") {
+        return productSubCategory?.includes('t-shirt') || 
+               productSubCategory?.includes('tee') ||
+               productSubCategory?.includes('t shirt')
       } else if (selectedCategoryLower === "shorts") {
-        return productSubCategory === "shorts" || productSubCategory === "short"
+        return productSubCategory?.includes('short')
       } else if (selectedCategoryLower === "trousers") {
-        return productSubCategory === "trousers" || productSubCategory === "trouser"
+        return productSubCategory?.includes('trouser') || 
+               productSubCategory?.includes('pant')
       } else if (selectedCategoryLower === "trainsets") {
-        return productSubCategory === "trainsets" || productSubCategory === "twinsets"
-      } else if (selectedCategoryLower === "tanks" || selectedCategoryLower === "tank top") {
-        return productSubCategory === "tanks" || 
-               productSubCategory === "tank" ||
-               productSubCategory === "tank top" ||
-               productSubCategory === "tank-top"
+        return productSubCategory?.includes('train') || 
+               productSubCategory?.includes('twin')
+      } else if (selectedCategoryLower === "tank top" || selectedCategoryLower === "tanks") {
+        return productSubCategory?.includes('tank')
       } else if (selectedCategoryLower === "hoodie") {
-        return productSubCategory === "hoodie" || 
-               productSubCategory === "hoodies" ||
-               productSubCategory === "hood"
+        return productSubCategory?.includes('hoodie')
       }
       
-      return true
+      return productSubCategory === selectedCategoryLower
     })
   }
 
@@ -220,7 +271,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
   return (
     <div className="bg-white">
       {/* New Design Section - Below Banner */}
-      <div className="bg-white text-[#212121] pt-0 pb-20">
+      <div className="bg-white text-[#212121] pt-20 pb-20">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Top Section - Gender heading and Lorem ipsum */}
           <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between mb-8 gap-6">
@@ -238,8 +289,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 {normalizedGender === 'women' ? 'WOMEN' : 'MEN'}
               </h1>
               
-              {/* Product Type Navigation */}
+              {/* Product Type Navigation - Dynamic from API */}
               <div className="flex flex-wrap gap-6 mb-4">
+                {/* ALL Button */}
                 <button 
                   onClick={() => setSelectedCategory('all')}
                   className={`uppercase text-left hover:text-gray-600 transition-colors ${
@@ -255,73 +307,42 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 >
                   ALL
                 </button>
-                <button 
-                  onClick={() => setSelectedCategory('t-shirts')}
-                  className={`uppercase text-left hover:text-gray-600 transition-colors ${
-                    selectedCategory === 't-shirts' ? 'text-black font-bold' : 'text-black'
-                  }`}
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22.18px',
-                    lineHeight: '31.1px',
-                    letterSpacing: '-0.8px',
-                    fontWeight: selectedCategory === 't-shirts' ? 700 : 500
-                  }}
-                >
-                  TEES
-                </button>
-                <button 
-                  onClick={() => setSelectedCategory('tanks')}
-                  className={`uppercase text-left hover:text-gray-600 transition-colors ${
-                    selectedCategory === 'tanks' ? 'text-black font-bold' : 'text-black'
-                  }`}
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22.18px',
-                    lineHeight: '31.1px',
-                    letterSpacing: '-0.8px',
-                    fontWeight: selectedCategory === 'tanks' ? 700 : 500
-                  }}
-                >
-                  TANK TOP
-                </button>
-                <button 
-                  onClick={() => setSelectedCategory('shorts')}
-                  className={`uppercase text-left hover:text-gray-600 transition-colors ${
-                    selectedCategory === 'shorts' ? 'text-black font-bold' : 'text-black'
-                  }`}
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22.18px',
-                    lineHeight: '31.1px',
-                    letterSpacing: '-0.8px',
-                    fontWeight: selectedCategory === 'shorts' ? 700 : 500
-                  }}
-                >
-                  SHORTS
-                </button>
-                <button 
-                  onClick={() => setSelectedCategory('hoodie')}
-                  className={`uppercase text-left hover:text-gray-600 transition-colors ${
-                    selectedCategory === 'hoodie' ? 'text-black font-bold' : 'text-black'
-                  }`}
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22.18px',
-                    lineHeight: '31.1px',
-                    letterSpacing: '-0.8px',
-                    fontWeight: selectedCategory === 'hoodie' ? 700 : 500
-                  }}
-                >
-                  HOODIE
-                </button>
+
+                {/* Dynamic Sub-categories from API */}
+                {availableSubCategories.map((subCategory) => {
+                  const displayName = getSubCategoryDisplayName(subCategory)
+                  const isActive = selectedCategory === subCategory || 
+                                 (displayName === 'TEES' && selectedCategory === 'tees') ||
+                                 (displayName === 'TANK TOP' && selectedCategory === 'tank top') ||
+                                 (displayName === 'SHORTS' && selectedCategory === 'shorts') ||
+                                 (displayName === 'HOODIE' && selectedCategory === 'hoodie')
+                  
+                  return (
+                    <button 
+                      key={subCategory}
+                      onClick={() => setSelectedCategory(subCategory)}
+                      className={`uppercase text-left hover:text-gray-600 transition-colors ${
+                        isActive ? 'text-black font-bold' : 'text-black'
+                      }`}
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: '22.18px',
+                        lineHeight: '31.1px',
+                        letterSpacing: '-0.8px',
+                        fontWeight: isActive ? 700 : 500
+                      }}
+                    >
+                      {displayName}
+                    </button>
+                  )
+                })}
               </div>
             </div>
             
-            {/* Right - Lorem ipsum text and Sort By */}
+            {/* Right - Gender-specific content and Sort By */}
             <div className="flex-1 lg:max-w-[412px] flex flex-col">
               <p 
-                className="text-black text-left leading-normal"
+                className="text-black text-left leading-normal whitespace-pre-line"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                   fontSize: '14px',
@@ -329,7 +350,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                   fontWeight: 500
                 }}
               >
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+                {getGenderContent()}
               </p>
               
               {/* Sort By - Exactly opposite to Filter */}
@@ -502,7 +523,6 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                   fontWeight: 500
                 }}
               >
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
               </p>
             </div>
           </div>

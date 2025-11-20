@@ -8,8 +8,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react"
 import Header from "@/components/layout/header"
 import Footer from "@/components/layout/footer"
 
-// Assuming the image is saved in your public folder as /images/hero-gym.jpg
-const HERO_IMAGE_PATH = "/images/hero-gym.jpg" 
+const HERO_IMAGE_PATH = "/images/about-new.png" 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew/api';
 
@@ -143,94 +142,66 @@ export default function AboutUs() {
     fetchCarouselImages()
   }, [])
 
-  // Helper function to get full image URL
-  const getImageUrl = (url: string | undefined): string => {
-    if (!url) return ''
-    if (url.startsWith('http')) {
-      return url
-    }
-    // Remove /api from API_BASE_URL for image URLs
-    const baseUrl = API_BASE_URL.replace('/api', '')
-    if (url.startsWith('/')) {
-      return `${baseUrl}${url}`
-    }
-    return `${baseUrl}/${url}`
-  }
-
   return (
-    // Main container is now a flex column to push the footer to the bottom
     <div className="min-h-screen bg-white text-gray-800 flex flex-col">
       
-      {/* 1. Header Component */}
+      {/* Header Component */}
       <Header />
 
-      {/* 2. Main Content Section (flex-grow ensures it takes up available space) */}
+      {/* Main Content Section */}
       <main className="flex-grow">
         
-        {/* Hero Section with Image and Overlay - REMOVED EXTRA SPACE */}
-        {/* --- HEIGHT REDUCED: h-[250px] and sm:h-[350px] --- */}
-        <div className="relative w-full h-[250px] sm:h-[350px] overflow-hidden bg-gray-900">
-          <div className="absolute inset-0">
+        {/* Image Section at Top */}
+        <div className="relative w-full h-[400px] sm:h-[300px] overflow-hidden bg-gray-100 mt-4">
+          <div className="h-full pl-4 pr-4">
             <Image
               src={HERO_IMAGE_PATH}
-              alt="A man running, wearing a white Athlekt t-shirt and black shorts."
+              alt="About Athlekt"
               fill
-              style={{ objectFit: "cover" }}
-              priority // Load the hero image first
-              className="opacity-70"
+              style={{ objectFit: "contain" }}
+              priority
             />
           </div>
-          {/* Curved dark overlay mimicking the image's design */}
-          <div 
-            className="absolute inset-x-0 bottom-0 h-40" 
-            style={{
-              background: 'linear-gradient(to top, #333 50%, transparent 100%)',
-            }}
-          ></div>
         </div>
 
-        {/* Content Section - CENTER ALIGNED AND SPACING FIXED */}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12 -mt-16 relative z-10 bg-white shadow-2xl rounded-t-lg">
+        {/* Content Section */}
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 bg-white">
           
-          {/* Header - CENTERED */}
-          <div className="text-center mb-12">
-            <h1 className="text-5xl md:text-6xl font-extrabold mb-4" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
+          {/* Header */}
+          <div className="text-left mb-8 sm:mb-12">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
               ABOUT ATHLEKT
             </h1>
-            {/* Optional subtitle */}
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl">
               Redefining activewear for every body, every day
             </p>
           </div>
 
-          {/* Brand Mission Paragraphs - CENTERED TEXT WITH MAX WIDTH */}
-          <div className="max-w-4xl mx-auto space-y-8">
-            <p className="text-lg leading-relaxed text-center">
+          {/* Brand Mission Paragraphs */}
+          <div className=" mx-auto space-y-6 sm:space-y-8">
+            <p className="text-base sm:text-lg leading-relaxed text-left">
               <strong className="font-semibold">Athlekt</strong> is a UAE-born athleisure brand redefining what it means to live an active, balanced lifestyle for <strong className="font-semibold">every body and everyone, everywhere</strong>. Created for parents, professionals, and fitness enthusiasts alike, Athlekt celebrates movement in all its forms from school, office runs to gym runs, from studio sessions to weekend adventures.
             </p>
 
-            <p className="text-lg leading-relaxed text-center">
+            <p className="text-base sm:text-lg leading-relaxed text-left">
               Built on the belief that <strong className="font-semibold">movement should be accessible, enjoyable, and body-positive</strong>, Athlekt designs performance-driven apparel that empowers everyone specially mums, dads, and fitness enthusiasts alike to show up for themselves with confidence and comfort. Whether you&apos;re sculpted, curvy, or somewhere in between, <strong className="font-semibold">our pieces are designed to fit your body, your life, and your rhythm</strong>.
             </p>
 
-            {/* Design Philosophy Paragraph */}
-            <p className="text-lg leading-relaxed text-center">
+            <p className="text-base sm:text-lg leading-relaxed text-left">
               Our design philosophy focuses on thoughtful details: from flattering fits for dad bods to inclusive sizing that supports breastfeeding mums, and performance cuts that complement athletic builds. Every stitch and fabric choice is crafted for <strong className="font-semibold">real comfort, real movement, and real confidence</strong>.
             </p>
 
-            {/* Global Movement Paragraph */}
-            <p className="text-lg leading-relaxed text-center">
+            <p className="text-base sm:text-lg leading-relaxed text-left">
               Rooted in <strong className="font-semibold">function</strong>, driven by <strong className="font-semibold">community</strong>, and inspired by <strong className="font-semibold">real people</strong>, Athlekt is more than activewear it&apos;s a <strong className="font-semibold">global movement for every body</strong> that believes feeling good and moving freely should belong to all.
             </p>
 
-            {/* End Goal Paragraph */}
-            <p className="text-lg leading-relaxed text-center">
+            <p className="text-base sm:text-lg leading-relaxed text-left">
               Our end goal is to <strong className="font-semibold">promote wellness and longevity</strong>, inspiring everyone to embrace a healthier, more balanced lifestyle.
             </p>
 
-            {/* Contact Information - CENTERED */}
-            <div className="text-center pt-8 border-t border-gray-200">
-              <p className="text-lg">
+            {/* Contact Information */}
+            <div className="text-left pt-6 sm:pt-8 border-t border-gray-200">
+              <p className="text-base sm:text-lg">
                 To know more or if you have any questions, feel free to reach us at <a href="mailto:info@athlekt.com" className="text-blue-600 hover:text-blue-800 font-semibold">info@athlekt.com</a>
               </p>
             </div>
@@ -238,17 +209,17 @@ export default function AboutUs() {
         
         </div>
 
-        {/* MOVE WITH US Section - Added at the end */}
-        <section className="bg-white text-[#212121] pt-0 pb-20 mt-12">
-          <div className="container mx-auto px-4 max-w-[1250px]">
+        {/* MOVE WITH US Section */}
+        <section className="bg-white text-[#212121] pt-0 pb-12 sm:pb-20 mt-8 sm:mt-12">
+          <div className="container mx-auto px-4 sm:px-6 max-w-[1250px]">
             {/* Heading and Subtitle */}
-            <div className="mb-8">
+            <div className="mb-6 sm:mb-8">
               <h1 
-                className="uppercase mb-6 text-black leading-none"
+                className="uppercase mb-4 sm:mb-6 text-black leading-none text-left"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontWeight: 400,
-                  fontSize: 'clamp(40px, 5vw, 90px)',
+                  fontSize: 'clamp(32px, 5vw, 90px)',
                   letterSpacing: 'clamp(-1.5px, -0.23vw, -3.37px)'
                 }}
               >
@@ -275,48 +246,48 @@ export default function AboutUs() {
                 onClick={() => scrollCarousel('left')}
                 className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
-                  left: '-12px',
-                  width: 'clamp(32px, 3.5vw, 48px)',
-                  height: 'clamp(32px, 3.5vw, 48px)',
+                  left: '-8px sm:-12px',
+                  width: 'clamp(28px, 3.5vw, 48px)',
+                  height: 'clamp(28px, 3.5vw, 48px)',
                   border: '1px solid #000000',
                   backgroundColor: '#FFFFFF'
                 }}
                 aria-label="Previous image"
               >
-                <ChevronLeft className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
+                <ChevronLeft className="text-black" style={{ width: 'clamp(14px, 1.8vw, 24px)', height: 'clamp(14px, 1.8vw, 24px)' }} />
               </button>
               <button
                 onClick={() => scrollCarousel('right')}
                 className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
-                  right: '-12px',
-                  width: 'clamp(32px, 3.5vw, 48px)',
-                  height: 'clamp(32px, 3.5vw, 48px)',
+                  right: '-8px sm:-12px',
+                  width: 'clamp(28px, 3.5vw, 48px)',
+                  height: 'clamp(28px, 3.5vw, 48px)',
                   border: '1px solid #000000',
                   backgroundColor: '#FFFFFF'
                 }}
                 aria-label="Next image"
               >
-                <ChevronRight className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
+                <ChevronRight className="text-black" style={{ width: 'clamp(14px, 1.8vw, 24px)', height: 'clamp(14px, 1.8vw, 24px)' }} />
               </button>
 
               {/* Carousel Container */}
               {loadingCarouselImages ? (
-                <div className="flex justify-start items-center gap-4 md:gap-6 px-4" style={{
-                  minHeight: 'clamp(240px, 28vw, 380px)',
+                <div className="flex justify-start items-center gap-3 sm:gap-4 md:gap-6 px-2 sm:px-4" style={{
+                  minHeight: 'clamp(200px, 28vw, 380px)',
                   overflowX: 'auto'
                 }}>
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-gray-200 animate-pulse rounded-[40px] flex-shrink-0" style={{
-                      width: 'clamp(160px, 40vw, 240px)',
-                      height: 'clamp(240px, 60vw, 380px)'
+                    <div key={i} className="bg-gray-200 animate-pulse rounded-[30px] sm:rounded-[40px] flex-shrink-0" style={{
+                      width: 'clamp(140px, 40vw, 240px)',
+                      height: 'clamp(200px, 60vw, 380px)'
                     }} />
                   ))}
                 </div>
               ) : carouselImages.length > 0 ? (
                 <div 
                   ref={carouselRef}
-                  className="flex overflow-x-auto scroll-smooth gap-4 md:gap-6 px-4"
+                  className="flex overflow-x-auto scroll-smooth gap-3 sm:gap-4 md:gap-6 px-2 sm:px-4"
                   style={{
                     scrollSnapType: 'x mandatory',
                     scrollbarWidth: 'none',
@@ -335,10 +306,10 @@ export default function AboutUs() {
                       onClick={() => openLightbox(index)}
                       style={{
                         scrollSnapAlign: 'start',
-                        width: 'clamp(160px, 40vw, 240px)',
-                        height: 'clamp(240px, 60vw, 380px)',
-                        minWidth: '160px',
-                        minHeight: '240px'
+                        width: 'clamp(140px, 40vw, 240px)',
+                        height: 'clamp(200px, 60vw, 380px)',
+                        minWidth: '140px',
+                        minHeight: '200px'
                       }}
                     >
                       <div
@@ -346,7 +317,7 @@ export default function AboutUs() {
                         style={{
                           width: '100%',
                           height: '100%',
-                          borderRadius: 'clamp(24px, 3vw, 40px)',
+                          borderRadius: 'clamp(20px, 3vw, 40px)',
                           opacity: 1,
                           overflow: 'hidden'
                         }}
@@ -357,18 +328,18 @@ export default function AboutUs() {
                           fill
                           className="object-cover"
                           style={{
-                            borderRadius: 'clamp(24px, 3vw, 40px)',
+                            borderRadius: 'clamp(20px, 3vw, 40px)',
                             objectFit: 'cover',
                             objectPosition: 'center top'
                           }}
-                          sizes="(max-width: 640px) 160px, (max-width: 768px) 200px, (max-width: 1024px) 220px, 240px"
+                          sizes="(max-width: 640px) 140px, (max-width: 768px) 180px, (max-width: 1024px) 220px, 240px"
                         />
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 px-4">
+                <div className="text-center py-8 sm:py-12 px-4">
                   <p className="text-gray-500">No images available at the moment.</p>
                 </div>
               )}
@@ -376,7 +347,7 @@ export default function AboutUs() {
 
             {/* Pagination Dots */}
             {!loadingCarouselImages && carouselImages.length > 0 && (
-              <div className="flex items-center justify-center gap-2 mt-6">
+              <div className="flex items-center justify-center gap-2 mt-4 sm:mt-6">
                 {carouselImages.map((_, index) => (
                   <button
                     key={index}
@@ -385,7 +356,7 @@ export default function AboutUs() {
                       if (carouselRef.current) {
                         const containerWidth = carouselRef.current.clientWidth
                         const gap = 24
-                        const imageWidth = Math.max(160, Math.min(240, containerWidth * 0.4))
+                        const imageWidth = Math.max(140, Math.min(240, containerWidth * 0.4))
                         const scrollPosition = index * (imageWidth + gap)
                         carouselRef.current.scrollTo({
                           left: scrollPosition,
@@ -469,7 +440,7 @@ export default function AboutUs() {
         
       </main>
 
-      {/* 3. Footer Component */}
+      {/* Footer Component */}
       <Footer />
       
     </div>

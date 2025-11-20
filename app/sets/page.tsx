@@ -102,6 +102,17 @@ export default function SetsPage() {
     <div className="min-h-screen bg-white">
       <Header />
       
+      {/* --- BANNER SECTION --- */}
+      <div style={{ paddingTop: '30px', paddingLeft: '8px', paddingRight: '8px' }}>
+        <div className="relative w-full h-[400px] overflow-hidden">
+          <img 
+            src="/images/sets.png" 
+            alt="Sets Collection Banner"
+            className="w-full h-full object-contain"
+          />
+        </div>
+      </div>
+      
       {/* --- SETS COLLECTION SECTION --- */}
       <section id="sets-collection" className="py-16">
         <div>

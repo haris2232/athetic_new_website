@@ -44,7 +44,7 @@ const ProductGrid = ({ products, loading }: { products: Product[]; loading: bool
 };
 
 
-// --- Main Page Component (NO BANNER) ---
+// --- Main Page Component (WITH BANNER) ---
 export default function AllProductsPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -74,13 +74,24 @@ export default function AllProductsPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white"> {/* Changed background color to white */}
+    <div className="min-h-screen bg-white">
       <Header />
+      
+      {/* --- BANNER SECTION --- */}
+      <div style={{ paddingTop: '30px', paddingLeft: '8px', paddingRight: '8px' }}>
+        <div className="relative w-full h-[400px] overflow-hidden">
+          <img 
+            src="/images/new-arrival.png" 
+            alt="New Arrivals Banner"
+            className="w-full h-full object-contain"
+          />
+        </div>
+      </div>
       
       {/* --- UNIFIED COLLECTION SECTION --- */}
       <section id="all-products-collection" className="py-16">
         <div>
-          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-10"> {/* Changed text color to black for contrast */}
+          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-10">
             New Arrivals
           </h2>
           <ProductGrid products={allProducts} loading={loading} />
