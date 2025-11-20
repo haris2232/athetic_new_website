@@ -1758,7 +1758,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 width: '100%'
               }}
             >
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+              
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
@@ -2079,7 +2079,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   fontWeight: 500
                 }}
               >
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
+                
               </p>
             </div>
           </div>
