@@ -1262,6 +1262,17 @@ Fresh colors. Updated fits. Same all-day comfort. See what’s new.            <
       {/* Section 4: FORM MEETS FUNCTION */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
+          <h1 
+              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontWeight: 400,
+                fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
+                letterSpacing: '0.5px'
+              }}
+            >
+              WHAT MAKE US MOVE
+            </h1>
           <div 
             className="relative mx-auto w-full"
             style={{
@@ -1523,15 +1534,15 @@ move with you from workouts to weekends.            </p>
                   letterSpacing: "-0.3px",
                 }}
               >
-                <p className="mb-3">
-                  We believe activewear shouldn't compromise. Comfort meets performance, design meets function.
-                </p>
-                <p className="mb-0">
-                  Whether it's lifting, running, stretching, or relaxing.. Whether you're an athlete or rocking a dad-bod.. we've engineered fabrics and fits to support your pace and lifestyle.
-                </p>
+                  <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
+At Athlekt, we started with a simple question, why should activewear only fit a few?                   </p>
+                  <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
+Most athletic brands are built around a single idea of the “ideal” body, leaving everyone else out. We wanted to change that.                   </p>
+                  <p style={{ marginBottom: '' }}>
+Athlekt is made for real people - for dad bods, mums, and everyone finding their own rhythm. Our pieces are crafted to move, breathe, and adapt to your body, not the other way around. Designed in the Gulf, for the Gulf.                    </p>
               </div>
             </div>
-            <div className="grid w-full max-w-sm grid-cols-1 gap-3 px-4">
+            {/* <div className="grid w-full max-w-sm grid-cols-1 gap-3 px-4">
               <div className="flex flex-col items-center justify-center rounded-3xl border border-black bg-white p-5 shadow-sm">
                 <div className="mb-3 flex h-12 w-12 items-center justify-center">
                   <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1595,9 +1606,9 @@ move with you from workouts to weekends.            </p>
                   }}
                 >
                   Sustainable<br />Practices
-                </p>
-              </div>
-            </div>
+                </p> */}
+              {/* </div> */}
+            {/* </div> */}
           </div>
 
           {/* Desktop Layout */}
@@ -1622,7 +1633,7 @@ move with you from workouts to weekends.            </p>
             />
 
             {/* Main Content */}
-            <div className="relative" style={{ minHeight: '290px', zIndex: 10 }}>
+            <div className="relative" style={{ minHeight: '30rem', zIndex: 10 }}>
               {/* Left Side - Image */}
               <div
                 className="absolute"
@@ -1689,7 +1700,7 @@ move with you from workouts to weekends.            </p>
                     marginBottom: 'clamp(5px, 0.8vw, 12px)'
                   }}
                 >
-                  WHY ATHLEKT
+                  OUR STORY
                 </h2>
 
                 {/* Body Text */}
