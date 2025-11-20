@@ -892,7 +892,7 @@ export default function HomePage() {
                   preload="metadata" // Optimizes loading
                   className="w-full h-full object-cover"
                   style={{
-                    objectFit: 'cover', // Changed to cover to fill the container
+                    objectFit: 'contain', // Changed to cover to fill the container
                     objectPosition: 'center center',
                     width: '100%',
                     height: '100%',
