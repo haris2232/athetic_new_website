@@ -151,7 +151,7 @@ export default function HomePage() {
     };
 
     // Try to play videos immediately
-    playVideos();
+    const timer = setTimeout(playVideos, 100);
 
     // Add click event listener to play videos on user interaction (for iOS)
     const handleUserInteraction = () => {
@@ -164,6 +164,7 @@ export default function HomePage() {
     document.addEventListener('touchstart', handleUserInteraction);
 
     return () => {
+      clearTimeout(timer);
       document.removeEventListener('click', handleUserInteraction);
       document.removeEventListener('touchstart', handleUserInteraction);
     };
