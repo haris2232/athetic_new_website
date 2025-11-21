@@ -106,7 +106,7 @@ function PaymentSuccessContent() {
                   </div>
                   <div>
                     <strong>Payment Status:</strong> 
-                    <span className={`ml-2 px-2 py-1 rounded text-xs ${
+                    <span className={`ml-2 px-2 py-1 rounded text-sm ${
                       orderStatus.paymentStatus === 'paid' 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-yellow-100 text-yellow-800'

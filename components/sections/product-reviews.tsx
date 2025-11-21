@@ -34,7 +34,7 @@ const renderReviewCard = (
     }}
   >
     {isTopReview && (
-      <span className="absolute top-4 right-6 flex items-center gap-2 text-xs uppercase tracking-wide text-[#2E2E2E]">
+      <span className="absolute top-4 right-6 flex items-center gap-2 text-sm uppercase tracking-wide text-[#2E2E2E]">
         <Crown className="h-4 w-4 text-[#c9ff4a]" />
         Top Review
       </span>
@@ -55,7 +55,7 @@ const renderReviewCard = (
         >
           {review.customer?.name || 'Anonymous'}
         </h3>
-        <p className="text-xs text-gray-500">
+        <p className="text-sm text-gray-500">
           {new Date(review.createdAt).toLocaleDateString()}
         </p>
       </div>
@@ -76,13 +76,13 @@ const renderReviewCard = (
     </p>
     {review.adminResponse && (
       <div className="bg-white/60 rounded-2xl p-4 border border-black/10">
-        <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-[#212121] mb-2">
+        <div className="flex items-center gap-2 text-sm uppercase tracking-wide text-[#212121] mb-2">
           <MessageSquare className="h-3 w-3" />
           Store Response
         </div>
         <p className="text-sm text-[#212121]">{review.adminResponse}</p>
         {review.responseDate && (
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-sm text-gray-500 mt-2">
             {new Date(review.responseDate).toLocaleDateString()}
           </p>
         )}

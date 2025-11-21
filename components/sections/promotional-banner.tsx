@@ -23,15 +23,15 @@ export default function PromotionalBanner() {
               <div className="flex space-x-4 text-center">
                 <div className="bg-[#ebff00] text-black px-4 py-2 rounded-lg">
                   <div className="text-2xl font-bold">02</div>
-                  <div className="text-xs">DAYS</div>
+                  <div className="text-sm">DAYS</div>
                 </div>
                 <div className="bg-[#ebff00] text-black px-4 py-2 rounded-lg">
                   <div className="text-2xl font-bold">14</div>
-                  <div className="text-xs">HOURS</div>
+                  <div className="text-sm">HOURS</div>
                 </div>
                 <div className="bg-[#ebff00] text-black px-4 py-2 rounded-lg">
                   <div className="text-2xl font-bold">32</div>
-                  <div className="text-xs">MINS</div>
+                  <div className="text-sm">MINS</div>
                 </div>
               </div>
             </div>

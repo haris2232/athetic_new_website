@@ -280,7 +280,7 @@ export default function CartPage() {
                           style={{ width: `${Math.min(100, (subtotal / freeShippingThreshold) * 100)}%` }}
                         />
                       </div>
-                      <div className="flex justify-between text-xs text-gray-400 mt-1">
+                      <div className="flex justify-between text-sm text-gray-400 mt-1">
                         <span>{formatPrice(0)}</span>
                         <span>{formatPrice(freeShippingThreshold)}</span>
                       </div>
@@ -332,7 +332,7 @@ export default function CartPage() {
                         )}
                       </h3>
                       {item.isBundle && (
-                        <div className="text-xs text-gray-500 mb-2 space-y-1">
+                        <div className="text-sm text-gray-500 mb-2 space-y-1">
                           {item.bundlePack && (
                             <div>
                               <span className="font-medium">Pack:</span>{" "}

@@ -1,4 +1,16 @@
 const ProductCard = ({ id, name, price, originalPrice, discount, image }) => {
+  // Format price function to remove decimals
+  const formatPrice = (price) => {
+    if (typeof price === 'number') {
+      return `₹${Math.round(price)}`;
+    }
+    if (typeof price === 'string') {
+      // If price is already a string like "₹80.00", remove the decimal part
+      return price.replace(/\.00$/, '');
+    }
+    return price;
+  };
+
   return (
     <div className="rounded-[40px] overflow-hidden shadow-lg bg-white border border-gray-200 hover:shadow-xl transition-all duration-300">
       {/* Image container with rounded top */}
@@ -12,12 +24,13 @@ const ProductCard = ({ id, name, price, originalPrice, discount, image }) => {
       
       {/* Content container with rounded bottom */}
       <div className="p-6 rounded-b-[40px] bg-white">
-        <h3 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-2">{name}</h3>
+        {/* Changed text-lg to text-md for smaller title */}
+        <h3 className="text-md font-semibold text-gray-800 mb-2 line-clamp-2">{name}</h3>
         
         <div className="flex items-center gap-3 mb-2">
-          <p className="text-xl font-bold text-gray-900">{price}</p>
+          <p className="text-xl font-bold text-gray-900">{formatPrice(price)}</p>
           {originalPrice && (
-            <p className="text-lg text-gray-500 line-through">{originalPrice}</p>
+            <p className="text-lg text-gray-500 line-through">{formatPrice(originalPrice)}</p>
           )}
         </div>
         

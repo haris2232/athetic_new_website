@@ -435,7 +435,7 @@ export default function CheckoutPage() {
                         </div>
                       ))}
                     </div>
-                    <p className="text-xs text-gray-500 mt-2">Click an address to fill the form below.</p>
+                    <p className="text-sm text-gray-500 mt-2">Click an address to fill the form below.</p>
                   </div>
                 )}
 

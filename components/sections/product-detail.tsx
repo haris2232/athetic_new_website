@@ -1792,7 +1792,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   >
                     {bundle.badgeText && (
                       <span
-                        className="absolute top-4 left-4 z-30 bg-white/90 text-black uppercase tracking-[0.2em] text-xs font-semibold px-3 py-1 rounded-full shadow-md"
+                        className="absolute top-4 left-4 z-30 bg-white/90 text-black uppercase tracking-[0.2em] text-sm font-semibold px-3 py-1 rounded-full shadow-md"
                         style={{
                           fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
                         }}

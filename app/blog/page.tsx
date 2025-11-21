@@ -121,7 +121,7 @@ export default function AllBlogsPage() {
                       {blog.adminName}
                     </h3>
                     <p
-                      className="text-xs truncate opacity-80"
+                      className="text-sm truncate opacity-80"
                       title={blog.url}
                     >
                       {blog.url}

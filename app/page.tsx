@@ -1064,12 +1064,12 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                       {hasProductDiscount && (
                         <>
                           {/* SALE Tag - Top Left */}
-                          <div className="absolute top-3 md:top-4 left-3 md:left-4 bg-red-600 text-white px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+                          <div className="absolute top-3 md:top-4 left-3 md:left-4 bg-red-600 text-white px-2 md:px-3 py-1 md:py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
                             SALE
                           </div>
                           
                           {/* Discount Percentage - Top Right */}
-                          <div className="absolute top-3 md:top-4 right-3 md:right-4 bg-white text-black px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold rounded-full">
+                          <div className="absolute top-3 md:top-4 right-3 md:right-4 bg-white text-black px-2 md:px-3 py-1 md:py-1.5 text-sm font-bold rounded-full">
                             {discountPercentage}% OFF
                           </div>
                         </>
@@ -1086,7 +1086,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                             className="uppercase text-white"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
+                              fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
                               lineHeight: '1.2',
                               letterSpacing: '0px',
                               fontWeight: 500,
@@ -1099,7 +1099,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                               className="uppercase text-white"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
+                                fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
                                 lineHeight: '1.2',
                                 letterSpacing: '0px',
                                 fontWeight: 500,
@@ -1119,7 +1119,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                             fontWeight: 600,
                           }}
                         >
-                          {formatPrice(productPrice)}
+                          AED{Math.round(productPrice)} {/* Fixed price format */}
                         </p>
                       </div>
                     </Link>
@@ -1328,14 +1328,14 @@ move with you from workouts to weekends.            </p>
 
                       {/* Purchase Count Badge */}
                       {purchaseCount > 0 && (
-                        <div className="absolute top-3 md:top-4 left-3 md:left-4 bg-green-600 text-white px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+                        <div className="absolute top-3 md:top-4 left-3 md:left-4 bg-green-600 text-white px-2 md:px-3 py-1 md:py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
                           {purchaseCount}+ SOLD
                         </div>
                       )}
 
                       {/* Discount Badges */}
                       {hasProductDiscount && (
-                        <div className="absolute top-3 md:top-4 right-3 md:right-4 bg-white text-black px-2 md:px-3 py-1 md:py-1.5 text-xs font-bold rounded-full">
+                        <div className="absolute top-3 md:top-4 right-3 md:right-4 bg-white text-black px-2 md:px-3 py-1 md:py-1.5 text-sm font-bold rounded-full">
                           {discountPercentage}% OFF
                         </div>
                       )}
@@ -1351,7 +1351,7 @@ move with you from workouts to weekends.            </p>
                             className="uppercase text-white"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
+                              fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
                               lineHeight: '1.2',
                               letterSpacing: '0px',
                               fontWeight: 500,
@@ -1364,7 +1364,7 @@ move with you from workouts to weekends.            </p>
                               className="uppercase text-white"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
+                                fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
                                 lineHeight: '1.2',
                                 letterSpacing: '0px',
                                 fontWeight: 500,
@@ -1384,7 +1384,7 @@ move with you from workouts to weekends.            </p>
                             fontWeight: 600,
                           }}
                         >
-                          {formatPrice(productPrice)}
+                          AED{Math.round(productPrice)} {/* Fixed price format */}
                         </p>
                       </div>
                     </Link>
@@ -1690,7 +1690,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                     >
                       {bundle.badgeText && (
                         <span
-                          className="absolute top-3 md:top-4 left-3 md:left-4 bg-white/90 text-black uppercase tracking-[0.2em] text-xs font-semibold px-2 md:px-3 py-1 md:py-1 rounded-full shadow-md z-20"
+                          className="absolute top-3 md:top-4 left-3 md:left-4 bg-white/90 text-black uppercase tracking-[0.2em] text-sm font-semibold px-2 md:px-3 py-1 md:py-1 rounded-full shadow-md z-20"
                           style={{
                             fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
                           }}
@@ -1722,7 +1722,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                             className="uppercase text-white"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
+                              fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
                               lineHeight: '1.2',
                               letterSpacing: '0px',
                               fontWeight: 500
@@ -1735,7 +1735,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                               className="uppercase text-white"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
+                                fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
                                 lineHeight: '1.2',
                                 letterSpacing: '0px',
                                 fontWeight: 500
@@ -1755,31 +1755,17 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                             fontWeight: 600
                           }}
                         >
-                          {formatPrice(bundlePrice)}
+                          AED{Math.round(bundlePrice)} {/* Fixed price format */}
                         </p>
                       </div>
                       {bundle.shortDescription && (
                         <div
                           className="absolute left-0 right-0 bottom-[72px] bg-gradient-to-t from-black/80 to-transparent text-white px-4 md:px-6 pb-8 md:pb-10 pt-4 md:pt-6"
                           style={{
-                            borderBottomLeftRadius: '32px',
-                            borderBottomRightRadius: '32px',
                             zIndex: 10
                           }}
                         >
-                          <p
-                            className="text-sm leading-snug"
-                            style={{
-                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              letterSpacing: '0px',
-                              display: '-webkit-box',
-                              WebkitLineClamp: 2,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden'
-                            }}
-                          >
-                            {bundle.shortDescription}
-                          </p>
+
                         </div>
                       )}
                     </Link>

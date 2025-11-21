@@ -435,7 +435,7 @@ export default function Header() {
                     ) : searchResults.length > 0 ? (
                       <>
                         <div className="p-2 bg-gray-50 border-b">
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm text-gray-500">
                             Found {searchResults.length} results for "{searchQuery}"
                           </p>
                         </div>
@@ -469,7 +469,7 @@ export default function Header() {
                               </span>
                               <div className="flex justify-between items-center mt-1">
                                 <span className="text-[#cbf26c] text-sm font-bold">${product.basePrice}</span>
-                                <span className="text-xs text-gray-500 capitalize truncate ml-2">
+                                <span className="text-sm text-gray-500 capitalize truncate ml-2">
                                   {product.category} • {product.subCategory}
                                 </span>
                               </div>
@@ -493,7 +493,7 @@ export default function Header() {
                 <Link href="/wishlist">
                   <Heart className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
                   {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#cbf26c] text-[#212121] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-[#cbf26c] text-[#212121] text-sm font-bold rounded-full w-5 h-5 flex items-center justify-center">
                       {wishlistCount}
                     </span>
                   )}
@@ -517,7 +517,7 @@ export default function Header() {
               <Button variant="ghost" size="icon" className="relative hover:bg-[#141619] text-white group" asChild>
                 <Link href="/cart">
                   <ShoppingBag className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
-                  <span className="absolute -top-1 -right-1 bg-[#cbf26c] text-[#212121] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-[#cbf26c] text-[#212121] text-sm font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 </Link>
@@ -640,7 +640,7 @@ export default function Header() {
                       ) : searchResults.length > 0 ? (
                         <>
                           <div className="p-2 bg-gray-50 border-b">
-                            <p className="text-xs text-gray-500">
+                            <p className="text-sm text-gray-500">
                               Found {searchResults.length} results for "{searchQuery}"
                             </p>
                           </div>
@@ -669,7 +669,7 @@ export default function Header() {
                                 </span>
                                 <div className="flex justify-between items-center mt-1">
                                   <span className="text-[#cbf26c] text-sm font-bold">${product.basePrice}</span>
-                                  <span className="text-xs text-gray-500 capitalize truncate ml-2">
+                                  <span className="text-sm text-gray-500 capitalize truncate ml-2">
                                     {product.category} • {product.subCategory}
                                   </span>
                                 </div>

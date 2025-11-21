@@ -84,7 +84,7 @@ export function BundleSection({ category }: BundleSectionProps) {
               {/* THIS IS THE MODIFIED LINE */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 {bundle.badgeText && (
-                  <span className="col-span-2 mb-2 inline-flex items-center justify-center rounded-full bg-black text-white text-xs uppercase tracking-[0.3em] px-4 py-1">
+                  <span className="col-span-2 mb-2 inline-flex items-center justify-center rounded-full bg-black text-white text-sm uppercase tracking-[0.3em] px-4 py-1">
                     {bundle.badgeText}
                   </span>
                 )}
@@ -96,12 +96,12 @@ export function BundleSection({ category }: BundleSectionProps) {
                       className="w-full h-32 object-cover rounded-lg mb-2"
                     />
                     <h3 className="text-[#212121] text-sm font-medium">{product.title || product.name}</h3>
-                    <p className="text-gray-500 text-xs">{product.description || 'Premium quality'}</p>
+                    <p className="text-gray-500 text-sm">{product.description || 'Premium quality'}</p>
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-[#212121] font-bold">{formatCurrency(product.basePrice || parseFloat(product.price || '0'))}</span>
                       <div className="flex items-center">
-                        <span className="text-yellow-400 text-xs">★</span>
-                        <span className="text-[#212121] text-xs ml-1">{product.reviewRating || product.rating || 4.5}</span>
+                        <span className="text-yellow-400 text-sm">★</span>
+                        <span className="text-[#212121] text-sm ml-1">{product.reviewRating || product.rating || 4.5}</span>
                       </div>
                     </div>
                   </div>

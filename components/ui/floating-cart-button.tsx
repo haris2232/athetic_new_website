@@ -148,8 +148,8 @@ export default function FloatingCartButton() {
           shadow-2xl
           z-20
           border-2 border-white
-          ${totalItems > 9 ? 'min-w-8 h-8 text-[11px] px-1' : 'h-7 w-7 text-xs'}
-          ${totalItems > 99 ? 'min-w-9 h-9 text-[10px]' : ''}
+          ${totalItems > 9 ? 'min-w-8 h-8 text-sm px-1' : 'h-7 w-7 text-sm'}
+          ${totalItems > 99 ? 'min-w-9 h-9 text-sm' : ''}
           ${isPulsing ? 'scale-125 animate-pulse' : ''}
           ${isHovered ? 'scale-110 -rotate-12' : 'scale-100 rotate-0'}
           ${isBouncing ? 'animate-bounce' : ''}

@@ -86,7 +86,7 @@ export default function WishlistPage() {
                   />
 
                   {/* Fit Label */}
-                  <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1.5 text-xs font-medium uppercase tracking-wider">
+                  <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1.5 text-sm font-medium uppercase tracking-wider">
                     REGULAR FIT
                   </div>
 

@@ -18,8 +18,9 @@ function createMockProduct(id: string) {
   return {
     id: id,
     name: "MEN'S HYBRID CLASSIC",
-    price: "59",
-    originalPrice: "80",
+price: 59,
+originalPrice: 80,
+
     image: mainImage,
     images: [mainImage, mainImage, mainImage], // Use same image for all thumbnails (as shown on MEN page)
     category: "men",

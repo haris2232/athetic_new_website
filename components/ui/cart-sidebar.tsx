@@ -148,7 +148,7 @@ export default function CartSidebar() {
                   <span>Subtotal</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
-                <p className="text-xs text-gray-400">
+                <p className="text-sm text-gray-400">
                   Taxes and shipping calculated at checkout.
                 </p>
                 <Button asChild className="w-full bg-white text-[#212121] hover:bg-gray-200 font-semibold py-3 text-base">

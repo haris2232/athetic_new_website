@@ -249,7 +249,7 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
           <div className="space-y-6 lg:flex-1">
             <div className="space-y-3">
               {bundle.badgeText && (
-                <span className="inline-flex items-center rounded-full bg-black px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-white">
+                <span className="inline-flex items-center rounded-full bg-black px-4 py-1 text-sm font-semibold uppercase tracking-[0.35em] text-white">
                   {bundle.badgeText}
                 </span>
               )}
@@ -286,17 +286,17 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
                 </div>
               )}
               {selection.pack && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-sm text-muted-foreground">
                   {selection.pack.name} · {selection.pack.quantity} pieces • {formatCurrency(packUnitPrice)}/item
                 </div>
               )}
               {selection.size && bundle.sizePriceVariation && bundle.sizePriceVariation[selection.size] && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-sm text-muted-foreground">
                   Size adjustment: +{formatCurrency(bundle.sizePriceVariation[selection.size])}
                 </div>
               )}
               {bundle.dealTag && (
-                <div className="text-xs font-semibold uppercase text-amber-600">{bundle.dealTag}</div>
+                <div className="text-sm font-semibold uppercase text-amber-600">{bundle.dealTag}</div>
               )}
             </div>
 
@@ -312,7 +312,7 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
                     )}
                   </p>
                   {selection.color?.description && (
-                    <p className="text-xs text-muted-foreground">{selection.color.description}</p>
+                    <p className="text-sm text-muted-foreground">{selection.color.description}</p>
                   )}
                 </div>
                 <div className="grid grid-flow-col auto-cols-[88px] gap-3 overflow-x-auto pb-1">
@@ -334,7 +334,7 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
                           className="h-full w-full object-cover"
                         />
                         {color.badge && (
-                          <span className="absolute left-1.5 top-1.5 rounded-full bg-black/80 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+                          <span className="absolute left-1.5 top-1.5 rounded-full bg-black/80 px-2 py-0.5 text-sm font-semibold uppercase text-white">
                             {color.badge}
                           </span>
                         )}
@@ -372,7 +372,7 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
                         <div className="text-sm opacity-80">{formatCurrency(pack.totalPrice ?? 0)}</div>
                       </div>
                       <div
-                        className={`mt-1 text-xs font-semibold uppercase ${
+                        className={`mt-1 text-sm font-semibold uppercase ${
                           selection.pack?.name === pack.name ? "text-white/80" : "text-emerald-600"
                         }`}
                       >
@@ -380,7 +380,7 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
                       </div>
                       {pack.tag && (
                         <div
-                          className={`mt-2 inline-flex items-center rounded-full px-2 py-1 text-[10px] font-semibold uppercase ${
+                          className={`mt-2 inline-flex items-center rounded-full px-2 py-1 text-sm font-semibold uppercase ${
                             selection.pack?.name === pack.name
                               ? "bg-white/20 text-white"
                               : "bg-emerald-100 text-emerald-700"
@@ -452,12 +452,12 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
                 <span>Total</span>
                 <span>{formatCurrency(totalPrice)}</span>
               </div>
-              <div className="mt-1 flex justify-between text-xs text-muted-foreground">
+              <div className="mt-1 flex justify-between text-sm text-muted-foreground">
                 <span>Base</span>
                 <span>{formatCurrency(packTotal)}</span>
               </div>
               {selection.size && bundle.sizePriceVariation && bundle.sizePriceVariation[selection.size] && (
-                <div className="flex justify-between text-xs text-muted-foreground">
+                <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Size adj.</span>
                   <span>{formatCurrency(sizeAdjustment)}</span>
                 </div>
@@ -805,9 +805,9 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
                   >
                     <div className="font-semibold text-zinc-900">{item.title}</div>
                     {item.description && (
-                      <div className="text-xs text-muted-foreground">{item.description}</div>
+                      <div className="text-sm text-muted-foreground">{item.description}</div>
                     )}
-                    {item.icon && <div className="text-xs text-muted-foreground">{item.icon}</div>}
+                    {item.icon && <div className="text-sm text-muted-foreground">{item.icon}</div>}
                   </div>
                 ))}
               </div>

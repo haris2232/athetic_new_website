@@ -437,12 +437,12 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       {hasProductDiscount && (
                         <>
                           {/* SALE Tag - Top Left */}
-                          <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+                          <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
                             SALE
                           </div>
                           
                           {/* Discount Percentage - Top Right */}
-                          <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
+                          <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-sm font-bold rounded-full">
                             {discountPercentage}% OFF
                           </div>
                         </>
@@ -456,7 +456,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       >
                         <div className="flex flex-col text-left flex-1 min-w-0">
                           <span 
-                            className="uppercase text-white truncate text-[10px] sm:text-[13.41px]"
+                            className="uppercase text-white truncate text-sm sm:text-[13.41px]"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                               lineHeight: '14.6px',
@@ -469,7 +469,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           </span>
                           {secondLine && (
                             <span 
-                              className="uppercase text-white truncate text-[10px] sm:text-[13.41px]"
+                              className="uppercase text-white truncate text-sm sm:text-[13.41px]"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                                 lineHeight: '14.6px',
@@ -582,12 +582,12 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       {hasProductDiscount && (
                         <>
                           {/* SALE Tag - Top Left */}
-                          <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+                          <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
                             SALE
                           </div>
                           
                           {/* Discount Percentage - Top Right */}
-                          <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
+                          <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-sm font-bold rounded-full">
                             {discountPercentage}% OFF
                           </div>
                         </>
@@ -601,7 +601,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       >
                         <div className="flex flex-col text-left flex-1 min-w-0">
                           <span 
-                            className="uppercase text-white truncate text-[10px] sm:text-[13.41px]"
+                            className="uppercase text-white truncate text-sm sm:text-[13.41px]"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                               lineHeight: '14.6px',
@@ -614,7 +614,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           </span>
                           {secondLine && (
                             <span 
-                              className="uppercase text-white truncate text-[10px] sm:text-[13.41px]"
+                              className="uppercase text-white truncate text-sm sm:text-[13.41px]"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                                 lineHeight: '14.6px',

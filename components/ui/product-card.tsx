@@ -49,7 +49,7 @@ export default function ProductCard({
 
           {/* Fit Label */}
           {fit && (
-            <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1.5 text-xs font-medium uppercase tracking-wider rounded-full">
+            <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1.5 text-sm font-medium uppercase tracking-wider rounded-full">
               {fit}
             </div>
           )}
@@ -58,12 +58,12 @@ export default function ProductCard({
           {discount && discount > 0 && (
             <>
               {/* SALE Tag - Top Left */}
-              <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+              <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
                 SALE
               </div>
               
               {/* Discount Percentage - Top Right */}
-              <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
+              <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-sm font-bold rounded-full">
                 {discount}% OFF
               </div>
             </>
@@ -86,7 +86,7 @@ export default function ProductCard({
                 </span>
               )}
               <span className="text-lg font-bold text-white">
-                {formatPrice(parseFloat(price.replace(/[^0-9.]/g, '')))}
+                {formatPrice(Math.round(parseFloat(price.replace(/[^0-9.]/g, ''))))}
               </span>
             </div>
           </div>
