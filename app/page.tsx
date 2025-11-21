@@ -13,8 +13,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/bac
 
 // CLOUDINARY URLs
 const CLOUDINARY_URLS = {
-  mobile: "https://vimeo.com/1139424902?fl=ip&fe=ec",
-  desktop: "https://vimeo.com/1139424861?fl=ip&fe=ec"
+  mobile: "https://res.cloudinary.com/dyfbyr8ym/video/upload/v1763752349/top-banner-mob_bu0u09.mp4",
+  desktop: "https://res.cloudinary.com/dyfbyr8ym/video/upload/v1763752331/move-desk-com_vs2gte.mp4"
 };
 
 interface HomepageSettings {
@@ -132,29 +132,6 @@ export default function HomePage() {
 
   // Auto-scroll pause state
   const [isCarouselHovered, setIsCarouselHovered] = useState(false)
-
-  // CLOUDINARY AUTO-PLAY
-  useEffect(() => {
-    const playVideos = () => {
-      if (mobileVideoRef.current) {
-        const mobileVideo = mobileVideoRef.current;
-        mobileVideo.src = CLOUDINARY_URLS.mobile;
-        mobileVideo.play().catch(e => {
-          console.log('Mobile auto-play failed');
-        });
-      }
-
-      if (desktopVideoRef.current) {
-        const desktopVideo = desktopVideoRef.current;
-        desktopVideo.src = CLOUDINARY_URLS.desktop;
-        desktopVideo.play().catch(e => {
-          console.log('Desktop auto-play failed');
-        });
-      }
-    };
-
-    playVideos();
-  }, []);
 
   // Lightbox helpers
   const openLightbox = (index: number) => {
@@ -787,10 +764,13 @@ export default function HomePage() {
           <div className="block md:hidden w-full h-full">
             <video
               ref={mobileVideoRef}
+              src={CLOUDINARY_URLS.mobile}
               autoPlay
               loop
               muted
               playsInline
+              poster="/placeholder-mobile.jpg" // Replace with a real poster image
+              preload="auto"
               className="w-full h-full object-cover"
               style={{
                 objectFit: 'contain',
@@ -805,10 +785,13 @@ export default function HomePage() {
           <div className="hidden md:block w-full h-full">
             <video
               ref={desktopVideoRef}
+              src={CLOUDINARY_URLS.desktop}
               autoPlay
               loop
               muted
               playsInline
+              poster="/placeholder-desktop.jpg" // Replace with a real poster image
+              preload="auto"
               className="w-full h-full object-cover"
               style={{
                 objectFit: 'cover',
@@ -1016,7 +999,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
               className="text-black leading-normal text-left"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
+                fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
                 letterSpacing: '0px',
                 fontWeight: 500
               }}
@@ -1254,7 +1237,7 @@ best sellers              </h1>
               className="text-black leading-normal text-left"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
+                fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
                 letterSpacing: '0px',
                 fontWeight: 500
               }}
