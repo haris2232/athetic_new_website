@@ -328,17 +328,15 @@ export default function Header() {
     <header className="bg-[#0f1013] text-white sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
+          {/* Logo - Fixed for mobile */}
+          <Link href="/" className="flex items-center flex-shrink-0">
             <Image 
               src="/logos.png" 
               alt="ATHLEKT" 
               width={120} 
               height={30} 
-              className="h-7 w-auto" 
-              height={28} 
+              className="h-7 w-auto max-w-[120px] object-contain"
               priority 
-              style={{ width: 'auto', height: '1.75rem' }}
             />
           </Link>
 
