@@ -127,11 +127,10 @@ export default function HomePage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const { formatPrice } = useCurrency()
   
-  // Video refs for autoplay
+  // Video refs for INSTANT PLAY
   const mobileVideoRef = useRef<HTMLVideoElement>(null);
   const desktopVideoRef = useRef<HTMLVideoElement>(null);
   const [videoLoaded, setVideoLoaded] = useState(false);
-  const [videoError, setVideoError] = useState(false);
 
   // Community favorites products state
   const [communityFavorites, setCommunityFavorites] = useState<Product[]>([])
@@ -152,91 +151,32 @@ export default function HomePage() {
   // Auto-scroll pause state
   const [isCarouselHovered, setIsCarouselHovered] = useState(false)
 
-  // Enhanced video autoplay with user interaction
+  // INSTANT PLAY EFFECT - Simple and aggressive
   useEffect(() => {
-    const playVideos = async () => {
+    const playVideos = () => {
       const videos = [mobileVideoRef.current, desktopVideoRef.current];
       
-      for (const video of videos) {
+      videos.forEach(video => {
         if (video) {
-          try {
-            // Reset video to beginning
-            video.currentTime = 0;
-            
-            // Try to play with promise
-            const playPromise = video.play();
-            
-            if (playPromise !== undefined) {
-              playPromise
-                .then(() => {
-                  console.log('Video autoplay started successfully');
-                  setVideoLoaded(true);
-                  setVideoError(false);
-                })
-                .catch(error => {
-                  console.log('Autoplay failed, will try with user interaction:', error);
-                  // Show play button or rely on user interaction
-                });
-            }
-          } catch (error) {
-            console.log('Autoplay blocked for video:', error);
-          }
+          // Force play immediately
+          video.play().catch(e => {
+            console.log('Auto-play prevented');
+          });
         }
-      }
+      });
     };
 
-    // Try to play immediately
-    setTimeout(() => {
-      playVideos();
-    }, 1000);
-
-    // More aggressive user interaction detection
-    const handleUserInteraction = () => {
-      playVideos();
-    };
-
-    // Add multiple event listeners for better coverage
-    document.addEventListener('click', handleUserInteraction);
-    document.addEventListener('touchstart', handleUserInteraction);
-    document.addEventListener('scroll', handleUserInteraction);
-    document.addEventListener('mousemove', handleUserInteraction);
-    document.addEventListener('keydown', handleUserInteraction);
+    // Immediate play attempt
+    const timer = setTimeout(playVideos, 100);
 
     return () => {
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('touchstart', handleUserInteraction);
-      document.removeEventListener('scroll', handleUserInteraction);
-      document.removeEventListener('mousemove', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
+      clearTimeout(timer);
     };
   }, []);
 
-  // Additional video loading handling
+  // Simple video loaded handler
   const handleVideoLoad = () => {
     setVideoLoaded(true);
-    setVideoError(false);
-  };
-
-  const handleVideoError = () => {
-    setVideoError(true);
-    setVideoLoaded(false);
-  };
-
-  // Manual play function as fallback
-  const handleManualPlay = async () => {
-    const videos = [mobileVideoRef.current, desktopVideoRef.current];
-    
-    for (const video of videos) {
-      if (video) {
-        try {
-          await video.play();
-          setVideoLoaded(true);
-          setVideoError(false);
-        } catch (error) {
-          console.log('Manual play also failed:', error);
-        }
-      }
-    }
   };
 
   // Lightbox helpers
@@ -248,6 +188,7 @@ export default function HomePage() {
     setLightboxOpen(false)
     setLightboxIndex(null)
   }
+  
   // prevent body scroll when lightbox open
   useEffect(() => {
     if (lightboxOpen) {
@@ -259,6 +200,7 @@ export default function HomePage() {
       document.body.style.overflow = ""
     }
   }, [lightboxOpen])
+  
   // keyboard navigation (Esc, ArrowLeft, ArrowRight)
   useEffect(() => {
     if (!lightboxOpen) return
@@ -871,12 +813,12 @@ export default function HomePage() {
     <div className="min-h-screen bg-white overflow-x-hidden">
       <Header />
       
-      {/* Section 1: MOVE WITH PURPOSE Header - ENHANCED VIDEO SECTION */}
+      {/* Section 1: MOVE WITH PURPOSE Header - INSTANT PLAY VIDEO */}
       <section className="relative w-full overflow-x-hidden">
         {/* Top Black Bar */}
         <div className="w-full h-3 bg-black"></div>
         
-        {/* Hero Box - ENHANCED VIDEO BANNER */}
+        {/* Hero Box - INSTANT PLAY VIDEO */}
         <div 
           className="bg-white relative w-full overflow-hidden mx-auto"
           style={{
@@ -890,8 +832,8 @@ export default function HomePage() {
             backgroundColor: '#FFFFFF',
           }}
         >
-          {/* Mobile Video - Enhanced */}
-          <div className="block md:hidden w-full h-full relative">
+          {/* Mobile Video - INSTANT PLAY */}
+          <div className="block md:hidden w-full h-full">
             <video
               ref={mobileVideoRef}
               src="/video/move-mob-com.mp4"
@@ -907,47 +849,13 @@ export default function HomePage() {
               }}
               onLoadedData={handleVideoLoad}
               onCanPlayThrough={handleVideoLoad}
-              onError={handleVideoError}
-              onLoadStart={() => console.log('Mobile video loading started')}
             >
               Your browser does not support the video tag.
             </video>
-            
-            {/* Fallback if video fails to load */}
-            {videoError && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100">
-                <div className="text-gray-500 mb-4">Video failed to load</div>
-                <button 
-                  onClick={handleManualPlay}
-                  className="bg-black text-white px-4 py-2 rounded"
-                >
-                  Tap to Play
-                </button>
-              </div>
-            )}
-            
-            {/* Loading State */}
-            {!videoLoaded && !videoError && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                <div className="text-gray-500">Loading video...</div>
-              </div>
-            )}
-            
-            {/* Play button overlay for iOS */}
-            {!videoLoaded && !videoError && (
-              <div 
-                className="absolute inset-0 flex items-center justify-center cursor-pointer"
-                onClick={handleManualPlay}
-              >
-                <div className="bg-black/50 rounded-full p-4">
-                  <div className="text-white text-sm">Tap to Play</div>
-                </div>
-              </div>
-            )}
           </div>
           
-          {/* Desktop Video - Enhanced */}
-          <div className="hidden md:block w-full h-full relative">
+          {/* Desktop Video - INSTANT PLAY */}
+          <div className="hidden md:block w-full h-full">
             <video
               ref={desktopVideoRef}
               src="/video/move-desk-com.mp4"
@@ -963,32 +871,17 @@ export default function HomePage() {
               }}
               onLoadedData={handleVideoLoad}
               onCanPlayThrough={handleVideoLoad}
-              onError={handleVideoError}
-              onLoadStart={() => console.log('Desktop video loading started')}
             >
               Your browser does not support the video tag.
             </video>
-
-            {/* Fallback if video fails to load */}
-            {videoError && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100">
-                <div className="text-gray-500 mb-4">Video failed to load</div>
-                <button 
-                  onClick={handleManualPlay}
-                  className="bg-black text-white px-4 py-2 rounded"
-                >
-                  Click to Play
-                </button>
-              </div>
-            )}
-
-            {/* Loading State */}
-            {!videoLoaded && !videoError && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                <div className="text-gray-500">Loading video...</div>
-              </div>
-            )}
           </div>
+
+          {/* Loading State */}
+          {!videoLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <div className="text-gray-500">Loading video...</div>
+            </div>
+          )}
         </div>
       </section>
 
