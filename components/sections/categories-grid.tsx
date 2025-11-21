@@ -366,7 +366,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
 
           {/* Product Grid - Dynamic Products from API */}
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
               {/* Loading skeleton */}
               {Array.from({ length: 8 }).map((_, index) => (
                 <div 
@@ -381,7 +381,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
               {filteredProducts.map((product) => {
                 // Split product name into two lines if it contains spaces
                 const nameParts = product.name.split(' ').filter(Boolean)
@@ -392,96 +392,96 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 
                 return (
                   <Link key={product.id} href={`/product/${product.id}`} className="block cursor-pointer">
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
+                    <div 
+                      className="bg-white relative overflow-hidden w-full"
+                      style={{
+                        aspectRatio: '307/450'
+                      }}
+                    >
+                      <img 
                         src={product.image || product.images?.[0] || "/3.png"} 
                         alt={product.name} 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
+                        className="w-full h-full object-cover"
+                        style={{
+                          borderRadius: '32px'
+                        }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
                           target.src = "/3.png"
-                }}
-              />
+                        }}
+                      />
 
-              {/* Discount Badges */}
-              {hasProductDiscount && (
-                <>
-                  {/* SALE Tag - Top Left */}
-                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
-                    SALE
-                  </div>
-                  
-                  {/* Discount Percentage - Top Right */}
-                  <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
-                    {discountPercentage}% OFF
-                  </div>
-                </>
-              )}
-              
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
+                      {/* Discount Badges */}
+                      {hasProductDiscount && (
+                        <>
+                          {/* SALE Tag - Top Left */}
+                          <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+                            SALE
+                          </div>
+                          
+                          {/* Discount Percentage - Top Right */}
+                          <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
+                            {discountPercentage}% OFF
+                          </div>
+                        </>
+                      )}
+                      
+                      <div 
+                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                        style={{
+                          height: '60px'
+                        }}
+                      >
                         <div className="flex flex-col text-left flex-1 min-w-0">
-                  <span 
+                          <span 
                             className="uppercase text-white truncate"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: '13.41px',
+                              lineHeight: '14.6px',
+                              letterSpacing: '0px',
+                              fontWeight: 500
+                            }}
                             title={firstLine}
-                  >
+                          >
                             {firstLine || product.name}
-                  </span>
+                          </span>
                           {secondLine && (
-                  <span 
+                            <span 
                               className="uppercase text-white truncate"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
+                              style={{
+                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                                fontSize: '13.41px',
+                                lineHeight: '14.6px',
+                                letterSpacing: '0px',
+                                fontWeight: 500
+                              }}
                               title={secondLine}
-                  >
+                            >
                               {secondLine}
-                  </span>
+                            </span>
                           )}
-                </div>
-                <p 
+                        </div>
+                        <p 
                           className="text-white font-bold text-right ml-2 flex-shrink-0"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '22px',
+                            lineHeight: '26px',
+                            letterSpacing: '0px',
+                            fontWeight: 600
+                          }}
+                        >
                           {product.price || 'AED 0'}
-                </p>
-              </div>
-            </div>
-            </Link>
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
                 )
               })}
-                </div>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
               <div className="col-span-full text-center py-12">
                 <p className="text-black text-lg">
                   No products found for {getGenderDisplay()}
@@ -489,7 +489,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
               </div>
             </div>
           )}
-                </div>
+        </div>
       </div>
 
       {/* YOU MAY ALSO LIKE Section */}
@@ -529,7 +529,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
 
           {/* Product Grid - Dynamic Recommended Products */}
           {getRecommendedProducts().length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
               {getRecommendedProducts().map((product) => {
                 // Split product name into two lines if it contains spaces
                 const nameParts = product.name.split(' ').filter(Boolean)
@@ -540,96 +540,96 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 
                 return (
                   <Link key={product.id} href={`/product/${product.id}`} className="block cursor-pointer">
-            <div 
-              className="bg-white relative overflow-hidden w-full"
-              style={{
-                aspectRatio: '307/450'
-              }}
-            >
-              <img 
+                    <div 
+                      className="bg-white relative overflow-hidden w-full"
+                      style={{
+                        aspectRatio: '307/450'
+                      }}
+                    >
+                      <img 
                         src={product.image || product.images?.[0] || "/3.png"} 
                         alt={product.name} 
-                className="w-full h-full object-cover"
-                style={{
-                  borderRadius: '32px'
-                }}
+                        className="w-full h-full object-cover"
+                        style={{
+                          borderRadius: '32px'
+                        }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
                           target.src = "/3.png"
-                }}
-              />
+                        }}
+                      />
 
-              {/* Discount Badges */}
-              {hasProductDiscount && (
-                <>
-                  {/* SALE Tag - Top Left */}
-                  <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
-                    SALE
-                  </div>
-                  
-                  {/* Discount Percentage - Top Right */}
-                  <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
-                    {discountPercentage}% OFF
-                  </div>
-                </>
-              )}
-              
-              <div 
-                className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                style={{
-                  height: '60px'
-                }}
-              >
+                      {/* Discount Badges */}
+                      {hasProductDiscount && (
+                        <>
+                          {/* SALE Tag - Top Left */}
+                          <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-full">
+                            SALE
+                          </div>
+                          
+                          {/* Discount Percentage - Top Right */}
+                          <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-xs font-bold rounded-full">
+                            {discountPercentage}% OFF
+                          </div>
+                        </>
+                      )}
+                      
+                      <div 
+                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                        style={{
+                          height: '60px'
+                        }}
+                      >
                         <div className="flex flex-col text-left flex-1 min-w-0">
-                  <span 
+                          <span 
                             className="uppercase text-white truncate"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              fontSize: '13.41px',
+                              lineHeight: '14.6px',
+                              letterSpacing: '0px',
+                              fontWeight: 500
+                            }}
                             title={firstLine}
-                  >
+                          >
                             {firstLine || product.name}
-                  </span>
+                          </span>
                           {secondLine && (
-                  <span 
+                            <span 
                               className="uppercase text-white truncate"
-                    style={{
-                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                      fontSize: '13.41px',
-                      lineHeight: '14.6px',
-                      letterSpacing: '0px',
-                      fontWeight: 500
-                    }}
+                              style={{
+                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                                fontSize: '13.41px',
+                                lineHeight: '14.6px',
+                                letterSpacing: '0px',
+                                fontWeight: 500
+                              }}
                               title={secondLine}
-                  >
+                            >
                               {secondLine}
-                  </span>
+                            </span>
                           )}
-                </div>
-                <p 
+                        </div>
+                        <p 
                           className="text-white font-bold text-right ml-2 flex-shrink-0"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: '22px',
-                    lineHeight: '26px',
-                    letterSpacing: '0px',
-                    fontWeight: 600
-                  }}
-                >
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '22px',
+                            lineHeight: '26px',
+                            letterSpacing: '0px',
+                            fontWeight: 600
+                          }}
+                        >
                           {product.price || 'AED 0'}
-                </p>
-              </div>
-            </div>
+                        </p>
+                      </div>
+                    </div>
                   </Link>
                 )
               })}
-                </div>
+            </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
               <div className="col-span-full text-center py-12">
                 <p className="text-black text-lg">
                   No recommended products available
@@ -639,7 +639,6 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
           )}
         </div>
       </div>
-
     </div>
   )
 }
