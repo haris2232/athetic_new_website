@@ -266,6 +266,28 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
     return product.discountPercentage || 0
   }
 
+  // Format price - remove .00 from the end
+  const formatPrice = (price: string | number) => {
+    if (!price) return 'AED 0'
+    
+    const priceStr = price.toString()
+    
+    // If price ends with .00, remove it
+    if (priceStr.endsWith('.00')) {
+      return ` ${priceStr.slice(0, -3)}`
+    }
+    
+    // If price contains decimal, check if it's .00
+    if (priceStr.includes('.')) {
+      const [whole, decimal] = priceStr.split('.')
+      if (decimal === '00') {
+        return `AED ${whole}`
+      }
+    }
+    
+    return `AED ${priceStr}`
+  }
+
   const filteredProducts = getFilteredProducts()
 
   return (
@@ -289,12 +311,12 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 {normalizedGender === 'women' ? 'WOMEN' : 'MEN'}
               </h1>
               
-              {/* Product Type Navigation - Dynamic from API */}
-              <div className="flex flex-wrap gap-6 mb-4">
+              {/* Product Type Navigation - Dynamic from API - Horizontal Scroll */}
+              <div className="flex overflow-x-auto gap-6 mb-4 pb-2 scrollbar-hide">
                 {/* ALL Button */}
                 <button 
                   onClick={() => setSelectedCategory('all')}
-                  className={`uppercase text-left hover:text-gray-600 transition-colors ${
+                  className={`uppercase text-left hover:text-gray-600 transition-colors whitespace-nowrap flex-shrink-0 ${
                     selectedCategory === 'all' ? 'text-black font-bold' : 'text-black'
                   }`}
                   style={{
@@ -321,7 +343,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                     <button 
                       key={subCategory}
                       onClick={() => setSelectedCategory(subCategory)}
-                      className={`uppercase text-left hover:text-gray-600 transition-colors ${
+                      className={`uppercase text-left hover:text-gray-600 transition-colors whitespace-nowrap flex-shrink-0 ${
                         isActive ? 'text-black font-bold' : 'text-black'
                       }`}
                       style={{
@@ -434,10 +456,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       >
                         <div className="flex flex-col text-left flex-1 min-w-0">
                           <span 
-                            className="uppercase text-white truncate"
+                            className="uppercase text-white truncate text-[10px] sm:text-[13.41px]"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: '13.41px',
                               lineHeight: '14.6px',
                               letterSpacing: '0px',
                               fontWeight: 500
@@ -448,10 +469,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           </span>
                           {secondLine && (
                             <span 
-                              className="uppercase text-white truncate"
+                              className="uppercase text-white truncate text-[10px] sm:text-[13.41px]"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: '13.41px',
                                 lineHeight: '14.6px',
                                 letterSpacing: '0px',
                                 fontWeight: 500
@@ -463,16 +483,15 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           )}
                         </div>
                         <p 
-                          className="text-white font-bold text-right ml-2 flex-shrink-0"
+                          className="text-white font-bold text-right ml-2 flex-shrink-0 text-[16px] sm:text-[22px]"
                           style={{
                             fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: '22px',
                             lineHeight: '26px',
                             letterSpacing: '0px',
                             fontWeight: 600
                           }}
                         >
-                          {product.price || 'AED 0'}
+                          {formatPrice(product.price)}
                         </p>
                       </div>
                     </div>
@@ -582,10 +601,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       >
                         <div className="flex flex-col text-left flex-1 min-w-0">
                           <span 
-                            className="uppercase text-white truncate"
+                            className="uppercase text-white truncate text-[10px] sm:text-[13.41px]"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: '13.41px',
                               lineHeight: '14.6px',
                               letterSpacing: '0px',
                               fontWeight: 500
@@ -596,10 +614,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           </span>
                           {secondLine && (
                             <span 
-                              className="uppercase text-white truncate"
+                              className="uppercase text-white truncate text-[10px] sm:text-[13.41px]"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: '13.41px',
                                 lineHeight: '14.6px',
                                 letterSpacing: '0px',
                                 fontWeight: 500
@@ -611,16 +628,15 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           )}
                         </div>
                         <p 
-                          className="text-white font-bold text-right ml-2 flex-shrink-0"
+                          className="text-white font-bold text-right ml-2 flex-shrink-0 text-[16px] sm:text-[22px]"
                           style={{
                             fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: '22px',
                             lineHeight: '26px',
                             letterSpacing: '0px',
                             fontWeight: 600
                           }}
                         >
-                          {product.price || 'AED 0'}
+                          {formatPrice(product.price)}
                         </p>
                       </div>
                     </div>
