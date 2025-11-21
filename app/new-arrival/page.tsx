@@ -26,7 +26,7 @@ const ProductGrid = ({ products, loading }: { products: Product[]; loading: bool
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg-grid-cols-3 xl:grid-cols-4 gap-6 px-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8">
       {products.map((product) => (
         <ProductCard
           key={product.id}
@@ -36,13 +36,11 @@ const ProductGrid = ({ products, loading }: { products: Product[]; loading: bool
           originalPrice={product.originalPrice}
           discount={product.isOnSale ? product.discountPercentage : undefined}
           image={product.image}
-          
         />
       ))}
     </div>
   );
 };
-
 
 // --- Main Page Component (WITH BANNER) ---
 export default function AllProductsPage() {
@@ -77,21 +75,21 @@ export default function AllProductsPage() {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* --- BANNER SECTION --- */}
-      <div style={{ paddingTop: '30px', paddingLeft: '8px', paddingRight: '8px' }}>
-        <div className="relative w-full h-[400px] overflow-hidden">
+      {/* --- BANNER SECTION - Updated for mobile --- */}
+      <div className="pt-0 sm:pt-8 px-2 sm:px-4 md:px-6 lg:px-8">
+        <div className="relative w-full h-[200px] sm:h-[300px] md:h-[350px] lg:h-[400px] overflow-hidden">
           <img 
             src="/images/new-arrival.png" 
             alt="New Arrivals Banner"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover sm:object-contain"
           />
         </div>
       </div>
       
       {/* --- UNIFIED COLLECTION SECTION --- */}
-      <section id="all-products-collection" className="py-16">
+      <section id="all-products-collection" className="py-8 sm:py-12 md:py-16">
         <div>
-          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-10">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-6 sm:mb-8 md:mb-10">
             New Arrivals
           </h2>
           <ProductGrid products={allProducts} loading={loading} />

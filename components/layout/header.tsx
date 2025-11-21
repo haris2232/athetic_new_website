@@ -334,9 +334,11 @@ export default function Header() {
               src="/logos.png" 
               alt="ATHLEKT" 
               width={120} 
-              height={25} 
+              height={30} 
               className="h-7 w-auto" 
+              height={28} 
               priority 
+              style={{ width: 'auto', height: '1.75rem' }}
             />
           </Link>
 

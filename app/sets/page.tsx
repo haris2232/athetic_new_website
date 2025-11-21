@@ -18,27 +18,27 @@ const ProductGrid = ({
 }) => {
   if (loading) {
     return (
-      <div className="text-center py-16">
-        <p className="text-black text-lg">Loading {title.toLowerCase()}...</p>
+      <div className="text-center py-8 sm:py-12 md:py-16">
+        <p className="text-black text-base sm:text-lg">Loading {title.toLowerCase()}...</p>
       </div>
     );
   }
 
   if (products.length === 0) {
     return (
-      <div className="text-center py-16">
-        <h3 className="text-black text-xl font-semibold mb-2">No {title} Found</h3>
-        <p className="text-gray-600">Check back later for new {title.toLowerCase()}!</p>
+      <div className="text-center py-8 sm:py-12 md:py-16">
+        <h3 className="text-black text-lg sm:text-xl font-semibold mb-2">No {title} Found</h3>
+        <p className="text-gray-600 text-sm sm:text-base">Check back later for new {title.toLowerCase()}!</p>
       </div>
     );
   }
 
   return (
-    <div className="mb-12">
-      <h3 className="text-2xl font-bold uppercase tracking-wide text-black text-center mb-6">
+    <div className="mb-8 sm:mb-10 md:mb-12">
+      <h3 className="text-xl sm:text-2xl font-bold uppercase tracking-wide text-black text-center mb-4 sm:mb-6">
         {title}
       </h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 px-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8">
         {products.map((product) => (
           <ProductCard
             key={product.id}
@@ -102,21 +102,21 @@ export default function SetsPage() {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* --- BANNER SECTION --- */}
-      <div style={{ paddingTop: '30px', paddingLeft: '8px', paddingRight: '8px' }}>
-        <div className="relative w-full h-[400px] overflow-hidden">
+      {/* --- BANNER SECTION - Updated for mobile --- */}
+      <div className="pt-0 sm:pt-8 px-2 sm:px-4 md:px-6 lg:px-8">
+        <div className="relative w-full h-[200px] sm:h-[300px] md:h-[350px] lg:h-[400px] overflow-hidden">
           <img 
             src="/images/sets.png" 
             alt="Sets Collection Banner"
-            className="w-full h-full object-contain"
+            className="w-full h-full object-cover sm:object-contain"
           />
         </div>
       </div>
       
       {/* --- SETS COLLECTION SECTION --- */}
-      <section id="sets-collection" className="py-16">
+      <section id="sets-collection" className="py-8 sm:py-12 md:py-16">
         <div>
-          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-10">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-6 sm:mb-8 md:mb-10">
             Sets Collection
           </h2>
           

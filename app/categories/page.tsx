@@ -112,15 +112,16 @@ export default function CategoriesPage() {
   return (
     <div className="min-h-screen bg-white">
       <Header />
-      {/* Banner Image Section */}
-      <div className="mt-32 mb-16 w-full px-4 sm:px-6 lg:px-10 flex justify-center pt-20">
+      
+      {/* Banner Image Section - Updated with mobile padding top 0 */}
+      <div className="mt-0 sm:mt-24 md:mt-28 lg:mt-32 mb-8 sm:mb-12 md:mb-16 w-full px-3 sm:px-4 md:px-6 lg:px-10 flex justify-center pt-0 sm:pt-18 md:pt-20">
         <div className="relative w-full max-w-[1400px]">
-          <div className="relative w-full overflow-hidden rounded-[80px] bg-[#f2f2f2]">
-            <div className="relative w-full" style={{ paddingTop: "18%" }}>
+          <div className="relative w-full overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[50px] lg:rounded-[80px] bg-[#f2f2f2]">
+            <div className="relative w-full" style={{ paddingTop: "30%", minHeight: "200px" }}>
               <img 
                 src={heroImages.background} 
                 alt={`${normalizedGender === "women" ? "Women" : "Men"} banner`} 
-                className="absolute inset-0 h-full w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover sm:object-contain"
                 onError={(event) => {
                   const target = event.target as HTMLImageElement
                   target.src = DEFAULT_HERO[normalizedGender].background
@@ -128,12 +129,13 @@ export default function CategoriesPage() {
               />
             </div>
           </div>
-          {/* Background Banner */}
+          
+          {/* Overlay Image */}
           <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
             <img 
               src={heroImages.overlay} 
               alt={`${normalizedGender === "women" ? "Women" : "Men"} feature`} 
-              className="w-[320px] md:w-[360px] lg:w-[400px] object-contain"
+              className="w-[180px] sm:w-[220px] md:w-[280px] lg:w-[320px] xl:w-[360px] 2xl:w-[400px] object-contain"
               onError={(event) => {
                 const target = event.target as HTMLImageElement
                 target.src = DEFAULT_HERO[normalizedGender].overlay
@@ -142,11 +144,17 @@ export default function CategoriesPage() {
           </div>
         </div>
       </div>
+      
       <main>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={
+          <div className="flex justify-center items-center py-16">
+            <div className="text-lg">Loading categories...</div>
+          </div>
+        }>
           <CategoriesContent />
         </Suspense>
       </main>
+      
       <Footer />
     </div>
   )

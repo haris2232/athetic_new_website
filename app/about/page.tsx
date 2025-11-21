@@ -151,14 +151,14 @@ export default function AboutUs() {
       {/* Main Content Section */}
       <main className="flex-grow">
         
-        {/* Image Section at Top */}
-        <div className="relative w-full h-[400px] sm:h-[300px] overflow-hidden bg-gray-100 mt-4">
-          <div className="h-full pl-4 pr-4">
+        {/* Image Section at Top - Updated for mobile responsiveness */}
+        <div className="relative w-full h-[300px] sm:h-[400px] md:h-[450px] lg:h-[500px] overflow-hidden bg-gray-100 mt-4">
+          <div className="h-full w-full">
             <Image
               src={HERO_IMAGE_PATH}
               alt="About Athlekt"
               fill
-              style={{ objectFit: "contain" }}
+              className="object-cover sm:object-contain"
               priority
             />
           </div>
@@ -178,7 +178,7 @@ export default function AboutUs() {
           </div>
 
           {/* Brand Mission Paragraphs */}
-          <div className=" mx-auto space-y-6 sm:space-y-8">
+          <div className="mx-auto space-y-6 sm:space-y-8 max-w-4xl">
             <p className="text-base sm:text-lg leading-relaxed text-left">
               <strong className="font-semibold">Athlekt</strong> is a UAE-born athleisure brand redefining what it means to live an active, balanced lifestyle for <strong className="font-semibold">every body and everyone, everywhere</strong>. Created for parents, professionals, and fitness enthusiasts alike, Athlekt celebrates movement in all its forms from school, office runs to gym runs, from studio sessions to weekend adventures.
             </p>
