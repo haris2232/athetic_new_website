@@ -110,9 +110,10 @@ export default function HomePage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const { formatPrice } = useCurrency()
   
-  // Video refs
+  // Video refs and state
   const mobileVideoRef = useRef<HTMLVideoElement>(null);
   const desktopVideoRef = useRef<HTMLVideoElement>(null);
+  const [videosLoaded, setVideosLoaded] = useState(false);
 
   // Community favorites products state
   const [communityFavorites, setCommunityFavorites] = useState<Product[]>([])
@@ -132,6 +133,41 @@ export default function HomePage() {
 
   // Auto-scroll pause state
   const [isCarouselHovered, setIsCarouselHovered] = useState(false)
+
+  // Video play handling for iOS
+  useEffect(() => {
+    const playVideos = () => {
+      if (mobileVideoRef.current) {
+        mobileVideoRef.current.play().catch(error => {
+          console.log('Mobile video play failed:', error);
+        });
+      }
+      if (desktopVideoRef.current) {
+        desktopVideoRef.current.play().catch(error => {
+          console.log('Desktop video play failed:', error);
+        });
+      }
+      setVideosLoaded(true);
+    };
+
+    // Try to play videos immediately
+    playVideos();
+
+    // Add click event listener to play videos on user interaction (for iOS)
+    const handleUserInteraction = () => {
+      playVideos();
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+    };
+
+    document.addEventListener('click', handleUserInteraction);
+    document.addEventListener('touchstart', handleUserInteraction);
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('touchstart', handleUserInteraction);
+    };
+  }, []);
 
   // Lightbox helpers
   const openLightbox = (index: number) => {
@@ -768,13 +804,17 @@ export default function HomePage() {
               loop
               muted
               playsInline
-              poster="/placeholder-mobile.jpg" // Replace with a real poster image
               preload="auto"
               className="w-full h-full object-cover"
               style={{
                 objectFit: 'contain',
                 objectPosition: 'center center',
               }}
+              // iOS specific attributes
+              webkit-playsinline="true"
+              x5-playsinline="true"
+              x5-video-player-type="h5"
+              x5-video-player-fullscreen="false"
             >
               Your browser does not support the video tag.
             </video>
@@ -789,17 +829,28 @@ export default function HomePage() {
               loop
               muted
               playsInline
-              poster="/placeholder-desktop.jpg" // Replace with a real poster image
               preload="auto"
               className="w-full h-full object-cover"
               style={{
                 objectFit: 'cover',
                 objectPosition: 'center center',
               }}
+              // iOS specific attributes
+              webkit-playsinline="true"
+              x5-playsinline="true"
+              x5-video-player-type="h5"
+              x5-video-player-fullscreen="false"
             >
               Your browser does not support the video tag.
             </video>
           </div>
+
+          {/* Fallback for videos that don't load */}
+          {!videosLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <p className="text-gray-500">Loading video...</p>
+            </div>
+          )}
         </div>
       </section>
 
