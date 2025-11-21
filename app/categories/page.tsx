@@ -113,11 +113,11 @@ export default function CategoriesPage() {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Banner Image Section - Updated with mobile padding top 0 */}
-      <div className="mt-0 sm:mt-24 md:mt-28 lg:mt-32 mb-8 sm:mb-12 md:mb-16 w-full px-3 sm:px-4 md:px-6 lg:px-10 flex justify-center pt-0 sm:pt-18 md:pt-20">
+      {/* Banner Image Section - Increased border radius */}
+      <div className="mt-4 mb-4 sm:mb-6 md:mb-8 w-full px-3 sm:px-4 md:px-6 lg:px-8 flex justify-center pt-0">
         <div className="relative w-full max-w-[1400px]">
-          <div className="relative w-full overflow-hidden rounded-2xl sm:rounded-3xl md:rounded-[50px] lg:rounded-[80px] bg-[#f2f2f2]">
-            <div className="relative w-full" style={{ paddingTop: "30%", minHeight: "200px" }}>
+          <div className="relative w-full overflow-hidden rounded-[40px] sm:rounded-[60px] md:rounded-[80px] lg:rounded-[100px] xl:rounded-[120px] bg-[#f2f2f2]">
+            <div className="relative w-full" style={{ paddingTop: "25%", minHeight: "150px" }}>
               <img 
                 src={heroImages.background} 
                 alt={`${normalizedGender === "women" ? "Women" : "Men"} banner`} 
@@ -135,7 +135,7 @@ export default function CategoriesPage() {
             <img 
               src={heroImages.overlay} 
               alt={`${normalizedGender === "women" ? "Women" : "Men"} feature`} 
-              className="w-[180px] sm:w-[220px] md:w-[280px] lg:w-[320px] xl:w-[360px] 2xl:w-[400px] object-contain"
+              className="w-[120px] sm:w-[160px] md:w-[200px] lg:w-[240px] xl:w-[280px] 2xl:w-[320px] object-contain"
               onError={(event) => {
                 const target = event.target as HTMLImageElement
                 target.src = DEFAULT_HERO[normalizedGender].overlay
@@ -147,8 +147,8 @@ export default function CategoriesPage() {
       
       <main>
         <Suspense fallback={
-          <div className="flex justify-center items-center py-16">
-            <div className="text-lg">Loading categories...</div>
+          <div className="flex justify-center items-center py-8">
+            <div className="text-base">Loading categories...</div>
           </div>
         }>
           <CategoriesContent />
