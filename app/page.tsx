@@ -775,6 +775,8 @@ export default function HomePage() {
   };
 
   // Content for the hero box - can be image or video
+  // COMMENTS: Previous dynamic logic is kept but commented out for reference
+  /*
   const heroContent: HeroContent | null = homepageSettings.homepageImage1
     ? {
         type: homepageSettings.homepageImage1Type === 'video' ? 'video' : 'image',
@@ -788,6 +790,7 @@ export default function HomePage() {
           alt: 'Hero content'
         }
       : null
+  */
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -798,48 +801,7 @@ export default function HomePage() {
         {/* Top Black Bar */}
         <div className="w-full h-3 bg-black"></div>
         
-        {/* Text Section - Above the box */}
-        {/* <div className="w-full py-4 md:py-8 lg:py-12 bg-white relative"> */}
-          {/* <div className="container mx-auto px-4"> */}
-            {/* MOVE WITH PURPOSE - Left Aligned */}
-            {/* <h1 
-              className="text-black uppercase text-center"
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: 'clamp(2rem, 8vw, 5.125rem)',
-                fontWeight: 700,
-                lineHeight: '1.1',
-                letterSpacing: '0px',
-                color: '#000000',
-                margin: '0',
-                padding: '0',
-                marginTop: 'clamp(1rem, 3vw, 2.5rem)',
-                marginBottom: 'clamp(0.5rem, 1.5vw, 1rem)'
-              }}
-            >
-              MOVE WITH PURPOSE
-            </h1> */}
-            
-            {/* Performance-driven text - Left Aligned */}
-            {/* <p 
-              className="text-black text-center"
-              style={{
-                fontFamily: "'Gilroy', 'Arial', sans-serif",
-                fontSize: 'clamp(0.75rem, 3vw, 1.125rem)',
-                fontWeight: 400,
-                lineHeight: '1.4',
-                letterSpacing: '0px',
-                color: '#000000',
-                margin: '0',
-                padding: '0',
-              }}
-            >
-              Performance-driven activewear designed for <em className="italic" style={{ fontStyle: 'italic' }}>every body, every day</em>
-            </p> */}
-          {/* </div> */}
-        {/* </div> */}
-
-        {/* Hero Box - AUTO ADJUSTING BANNER */}
+        {/* Hero Box - STATIC VIDEO BANNER */}
         <div 
           className="bg-white relative w-full overflow-hidden mx-auto"
           style={{
@@ -857,7 +819,57 @@ export default function HomePage() {
             transform: 'rotate(0deg)'
           }}
         >
-          {/* Image or Video Content - AUTO ADJUSTING TO CONTAINER */}
+          {/* Static Video Content - Different for mobile and desktop */}
+          <div className="relative w-full h-full" style={{ 
+            height: 'clamp(300px, 70vh, 700px)',
+          }}>
+            {/* Mobile Video */}
+            <div className="block md:hidden w-full h-full">
+                <video
+                  src="/video/top-banner-mob.mp4"
+                  poster="/placeholder.svg"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                  style={{
+                    objectFit: 'contain',
+                    objectPosition: 'center center',
+                    width: '100%',
+                    height: '100%',
+                  }}
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+            
+            {/* Desktop Video */}
+            <div className="hidden md:block w-full h-full">
+              <video
+                src="/video/top-banner.mp4"
+                poster="/placeholder.svg"
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="metadata"
+                className="w-full h-full object-cover"
+                style={{
+                  objectFit: 'cover',
+                  objectPosition: 'center center',
+                  width: '100%',
+                  height: '100%',
+                }}
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+
+          {/* COMMENTS: Previous dynamic content logic is kept but commented out for reference */}
+          {/*
           {heroContent ? (
             heroContent.type === 'image' ? (
               <div className="relative w-full h-full" style={{ 
@@ -884,15 +896,15 @@ export default function HomePage() {
               }}>
                 <video
                   src={heroContent.src}
-                  poster="/placeholder.svg" // Shows an image while video loads
+                  poster="/placeholder.svg"
                   autoPlay
                   loop
                   muted
                   playsInline
-                  preload="metadata" // Optimizes loading
+                  preload="metadata"
                   className="w-full h-full object-cover"
                   style={{
-                    objectFit: 'contain', // Changed to cover to fill the container
+                    objectFit: 'cover',
                     objectPosition: 'center center',
                     width: '100%',
                     height: '100%',
@@ -907,9 +919,11 @@ export default function HomePage() {
               height: 'clamp(300px, 70vh, 700px)',
             }} />
           )}
+          */}
         </div>
       </section>
 
+      {/* Rest of the code remains exactly the same */}
       {/* Section 2: DISCOVER YOUR FIT */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
@@ -1110,7 +1124,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
                 fontWeight: 500
               }}
             >
-Fresh colors. Updated fits. Same all-day comfort. See what’s new.            </p>
+Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p>
           </div>
 
           {/* Product Slider - Recent Products */}
@@ -1261,39 +1275,64 @@ Fresh colors. Updated fits. Same all-day comfort. See what’s new.            <
         </div>
       </section>
 
-      {/* Section 4: FORM MEETS FUNCTION */}
+      {/* Section 4: WHAT MAKE US MOVE - Updated with static images */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontWeight: 400,
-                fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
-                letterSpacing: '0.5px'
-              }}
-            >
-              WHAT MAKE US MOVE
-            </h1>
-          <div 
-            className="relative mx-auto w-full"
+            className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
             style={{
-              position: 'relative',
-              width: '100%',
-              aspectRatio: '1440/937',
-              minHeight: 'clamp(300px, 50vw, 600px)',
-              backgroundColor: '#FFFFFF',
-              backgroundImage: homepageSettings.homepageImage2 
-                ? `url(${getImageUrl(homepageSettings.homepageImage2)})` 
-                : 'url(/8.png)',
-              backgroundSize: 'contain',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              opacity: 1,
-              borderRadius: '0px',
-              overflow: 'visible'
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontWeight: 400,
+              fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
+              letterSpacing: '0.5px'
             }}
-          />
+          >
+            WHAT MAKE US MOVE
+          </h1>
+          
+          {/* Mobile Image */}
+          <div className="block md:hidden">
+            <div 
+              className="relative mx-auto w-full"
+style={{
+  position: 'relative',
+  width: '100%',
+  aspectRatio: '3/4',
+  minHeight: 'clamp(400px, 100vw, 600px)',
+  backgroundColor: '#FFFFFF',
+  backgroundImage: 'url(/images/move-mob.jpg)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  opacity: 1,
+  borderRadius: '20px',
+  overflow: 'hidden'
+}}
+            />
+          </div>
+          
+          {/* Desktop Image - Keep backend logic as fallback */}
+          <div className="hidden md:block">
+            <div 
+              className="relative mx-auto w-full"
+              style={{
+                position: 'relative',
+                width: '100%',
+                aspectRatio: '1440/937',
+                minHeight: 'clamp(300px, 50vw, 600px)',
+                backgroundColor: '#FFFFFF',
+                backgroundImage: homepageSettings.homepageImage2 
+                  ? `url(${getImageUrl(homepageSettings.homepageImage2)})` 
+                  : 'url(images/move-desk.jpg)',
+                backgroundSize: 'contain',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                opacity: 1,
+                borderRadius: '0px',
+                overflow: 'visible'
+              }}
+            />
+          </div>
         </div>
       </section>
 
@@ -1539,78 +1578,11 @@ move with you from workouts to weekends.            </p>
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
 At Athlekt, we started with a simple question, why should activewear only fit a few?                   </p>
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
-Most athletic brands are built around a single idea of the “ideal” body, leaving everyone else out. We wanted to change that.                   </p>
+Most athletic brands are built around a single idea of the "ideal" body, leaving everyone else out. We wanted to change that.                   </p>
                   <p style={{ marginBottom: '' }}>
 Athlekt is made for real people - for dad bods, mums, and everyone finding their own rhythm. Our pieces are crafted to move, breathe, and adapt to your body, not the other way around. Designed in the Gulf, for the Gulf.                    </p>
               </div>
             </div>
-            {/* <div className="grid w-full max-w-sm grid-cols-1 gap-3 px-4">
-              <div className="flex flex-col items-center justify-center rounded-3xl border border-black bg-white p-5 shadow-sm">
-                <div className="mb-3 flex h-12 w-12 items-center justify-center">
-                  <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 4L8 8L12 12L16 8L12 4Z" stroke="#000000" strokeWidth="2" fill="none" />
-                    <path d="M4 12L8 8L12 12L8 16L4 12Z" stroke="#000000" strokeWidth="2" fill="none" />
-                    <path d="M12 12L16 8L20 12L16 16L12 12Z" stroke="#000000" strokeWidth="2" fill="none" />
-                    <path d="M12 20L8 16L12 12L16 16L12 20Z" stroke="#000000" strokeWidth="2" fill="none" />
-                  </svg>
-                </div>
-                <p
-                  className="text-center text-black"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: "clamp(0.875rem, 3vw, 0.875rem)",
-                    fontWeight: 500,
-                    lineHeight: "1.3",
-                    margin: 0,
-                  }}
-                >
-                  Engineered<br />Fabrics
-                </p>
-              </div>
-              <div className="flex flex-col items-center justify-center rounded-3xl border border-black bg-white p-5 shadow-sm">
-                <div className="mb-3 flex h-12 w-12 items-center justify-center">
-                  <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 12H20" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M12 4L12 20" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M7 7L17 17" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M17 7L7 17" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <p
-                  className="text-center text-black"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: "clamp(0.875rem, 3vw, 0.875rem)",
-                    fontWeight: 500,
-                    lineHeight: "1.3",
-                    margin: 0,
-                  }}
-                >
-                  Precision<br />Fit
-                </p>
-              </div>
-              <div className="flex flex-col items-center justify-center rounded-3xl border border-black bg-white p-5 shadow-sm">
-                <div className="mb-3 flex h-12 w-12 items-center justify-center">
-                  <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M6 8C6 5.79086 7.79086 4 10 4H14C16.2091 4 18 5.79086 18 8C18 10.2091 16.2091 12 14 12H10C7.79086 12 6 13.7909 6 16C6 18.2091 7.79086 20 10 20H14" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M12 8V4" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
-                    <path d="M12 20V16" stroke="#000000" strokeWidth="2" strokeLinecap="round" />
-                  </svg>
-                </div>
-                <p
-                  className="text-center text-black"
-                  style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: "clamp(0.875rem, 3vw, 0.875rem)",
-                    fontWeight: 500,
-                    lineHeight: "1.3",
-                    margin: 0,
-                  }}
-                >
-                  Sustainable<br />Practices
-                </p> */}
-              {/* </div> */}
-            {/* </div> */}
           </div>
 
           {/* Desktop Layout */}
@@ -1731,85 +1703,10 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
 At Athlekt, we started with a simple question, why should activewear only fit a few?                   </p>
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
-Most athletic brands are built around a single idea of the “ideal” body, leaving everyone else out. We wanted to change that.                   </p>
+Most athletic brands are built around a single idea of the "ideal" body, leaving everyone else out. We wanted to change that.                   </p>
                   <p style={{ marginBottom: '' }}>
 Athlekt is made for real people - for dad bods, mums, and everyone finding their own rhythm. Our pieces are crafted to move, breathe, and adapt to your body, not the other way around. Designed in the Gulf, for the Gulf.                    </p>
                 </div>
-
-                {/* <div className="flex flex-row gap-4" style={{ width: 'clamp(250px, 32vw, 490px)', maxWidth: '490px' }}>
-                  <div
-                    className="border-2 border-black rounded-lg text-center flex flex-col items-center justify-center"
-                    style={{
-                      border: '1px solid #000000',
-                      borderRadius: 'clamp(10px, 1.3vw, 20px)',
-                      backgroundColor: '#FFFFFF',
-                      padding: 'clamp(12px, 1.2vw, 18px)',
-                      width: 'clamp(85px, 9.5vw, 145px)',
-                      height: 'clamp(85px, 8.5vw, 125px)',
-                      flexShrink: '0',
-                      flexGrow: '0'
-                    }}
-                  >
-                    <div className="mx-auto mb-3 flex items-center justify-center" style={{ width: 'clamp(38px, 3.5vw, 50px)', height: 'clamp(38px, 3.5vw, 50px)' }}>
-                      <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 4L8 8L12 12L16 8L12 4Z" stroke="#000000" strokeWidth="2" fill="none"/>
-                        <path d="M4 12L8 8L12 12L8 16L4 12Z" stroke="#000000" strokeWidth="2" fill="none"/>
-                        <path d="M12 12L16 8L20 12L16 16L12 12Z" stroke="#000000" strokeWidth="2" fill="none"/>
-                        <path d="M12 20L8 16L12 12L16 16L12 20Z" stroke="#000000" strokeWidth="2" fill="none"/>
-                      </svg>
-                    </div>
-                    <p className="text-black font-medium text-center" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: 'clamp(11px, 1.1vw, 16px)', fontWeight: 500, color: '#000000', margin: '0', lineHeight: '1.4' }}>
-                      Engineered<br />Fabrics
-                    </p>
-                  </div>
-
-                  <div
-                    className="border-2 border-black rounded-lg text-center flex flex-col items-center justify-center"
-                    style={{
-                      border: '1px solid #000000',
-                      borderRadius: 'clamp(10px, 1.3vw, 20px)',
-                      backgroundColor: '#FFFFFF',
-                      padding: 'clamp(12px, 1.2vw, 18px)',
-                      width: 'clamp(85px, 9.5vw, 145px)',
-                      height: 'clamp(85px, 8.5vw, 125px)',
-                      flexShrink: '0',
-                      flexGrow: '0'
-                    }}
-                  >
-                    <div className="mx-auto mb-3 flex items-center justify-center" style={{ width: 'clamp(38px, 3.5vw, 50px)', height: 'clamp(38px, 3.5vw, 50px)' }}>
-                      <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 12H21M8 7L3 12L8 17M16 7L21 12L16 17" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <line x1="12" y1="8" x2="12" y2="16" stroke="#000000" strokeWidth="2"/>
-                      </svg>
-                    </div>
-                    <p className="text-black font-medium text-center" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: 'clamp(11px, 1.1vw, 16px)', fontWeight: 500, color: '#000000', margin: '0', lineHeight: '1.4' }}>
-                      Precision<br />Fit
-                    </p>
-                  </div>
-
-                  <div
-                    className="border-2 border-black rounded-lg text-center flex flex-col items-center justify-center"
-                    style={{
-                      border: '1px solid #000000',
-                      borderRadius: 'clamp(10px, 1.3vw, 20px)',
-                      backgroundColor: '#FFFFFF',
-                      padding: 'clamp(12px, 1.2vw, 18px)',
-                      width: 'clamp(85px, 9.5vw, 145px)',
-                      height: 'clamp(85px, 8.5vw, 125px)',
-                      flexShrink: '0',
-                      flexGrow: '0'
-                    }}
-                  >
-                    <div className="mx-auto mb-3 flex items-center justify-center" style={{ width: 'clamp(38px, 3.5vw, 50px)', height: 'clamp(38px, 3.5vw, 50px)' }}>
-                      <svg width="100%" height="100%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C8 6 4 10 4 16C4 18 5 20 7 20C9 20 10 18 10 16C10 14 9 12 8 11C8 11 9 10 11 10C13 10 14 11 14 11C13 12 12 14 12 16C12 18 13 20 15 20C17 20 18 18 18 16C18 10 14 6 10 2H12Z" stroke="#000000" strokeWidth="2" fill="none"/>
-                      </svg>
-                    </div>
-                    <p className="text-black font-medium text-center" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: 'clamp(11px, 1.1vw, 16px)', fontWeight: 500, color: '#000000', margin: '0', lineHeight: '1.4' }}>
-                      Sustainable<br />Practices
-                    </p> */}
-                  {/* </div> */}
-                {/* </div> */}
               </div>
             </div>
           </div>
@@ -2060,7 +1957,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                 marginTop: '2px'
               }}
             >
-              Your everyday motion can motivate someone else. Post in Athlekt, tag @Athlekt, and we’ll feature your move.
+              Your everyday motion can motivate someone else. Post in Athlekt, tag @Athlekt, and we'll feature your move.
             </p>
           </div>
 

@@ -2079,7 +2079,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   fontWeight: 500
                 }}
               >
-                
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
               </p>
             </div>
           </div>
