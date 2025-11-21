@@ -11,17 +11,6 @@ import { useCurrency } from "@/lib/currency-context"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew/api';
 
-interface HomepageSettings {
-  homepageImage1?: string;
-  homepageImage1Type?: 'image' | 'video';
-  homepageImage2?: string;
-  homepageImage3?: string;
-  discoverYourFitMen?: string;
-  discoverYourFitWomen?: string;
-  discoverYourFitNewArrivals?: string;
-  discoverYourFitSets?: string;
-}
-
 interface Product {
   _id: string;
   id?: string;
@@ -84,10 +73,6 @@ interface Blog {
   updatedAt: string;
 }
 
-type HeroContent =
-  | { type: 'image'; src: string; alt: string }
-  | { type: 'video'; src: string; alt: string };
-
 const normalizeBlogHref = (blog: Blog): string => {
   const rawUrl = blog.url?.trim()
   if (rawUrl) {
@@ -107,11 +92,59 @@ const normalizeBlogHref = (blog: Blog): string => {
   return `/blog/${blog._id}`
 }
 
+// Custom hook for instant video autoplay
+const useInstantVideoAutoplay = (videoRef: React.RefObject<HTMLVideoElement>) => {
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Immediate play attempt
+    const playVideo = () => {
+      const playPromise = video.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log('Auto-play prevented, retrying...', error);
+          // Retry after a short delay
+          setTimeout(() => {
+            video.play().catch(e => {
+              console.log('Second play attempt failed:', e);
+              // Show fallback if both attempts fail
+              const fallback = document.getElementById('videoFallback');
+              if (fallback) fallback.classList.remove('hidden');
+            });
+          }, 300);
+        });
+      }
+    };
+
+    // Try to play when video can play
+    const handleCanPlay = () => {
+      playVideo();
+    };
+
+    // Also try when metadata is loaded
+    const handleLoadedMetadata = () => {
+      playVideo();
+    };
+
+    video.addEventListener('canplay', handleCanPlay);
+    video.addEventListener('loadedmetadata', handleLoadedMetadata);
+
+    // Initial attempt if video is already ready
+    if (video.readyState >= 3) {
+      playVideo();
+    }
+
+    return () => {
+      video.removeEventListener('canplay', handleCanPlay);
+      video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+    };
+  }, [videoRef]);
+};
+
 export default function HomePage() {
   const [currentCarouselIndex, setCurrentCarouselIndex] = useState(0)
   const carouselRef = useRef<HTMLDivElement>(null)
-  const [homepageSettings, setHomepageSettings] = useState<HomepageSettings>({})
-  const [homepageSettingsLoaded, setHomepageSettingsLoaded] = useState(false)
   const [recentProducts, setRecentProducts] = useState<Product[]>([])
   const [loadingProducts, setLoadingProducts] = useState(true)
   const whatsNewCarouselRef = useRef<HTMLDivElement>(null)
@@ -127,6 +160,11 @@ export default function HomePage() {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null)
   const { formatPrice } = useCurrency()
   
+  // Video refs for autoplay
+  const mobileVideoRef = useRef<HTMLVideoElement>(null);
+  const desktopVideoRef = useRef<HTMLVideoElement>(null);
+  const [videoLoaded, setVideoLoaded] = useState(false);
+
   // Community favorites products state
   const [communityFavorites, setCommunityFavorites] = useState<Product[]>([])
   const [loadingCommunityFavorites, setLoadingCommunityFavorites] = useState(true)
@@ -146,6 +184,22 @@ export default function HomePage() {
   // Auto-scroll pause state
   const [isCarouselHovered, setIsCarouselHovered] = useState(false)
 
+  // Use the video autoplay hooks
+  useInstantVideoAutoplay(mobileVideoRef);
+  useInstantVideoAutoplay(desktopVideoRef);
+
+  // Handle manual video play from fallback
+  const handleManualVideoPlay = () => {
+    const videos = document.querySelectorAll('video');
+    videos.forEach(video => {
+      video.play().catch(error => {
+        console.log('Manual play failed:', error);
+      });
+    });
+    const fallback = document.getElementById('videoFallback');
+    if (fallback) fallback.classList.add('hidden');
+  };
+
   // Lightbox helpers
   const openLightbox = (index: number) => {
     setLightboxIndex(index)
@@ -155,6 +209,7 @@ export default function HomePage() {
     setLightboxOpen(false)
     setLightboxIndex(null)
   }
+  
   // prevent body scroll when lightbox open
   useEffect(() => {
     if (lightboxOpen) {
@@ -166,6 +221,7 @@ export default function HomePage() {
       document.body.style.overflow = ""
     }
   }, [lightboxOpen])
+  
   // keyboard navigation (Esc, ArrowLeft, ArrowRight)
   useEffect(() => {
     if (!lightboxOpen) return
@@ -383,37 +439,6 @@ export default function HomePage() {
 
     return () => clearInterval(interval)
   }, [currentCarouselIndex, carouselImages.length, isCarouselHovered])
-
-  // Fetch homepage images from API
-  useEffect(() => {
-    const fetchHomepageImages = async () => {
-      try {
-        const response = await fetch(`${API_BASE_URL}/settings/public`);
-        if (response.ok) {
-          const settings = await response.json();
-          console.log('🏠 Homepage settings received:', settings);
-          setHomepageSettings({
-            homepageImage1: settings.homepageImage1 || '',
-            homepageImage1Type: settings.homepageImage1Type || 'image',
-            homepageImage2: settings.homepageImage2 || '',
-            homepageImage3: settings.homepageImage3 || '',
-            discoverYourFitMen: settings.discoverYourFitMen || '',
-            discoverYourFitWomen: settings.discoverYourFitWomen || '',
-            discoverYourFitNewArrivals: settings.discoverYourFitNewArrivals || '',
-            discoverYourFitSets: settings.discoverYourFitSets || '',
-          });
-          console.log('🏠 Homepage settings state updated');
-        } else {
-          console.error('❌ Failed to fetch homepage images, status:', response.status);
-        }
-      } catch (error) {
-        console.error('❌ Failed to fetch homepage images:', error);
-      } finally {
-        setHomepageSettingsLoaded(true);
-      }
-    };
-    fetchHomepageImages();
-  }, []);
 
   // Fetch recent products from API
   useEffect(() => {
@@ -692,24 +717,7 @@ export default function HomePage() {
     return product.discountPercentage || 0;
   };
 
-  const discoverImageOverrides: Record<string, string> = {
-    men: homepageSettings.discoverYourFitMen || '',
-    women: homepageSettings.discoverYourFitWomen || '',
-    "new arrivals": homepageSettings.discoverYourFitNewArrivals || '',
-    sets: homepageSettings.discoverYourFitSets || '',
-  };
-
   const getDiscoverBackgroundImage = (name: string, category?: Category): string => {
-    const normalized = name.trim().toLowerCase();
-    const override = discoverImageOverrides[normalized];
-
-    if (override) {
-      const overrideUrl = getImageUrl(override);
-      if (overrideUrl) {
-        return overrideUrl;
-      }
-    }
-
     if (category?.image) {
       const imageUrl = getImageUrl(category.image);
       if (imageUrl) {
@@ -774,29 +782,11 @@ export default function HomePage() {
     return '/bundles';
   };
 
-  // Content for the hero box - can be image or video
-  // COMMENTS: Previous dynamic logic is kept but commented out for reference
-  /*
-  const heroContent: HeroContent | null = homepageSettings.homepageImage1
-    ? {
-        type: homepageSettings.homepageImage1Type === 'video' ? 'video' : 'image',
-        src: getImageUrl(homepageSettings.homepageImage1),
-        alt: 'Hero content'
-      }
-    : homepageSettingsLoaded
-      ? {
-          type: 'image',
-          src: '/10.png',
-          alt: 'Hero content'
-        }
-      : null
-  */
-
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       <Header />
       
-      {/* Section 1: MOVE WITH PURPOSE Header */}
+      {/* Section 1: MOVE WITH PURPOSE Header - OPTIMIZED STATIC VIDEO */}
       <section className="relative w-full overflow-x-hidden">
         {/* Top Black Bar */}
         <div className="w-full h-3 bg-black"></div>
@@ -812,118 +802,82 @@ export default function HomePage() {
             height: 'clamp(300px, 70vh, 700px)',
             opacity: 1,
             borderRadius: '0px',
-            backgroundImage: 'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
-            backgroundPosition: '0 0',
             backgroundColor: '#FFFFFF',
-            transform: 'rotate(0deg)'
           }}
         >
-          {/* Static Video Content - Different for mobile and desktop */}
-          <div className="relative w-full h-full" style={{ 
-            height: 'clamp(300px, 70vh, 700px)',
-          }}>
-            {/* Mobile Video */}
-            <div className="block md:hidden w-full h-full">
-                <video
-                  src="/video/top-banner-mob.mp4"
-                  poster="/placeholder.svg"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  className="w-full h-full object-cover"
-                  style={{
-                    objectFit: 'contain',
-                    objectPosition: 'center center',
-                    width: '100%',
-                    height: '100%',
-                  }}
-              >
-                Your browser does not support the video tag.
-              </video>
-            </div>
-            
-            {/* Desktop Video */}
-            <div className="hidden md:block w-full h-full">
-              <video
-                src="/video/top-banner.mp4"
-                poster="/placeholder.svg"
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="metadata"
-                className="w-full h-full object-cover"
-                style={{
-                  objectFit: 'cover',
-                  objectPosition: 'center center',
-                  width: '100%',
-                  height: '100%',
-                }}
-              >
-                Your browser does not support the video tag.
-              </video>
-            </div>
+          {/* Mobile Video - Optimized for Instant Play */}
+          <div className="block md:hidden w-full h-full">
+            <video
+              ref={mobileVideoRef}
+              src="/video/top-banner-mob.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              className="w-full h-full object-cover"
+              style={{
+                objectFit: 'contain',
+                objectPosition: 'center center',
+              }}
+              onLoadedData={() => setVideoLoaded(true)}
+              onCanPlayThrough={() => setVideoLoaded(true)}
+            >
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          
+          {/* Desktop Video - Optimized for Instant Play */}
+          <div className="hidden md:block w-full h-full">
+            <video
+              ref={desktopVideoRef}
+              src="/video/top-banner.mp4"
+              autoPlay
+              loop
+              muted
+              playsInline
+              preload="auto"
+              className="w-full h-full object-cover"
+              style={{
+                objectFit: 'cover',
+                objectPosition: 'center center',
+              }}
+              onLoadedData={() => setVideoLoaded(true)}
+              onCanPlayThrough={() => setVideoLoaded(true)}
+            >
+              Your browser does not support the video tag.
+            </video>
           </div>
 
-          {/* COMMENTS: Previous dynamic content logic is kept but commented out for reference */}
-          {/*
-          {heroContent ? (
-            heroContent.type === 'image' ? (
-              <div className="relative w-full h-full" style={{ 
-                height: 'clamp(300px, 70vh, 700px)',
-              }}>
-                <Image
-                  src={heroContent.src}
-                  alt={heroContent.alt}
-                  fill
-                  className="object-cover"
-                  style={{
-                    objectFit: 'cover',
-                    objectPosition: 'center center',
-                    width: '100%',
-                    height: '100%'
-                  }}
-                  priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 100vw, 100vw"
-                />
-              </div>
-            ) : (
-              <div className="relative w-full h-full" style={{ 
-                height: 'clamp(300px, 70vh, 700px)',
-              }}>
-                <video
-                  src={heroContent.src}
-                  poster="/placeholder.svg"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="metadata"
-                  className="w-full h-full object-cover"
-                  style={{
-                    objectFit: 'cover',
-                    objectPosition: 'center center',
-                    width: '100%',
-                    height: '100%',
-                  }}
-                >
-                  Your browser does not support the video tag.
-                </video>
-              </div>
-            )
-          ) : (
-            <div className="w-full h-full bg-gray-100 animate-pulse" style={{ 
-              height: 'clamp(300px, 70vh, 700px)',
-            }} />
+          {/* Fallback for browsers that block autoplay */}
+          <div 
+            id="videoFallback" 
+            className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70 hidden transition-opacity duration-300"
+            style={{
+              zIndex: 20,
+              borderRadius: '0px'
+            }}
+          >
+            <button 
+              onClick={handleManualVideoPlay}
+              className="bg-white text-black px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition-colors"
+              style={{
+                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+              }}
+            >
+              Play Video
+            </button>
+          </div>
+
+          {/* Loading State - Only show if video takes time */}
+          {!videoLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+              <div className="text-gray-500">Loading video...</div>
+            </div>
           )}
-          */}
         </div>
       </section>
 
-      {/* Rest of the code remains exactly the same */}
       {/* Section 2: DISCOVER YOUR FIT */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
@@ -1100,6 +1054,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
         </div>
       </section>
 
+      {/* Rest of the sections remain exactly the same */}
       {/* Section 3: WHAT'S NEW */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
@@ -1275,7 +1230,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
         </div>
       </section>
 
-      {/* Section 4: WHAT MAKE US MOVE - Updated with static images */}
+      {/* Section 4: WHAT MAKE US MOVE */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <h1 
@@ -1294,24 +1249,24 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
           <div className="block md:hidden">
             <div 
               className="relative mx-auto w-full"
-style={{
-  position: 'relative',
-  width: '100%',
-  aspectRatio: '3/4',
-  minHeight: 'clamp(400px, 100vw, 600px)',
-  backgroundColor: '#FFFFFF',
-  backgroundImage: 'url(/images/move-mob.jpg)',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
-  opacity: 1,
-  borderRadius: '20px',
-  overflow: 'hidden'
-}}
+              style={{
+                position: 'relative',
+                width: '100%',
+                aspectRatio: '3/4',
+                minHeight: 'clamp(400px, 100vw, 600px)',
+                backgroundColor: '#FFFFFF',
+                backgroundImage: 'url(/images/move-mob.jpg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                opacity: 1,
+                borderRadius: '20px',
+                overflow: 'hidden'
+              }}
             />
           </div>
           
-          {/* Desktop Image - Keep backend logic as fallback */}
+          {/* Desktop Image */}
           <div className="hidden md:block">
             <div 
               className="relative mx-auto w-full"
@@ -1321,9 +1276,7 @@ style={{
                 aspectRatio: '1440/937',
                 minHeight: 'clamp(300px, 50vw, 600px)',
                 backgroundColor: '#FFFFFF',
-                backgroundImage: homepageSettings.homepageImage2 
-                  ? `url(${getImageUrl(homepageSettings.homepageImage2)})` 
-                  : 'url(images/move-desk.jpg)',
+                backgroundImage: 'url(/images/move-desk.jpg)',
                 backgroundSize: 'contain',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
@@ -1336,7 +1289,7 @@ style={{
         </div>
       </section>
 
-      {/* Section 5: COMMUNITY FAVOURITES - Products sorted by purchase count */}
+      {/* Section 5: COMMUNITY FAVOURITES */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="mb-6 md:mb-8">
@@ -1546,7 +1499,7 @@ move with you from workouts to weekends.            </p>
               <div className="absolute inset-x-4 top-8 h-60 rounded-[40px] border border-black bg-gradient-to-b from-[#91ADB9] to-[#3A6685]" />
               <div className="relative z-10 overflow-hidden rounded-[40px] border border-black bg-white shadow-lg">
                 <img
-                  src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : "/9.png"}
+                  src="/9.png"
                   alt="Why Athlekt"
                   className="h-full w-full object-cover"
                 />
@@ -1624,7 +1577,7 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
                 }}
               >
                 <img 
-                  src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : '/9.png'} 
+                  src="/9.png" 
                   alt="Why Athlekt" 
                   className="w-full h-full object-cover"
                   style={{
