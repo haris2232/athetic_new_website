@@ -757,7 +757,6 @@ export default function HomePage() {
             marginTop: 'clamp(1rem, 3vw, 2.5rem)',
             width: '100%',
             maxWidth: '100%',
-            height: 'clamp(300px, 70vh, 700px)',
           }}
         >
           {/* Mobile Video */}
