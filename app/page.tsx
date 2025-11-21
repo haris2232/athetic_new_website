@@ -11,40 +11,50 @@ import { useCurrency } from "@/lib/currency-context"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew/api';
 
-// SIRF GOOGLE DRIVE
-const GOOGLE_DRIVE_URLS = {
-  mobile: "https://drive.google.com/uc?export=download&id=1eU46tR8VLwDzb8YDp5W65EX_vS8kjDPt",
-  desktop: "https://drive.google.com/uc?export=download&id=1HQyn0erWLAT_rmd7FiDrfpqN4Ub8htHa"
+// CLOUDINARY URLs - Ye work karenge!
+const CLOUDINARY_URLS = {
+  mobile: "https://res.cloudinary.com/dyfbyr8ym/video/upload/v1763752349/top-banner-mob_bu0u09.mp4",
+  desktop: "https://res.cloudinary.com/dyfbyr8ym/video/upload/v1763752331/move-desk-com_vs2gte.mp4"
 };
 
 export default function HomePage() {
-  // ... (sabhi existing state variables same)
+  // ... (sabhi existing state variables same rahenge)
   
   const mobileVideoRef = useRef<HTMLVideoElement>(null);
   const desktopVideoRef = useRef<HTMLVideoElement>(null);
+  const [mobileVideoLoaded, setMobileVideoLoaded] = useState(false);
+  const [desktopVideoLoaded, setDesktopVideoLoaded] = useState(false);
 
-  // GOOGLE DRIVE AUTO-PLAY - No buttons, no controls
+  // CLOUDINARY AUTO-PLAY - Ye pakka chalegi!
   useEffect(() => {
-    console.log('🚀 GOOGLE DRIVE AUTO-PLAY...');
+    console.log('🚀 CLOUDINARY AUTO-PLAY STARTING...');
     
     const playVideos = () => {
       // Mobile video
       if (mobileVideoRef.current) {
         const mobileVideo = mobileVideoRef.current;
-        mobileVideo.src = GOOGLE_DRIVE_URLS.mobile;
-        mobileVideo.controls = false; // No controls
-        mobileVideo.play().catch(e => {
-          console.log('Mobile auto-play failed');
+        mobileVideo.src = CLOUDINARY_URLS.mobile;
+        console.log('📱 Mobile video loading from Cloudinary...');
+        
+        mobileVideo.play().then(() => {
+          console.log('✅ Mobile video playing successfully');
+          setMobileVideoLoaded(true);
+        }).catch(e => {
+          console.log('❌ Mobile auto-play failed:', e);
         });
       }
 
       // Desktop video  
       if (desktopVideoRef.current) {
         const desktopVideo = desktopVideoRef.current;
-        desktopVideo.src = GOOGLE_DRIVE_URLS.desktop;
-        desktopVideo.controls = false; // No controls
-        desktopVideo.play().catch(e => {
-          console.log('Desktop auto-play failed');
+        desktopVideo.src = CLOUDINARY_URLS.desktop;
+        console.log('🖥️ Desktop video loading from Cloudinary...');
+        
+        desktopVideo.play().then(() => {
+          console.log('✅ Desktop video playing successfully');
+          setDesktopVideoLoaded(true);
+        }).catch(e => {
+          console.log('❌ Desktop auto-play failed:', e);
         });
       }
     };
@@ -52,20 +62,24 @@ export default function HomePage() {
     // Immediate play
     playVideos();
 
+    // Retry after 1 second
+    const retryTimer = setTimeout(playVideos, 1000);
+
+    return () => clearTimeout(retryTimer);
   }, []);
 
-  // ... (sabhi existing functions same)
+  // ... (sabhi existing functions same rahenge)
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
       <Header />
       
-      {/* Section 1: PURE AUTO-PLAY - NO CONTROLS */}
+      {/* Section 1: CLOUDINARY VIDEO SECTION */}
       <section className="relative w-full overflow-x-hidden">
         {/* Top Black Bar */}
         <div className="w-full h-3 bg-black"></div>
         
-        {/* Hero Box - CLEAN VIDEO */}
+        {/* Hero Box - CLOUDINARY VIDEOS */}
         <div className="bg-white relative w-full overflow-hidden mx-auto"
           style={{
             marginTop: 'clamp(1rem, 3vw, 2.5rem)',
@@ -74,7 +88,12 @@ export default function HomePage() {
             height: 'clamp(300px, 70vh, 700px)',
           }}
         >
-          {/* Mobile Video - NO CONTROLS */}
+          {/* Cloudinary Badge */}
+          <div className="absolute top-4 left-4 z-20 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+            Cloudinary ✓
+          </div>
+
+          {/* Mobile Video - CLOUDINARY */}
           <div className="block md:hidden w-full h-full">
             <video
               ref={mobileVideoRef}
@@ -88,12 +107,17 @@ export default function HomePage() {
                 objectFit: 'contain',
                 objectPosition: 'center center',
               }}
+              onLoadedData={() => {
+                console.log('📱 Mobile video loaded');
+                setMobileVideoLoaded(true);
+              }}
+              onError={(e) => console.log('📱 Mobile video error:', e)}
             >
               Your browser does not support the video tag.
             </video>
           </div>
           
-          {/* Desktop Video - NO CONTROLS */}
+          {/* Desktop Video - CLOUDINARY */}
           <div className="hidden md:block w-full h-full">
             <video
               ref={desktopVideoRef}
@@ -107,6 +131,11 @@ export default function HomePage() {
                 objectFit: 'cover',
                 objectPosition: 'center center',
               }}
+              onLoadedData={() => {
+                console.log('🖥️ Desktop video loaded');
+                setDesktopVideoLoaded(true);
+              }}
+              onError={(e) => console.log('🖥️ Desktop video error:', e)}
             >
               Your browser does not support the video tag.
             </video>
@@ -114,7 +143,39 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ... (Baki sab sections exactly same) */}
+      {/* Section 2: DISCOVER YOUR FIT */}
+      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          <div className="mb-6 md:mb-8">
+            <h1 
+              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontWeight: 400,
+                fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
+                letterSpacing: '0.5px'
+              }}
+            >
+              DISCOVER YOUR FIT
+            </h1>
+            <p 
+              className="text-black leading-normal text-left"
+              style={{
+                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
+                letterSpacing: '0px',
+                fontWeight: 500
+              }}
+            >
+Explore breathable, real-body fits for runs, lifts, and everything in between we call life.            </p>
+          </div>
+
+          {/* ... (Baki sab sections exactly same) */}
+
+        </div>
+      </section>
+
+      {/* ... (All other sections remain exactly the same) */}
 
       <Footer />
     </div>
