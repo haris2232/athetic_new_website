@@ -13,7 +13,7 @@ interface Product {
   _id: string;
   title: string;
   slug: string;
-  images?: any[]; // Changed to any for flexibility
+  images?: any[];
   basePrice: number;
   category: string;
   subCategory: string;
@@ -43,35 +43,24 @@ export default function Header() {
   const { cartCount } = useCart()
   const { wishlistCount } = useWishlist()
 
-  // Fetch all products on component mount
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
-        console.log("🔄 Fetching all products...")
         const response = await fetch('https://athlekt.com/backendnew/api/products')
         const data = await response.json()
         
-        console.log("📦 API Response:", data) // Debug API response
-        
         if (data.success && data.data) {
-          console.log("✅ Products loaded:", data.data.length)
-          // Log first product to see structure
-          if (data.data.length > 0) {
-            console.log("🔍 First product sample:", data.data[0])
-            console.log("🖼️ First product images:", data.data[0].images)
-          }
           setAllProducts(data.data)
           setProductsLoaded(true)
         }
       } catch (error) {
-        console.error("❌ Error fetching products:", error)
+        console.error("Error fetching products:", error)
       }
     }
 
     fetchAllProducts()
   }, [])
 
-  // Fetch sub-categories from backend
   useEffect(() => {
     fetchSubCategories()
   }, [])
@@ -90,7 +79,6 @@ export default function Header() {
     }
   }
 
-  // Client-side search function
   useEffect(() => {
     const query = searchQuery.trim().toLowerCase()
     
@@ -101,7 +89,6 @@ export default function Header() {
     }
 
     if (!productsLoaded) {
-      console.log("⏳ Products not loaded yet...")
       return
     }
 
@@ -121,7 +108,7 @@ export default function Header() {
         setIsSearchLoading(false)
         
       } catch (error) {
-        console.error("❌ Search error:", error)
+        console.error("Search error:", error)
         setIsSearchLoading(false)
       }
     }, 300)
@@ -129,31 +116,20 @@ export default function Header() {
     return () => clearTimeout(delayDebounceFn)
   }, [searchQuery, allProducts, productsLoaded])
 
-  // Robust function to get correct image URL
   const getImageUrl = (product: Product): string => {
     try {
-      console.log(`🔄 Getting image for product: ${product.title}`, product.images)
-      
-      // If no images array or empty array
       if (!product.images || !Array.isArray(product.images) || product.images.length === 0) {
-        console.log("❌ No images array or empty")
         return "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
       }
 
       const firstImage = product.images[0]
-      console.log("📸 First image object:", firstImage)
-
       let imageUrl = ''
 
-      // Handle different possible image structures
       if (typeof firstImage === 'string') {
-        // Case 1: Direct URL string
         imageUrl = firstImage
       } else if (firstImage && typeof firstImage === 'object') {
-        // Case 2: Object with various possible properties
         imageUrl = firstImage.url || firstImage.src || firstImage.imageUrl || firstImage.path || firstImage.image || ''
         
-        // If still no URL, try to find any string property that looks like a URL
         if (!imageUrl) {
           for (const key in firstImage) {
             if (typeof firstImage[key] === 'string' && 
@@ -168,13 +144,9 @@ export default function Header() {
         }
       }
 
-      console.log("🔗 Extracted image URL:", imageUrl)
-
-      // If we found a URL, format it properly
       if (imageUrl && imageUrl.trim()) {
         imageUrl = imageUrl.trim()
         
-        // Handle different URL formats
         if (imageUrl.startsWith('http')) {
           return imageUrl
         } else if (imageUrl.startsWith('//')) {
@@ -186,12 +158,9 @@ export default function Header() {
         }
       }
 
-      // Fallback if no valid image found
-      console.log("❌ No valid image URL found")
       return "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
 
     } catch (error) {
-      console.error("❌ Error getting image URL:", error)
       return "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
     }
   }
@@ -202,7 +171,6 @@ export default function Header() {
     router.push(`/product/${slug}`)
   }
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
@@ -236,14 +204,12 @@ export default function Header() {
     }
   }
 
-  // Function to check if a path is active
   const isActivePath = (path: string) => {
     if (path === "/" && pathname === "/") return true
     if (path !== "/" && pathname.startsWith(path)) return true
     return false
   }
 
-  // Get sub-categories based on selected gender
   const getSubCategories = (gender: string) => {
     if (loading) return []
     
@@ -270,7 +236,6 @@ export default function Header() {
     }))
   }
 
-  // Reusable component for category dropdowns
   const CategoryDropdown = ({
     gender,
     isOpen,
@@ -328,14 +293,14 @@ export default function Header() {
     <header className="bg-[#0f1013] text-white sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-20">
-          {/* Logo - Increased size for both desktop and mobile */}
+          {/* Logo - Increased size for desktop */}
           <Link href="/" className="flex items-center flex-shrink-0">
             <Image 
               src="/logos.png" 
               alt="ATHLEKT" 
-              width={140} 
-              height={35} 
-              className="h-8 w-auto max-w-[140px] object-contain"
+              width={160} 
+              height={40} 
+              className="h-10 w-auto max-w-[160px] object-contain"
               priority 
             />
           </Link>
@@ -351,7 +316,6 @@ export default function Header() {
               PRODUCTS
             </Link>
 
-            {/* Men's Category Dropdown */}
             <CategoryDropdown
               gender="men"
               isOpen={isMenMenuOpen}
@@ -359,7 +323,6 @@ export default function Header() {
               onMouseLeave={() => setIsMenMenuOpen(false)}
             />
 
-            {/* Women's Category Dropdown */}
             <CategoryDropdown
               gender="women"
               isOpen={isWomenMenuOpen}
@@ -397,7 +360,7 @@ export default function Header() {
 
           {/* Search and Icons */}
           <div className="flex items-center space-x-4">
-            {/* Desktop Search Bar */}
+            {/* Desktop Search Bar - Black background */}
             <div className="hidden md:flex items-center search-container">
               <div className="relative">
                 <div className="flex items-center bg-black border border-white rounded-full overflow-hidden">
@@ -442,10 +405,7 @@ export default function Header() {
                         {searchResults.map((product) => (
                           <button
                             key={product._id}
-                            onClick={() => {
-                              console.log("🎯 Clicked product:", product)
-                              handleSuggestionClick(product.slug || product._id)
-                            }}
+                            onClick={() => handleSuggestionClick(product.slug || product._id)}
                             className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0 w-full text-left"
                           >
                             <div className="w-12 h-12 bg-gray-200 rounded-md mr-3 flex items-center justify-center flex-shrink-0 overflow-hidden">
@@ -456,11 +416,9 @@ export default function Header() {
                                 height={48}
                                 className="w-12 h-12 object-cover"
                                 onError={(e) => {
-                                  console.log("🖼️ Image load error for product:", product.title)
                                   const target = e.target as HTMLImageElement
                                   target.src = "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
                                 }}
-                                onLoad={() => console.log("✅ Image loaded successfully for:", product.title)}
                               />
                             </div>
                             <div className="flex-1 min-w-0">
@@ -500,19 +458,11 @@ export default function Header() {
                 </Link>
               </Button>
 
-              {user ? (
-                <Button variant="ghost" size="icon" className="hover:bg-[#141619] text-white group" asChild>
-                  <Link href="/profile">
-                    <User className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
-                  </Link>
-                </Button>
-              ) : (
-                <Button variant="ghost" size="icon" className="hover:bg-[#141619] text-white group" asChild>
-                  <Link href="/profile">
-                    <User className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
-                  </Link>
-                </Button>
-              )}
+              <Button variant="ghost" size="icon" className="hover:bg-[#141619] text-white group" asChild>
+                <Link href="/profile">
+                  <User className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
+                </Link>
+              </Button>
 
               <Button variant="ghost" size="icon" className="relative hover:bg-[#141619] text-white group" asChild>
                 <Link href="/cart">
@@ -523,7 +473,6 @@ export default function Header() {
                 </Link>
               </Button>
 
-              {/* Mobile Menu Button - Changed to white */}
               <Button
                 variant="ghost"
                 size="icon"
@@ -536,14 +485,14 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Search Bar - Now outside the menu, below header */}
+        {/* Mobile Search Bar - White background line */}
         <div className="lg:hidden pb-4 search-container">
           <div className="relative">
-            <div className="flex items-center bg-black border border-white rounded-full overflow-hidden">
+            <div className="flex items-center bg-white border border-gray-300 rounded-full overflow-hidden">
               <input
                 type="search"
                 placeholder="Search for products..."
-                className="px-4 py-2 w-full bg-black text-white border-none outline-none h-10 placeholder:text-gray-400 text-[11px]"
+                className="px-4 py-2 w-full bg-white text-black border-none outline-none h-10 placeholder:text-gray-500 text-[11px]"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value)
@@ -558,9 +507,9 @@ export default function Header() {
               />
               <button 
                 onClick={handleSearchIconClick}
-                className="px-4 py-2 hover:bg-gray-800 transition-colors"
+                className="px-4 py-2 hover:bg-gray-100 transition-colors"
               >
-                <Search className="text-white h-4 w-4" />
+                <Search className="text-gray-600 h-4 w-4" />
               </button>
             </div>
             
@@ -635,7 +584,6 @@ export default function Header() {
                 PRODUCTS
               </Link>
 
-              {/* Mobile Categories */}
               <div className="space-y-3">
                 <span className="font-medium uppercase text-[15px] text-white">
                   CATEGORIES
