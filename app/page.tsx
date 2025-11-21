@@ -1425,11 +1425,13 @@ move with you from workouts to weekends.            </p>
             <div className="relative w-full max-w-sm">
               <div className="absolute inset-x-4 top-8 h-60 rounded-[40px] border border-black bg-gradient-to-b from-[#91ADB9] to-[#3A6685]" />
               <div className="relative z-10 overflow-hidden rounded-[40px] border border-black bg-white shadow-lg">
-                <img
-                  src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : "/9.png"}
-                  alt="Why Athlekt"
-                  className="h-full w-full object-cover"
-                />
+                {homepageSettings.homepageImage3 && (
+                  <img
+                    src={getImageUrl(homepageSettings.homepageImage3)}
+                    alt="Why Athlekt"
+                    className="h-full w-full object-cover"
+                  />
+                )}
               </div>
             </div>
             <div className="flex w-full max-w-sm flex-col items-center gap-4 px-4 text-center">
@@ -1503,19 +1505,21 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
                   zIndex: 10
                 }}
               >
-                <img 
-                  src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : '/9.png'} 
-                  alt="Why Athlekt" 
-                  className="w-full h-full object-cover"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    objectPosition: 'center top',
-                    borderRadius: 'clamp(24px, 3vw, 48px)',
-                    display: 'block'
-                  }}
-                />
+                {homepageSettings.homepageImage3 && (
+                  <img 
+                    src={getImageUrl(homepageSettings.homepageImage3)} 
+                    alt="Why Athlekt" 
+                    className="w-full h-full object-cover"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      objectPosition: 'center top',
+                      borderRadius: 'clamp(24px, 3vw, 48px)',
+                      display: 'block'
+                    }}
+                  />
+                )}
               </div>
 
               {/* Right Side - Text Content */}
