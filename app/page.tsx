@@ -1015,7 +1015,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                   className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
                   style={{
                     aspectRatio: '307/450',
-                    borderRadius: 'clamp(16px, 2vw, 32px)',
+                    borderRadius: 'clamp(26px, 2vw, 32px)',
                   }}
                 />
               ))}
@@ -1051,7 +1051,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                         alt={productName}
                         className="w-full h-full object-cover"
                         style={{
-                          borderRadius: 'clamp(16px, 2vw, 32px)',
+                          borderRadius: 'clamp(26px, 2vw, 32px)',
                         }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -1118,7 +1118,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                             fontWeight: 600,
                           }}
                         >
-                          AED{Math.round(productPrice)} {/* Fixed price format */}
+                          AED {Math.round(productPrice)} {/* Fixed price format */}
                         </p>
                       </div>
                     </Link>
@@ -1317,7 +1317,7 @@ move with you from workouts to weekends.            </p>
                         alt={productName}
                         className="w-full h-full object-cover"
                         style={{
-                          borderRadius: 'clamp(16px, 2vw, 32px)',
+                          borderRadius: 'clamp(26px, 2vw, 32px)',
                         }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -1383,7 +1383,7 @@ move with you from workouts to weekends.            </p>
                             fontWeight: 600,
                           }}
                         >
-                          AED{Math.round(productPrice)} {/* Fixed price format */}
+                          AED {Math.round(productPrice)} {/* Fixed price format */}
                         </p>
                       </div>
                     </Link>
@@ -1421,8 +1421,8 @@ move with you from workouts to weekends.            </p>
           {/* Mobile Layout */}
           <div className="flex flex-col items-center gap-6 py-8 lg:hidden">
             <div className="relative w-full max-w-sm">
-                <div className="absolute inset-x-4 top-8 h-60 rounded-[40px] border border-black bg-gradient-to-b from-[#91ADB9] to-[#3A6685]" />
-              <div className="relative z-10 overflow-hidden rounded-[40px] border border-black bg-white shadow-lg">
+                <div className="absolute inset-x-4 top-8 h-60  " />
+              <div className="relative z-10 overflow-hidden  bg-white shadow-lg">
                 <img
                   src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : "/9.png"}
                   alt="Why Athlekt"
@@ -1470,15 +1470,9 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
               className="absolute"
               style={{
                 position: 'absolute',
-                left: 'clamp(0px, 1.28vw, 16px)',
-                top: 'clamp(50px, 7.5vw, 130px)',
-                width: 'clamp(320px, 48.25vw, 682px)',
-                height: 'clamp(200px, 29.75vw, 412px)',
-                background: 'linear-gradient(180deg, #91ADB9 0%, #3A6685 100%)',
+
+
                 opacity: 1,
-                borderRadius: 'clamp(40px, 5.5vw, 96px)',
-                border: '1px solid #000000',
-                boxSizing: 'border-box',
                 transform: 'rotate(180deg)',
                 zIndex: 1,
               }}
@@ -1492,11 +1486,9 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
                 style={{
                   position: 'absolute',
                   left: 'clamp(50px, 9.5vw, 111px)',
-                  top: 'clamp(-105px, -8vw, -95px)',
-                  width: 'clamp(240px, 35vw, 520px)',
-                  height: 'clamp(250px, 35.5vw, 580px)',
+                  top: 'clamp(-55px, -8vw, -95px)',
+                  height: 'clamp(200px, 25.5vw, 380px)',
                   opacity: 1,
-                  borderRadius: 'clamp(18px, 2.8vw, 48px)',
                   overflow: 'hidden',
                   zIndex: 10
                 }}
@@ -1506,12 +1498,10 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
                   alt="Why Athlekt" 
                   className="w-full h-full object-cover"
                   style={{
-                    paddingBottom: '85px',
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
                     objectPosition: 'center top',
-                    borderRadius: 'clamp(24px, 3vw, 48px)',
                     display: 'block'
                   }}
                 />
@@ -1702,7 +1692,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                         alt={bundleName}
                         className="w-full h-full object-cover"
                         style={{
-                          borderRadius: 'clamp(16px, 2vw, 32px)'
+                          borderRadius: 'clamp(26px, 2vw, 32px)'
                         }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -1754,12 +1744,10 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                             fontWeight: 600
                           }}
                         >
-                          AED{Math.round(bundlePrice)} {/* Fixed price format */}
+                          AED {Math.round(bundlePrice)} {/* Fixed price format */}
                         </p>
                       </div>
-                      {bundle.shortDescription && (
                         <div
-                          className="absolute left-0 right-0 bottom-[72px] bg-gradient-to-t from-black/80 to-transparent text-white px-4 md:px-6 pb-8 md:pb-10 pt-4 md:pt-6"
                           style={{
                             zIndex: 10
                           }}
