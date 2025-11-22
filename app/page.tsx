@@ -1293,7 +1293,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="mb-6 md:mb-8 text-left md:text-left">
-            <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6 justify-center md:justify-start">
+            <div className="flex items-left gap-2 md:gap-3 mb-4 md:mb-6 justify-center md:justify-start">
               <h1 
                 className="uppercase text-black leading-none"
                 style={{
@@ -1337,7 +1337,7 @@ move with you from workouts to weekends.            </p>
               {/* Navigation Arrows */}
               <button
                 onClick={() => scrollCommunityCarousel('left')}
-                className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 z-10 rounded-full border border-black bg-white flex items-left justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
                   height: 'clamp(32px, 8vw, 48px)',
