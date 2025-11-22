@@ -13,8 +13,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/bac
 
 // CLOUDINARY URLs
 const CLOUDINARY_URLS = {
-  mobile: "https://res.cloudinary.com/dyfbyr8ym/video/upload/v1763752349/top-banner-mob_bu0u09.mp4",
-  desktop: "https://res.cloudinary.com/dyfbyr8ym/video/upload/v1763752331/move-desk-com_vs2gte.mp4"
+  mobile: "https://res.cloudinary.com/dyfbyr8ym/image/upload/v1763784318/move-desk-com_vs2gte_xuy7at.gif",
+  desktop: "https://res.cloudinary.com/dyfbyr8ym/image/upload/v1763784318/move-desk-com_vs2gte_xuy7at.gif"
 };
 
 interface HomepageSettings {
