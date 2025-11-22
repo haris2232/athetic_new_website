@@ -373,7 +373,7 @@ const getProductCardKey = (item: ProductCardItem): string => {
 const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> => {
   try {
     // Use the correct API endpoint
-    const response = await fetch(`${API_BASE_URL}/api/products/public/all${queryString}`);
+    const response = await fetch(`${API_BASE_URL}/api/public/products/public/all${queryString}`);
     if (!response.ok) {
       console.error('Error fetching products list:', response.status, response.statusText);
       return [];
@@ -421,14 +421,14 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
     const fetchMoveWithUsImages = async () => {
       try {
         setLoadingMoveWithUs(true);
-        const response = await fetch(`${API_BASE_URL}/carousel-images/public/active`);
+        const response = await fetch(`${API_BASE_URL}/api/carousel-images/public/active`);
         if (response.ok) {
           const data = await response.json();
           if (data.success && Array.isArray(data.data)) {
             // Sort by order and extract image URLs
             const sortedImages = data.data
               .sort((a: any, b: any) => a.order - b.order)
-              .map((img: any) => img.imageUrl);
+              .map((img: any) => getFullImageUrl(img.imageUrl));
             setMoveWithUsImages(sortedImages);
           }
         } else {
@@ -512,7 +512,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
     const fetchBundles = async () => {
       try {
         setLoadingBundles(true)
-        const response = await fetch(`${API_BASE_URL}/bundles/public/active`)
+        const response = await fetch(`${API_BASE_URL}/api/bundles/public/active`)
         if (!response.ok) {
           console.error('Error fetching bundles:', response.status, response.statusText)
           return
@@ -552,6 +552,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
         const currentProductId = product.id || (product as any)._id
         const seenKeys = new Set<string>()
 
+        // Fetch products from same category
         const primaryQuery = product.category ? `?category=${encodeURIComponent(product.category)}` : ''
         const primaryProducts = await fetchProductList(primaryQuery)
         const recommendations: ProductCardItem[] = []
@@ -573,13 +574,10 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
 
         addUniqueProducts(primaryProducts)
 
+        // If not enough recommendations, fetch all products
         if (recommendations.length < 4) {
           const fallbackProducts = await fetchProductList()
           addUniqueProducts(fallbackProducts)
-        }
-
-        if (recommendations.length < 4 && primaryProducts.length > 0) {
-          addUniqueProducts(primaryProducts)
         }
 
         setRecommendedProducts(recommendations.slice(0, 4))
@@ -600,7 +598,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
       try {
         setLoading(true)
         // FIXED: Corrected API endpoint
-        const response = await fetch(`${API_BASE_URL}/api/products/public`)
+        const response = await fetch(`${API_BASE_URL}/api/public/products/public/all`)
         if (!response.ok) {
           throw new Error('Failed to fetch products')
         }
@@ -716,7 +714,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
   useEffect(() => {
     const fetchCommunityHighlights = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/settings/public`)
+        const response = await fetch(`${API_BASE_URL}/api/settings/public`)
         if (response.ok) {
           const data = await response.json()
           const settingsData = data?.data && typeof data.data === "object" ? data.data : data
@@ -908,7 +906,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 {/* Thumbnails - Left side, vertical stack - Scrollable with arrows */}
                 {currentImages && currentImages.length > 0 && (
                   <div className="flex flex-col items-center gap-2">
-                    {/* Up Arrow */}
+                    {/* Up Arrow - Hide when no scroll needed */}
                     {currentImages.length > 3 && (
                       <button
                         onClick={scrollGalleryUp}
@@ -922,10 +920,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     {/* Scrollable Thumbnails Container - Show 3 at a time */}
                     <div 
                       ref={galleryScrollRef}
-                      className="flex flex-col gap-3 max-h-[380px] overflow-y-auto"
+                      className="flex flex-col gap-3 max-h-[380px] overflow-y-auto hide-scrollbar"
                       style={{ scrollBehavior: 'smooth' }}
-                      onMouseEnter={(e) => e.currentTarget.style.scrollbarWidth = 'thin'}
-                      onMouseLeave={(e) => e.currentTarget.style.scrollbarWidth = 'none'}
                     >
                       {currentImages.map((image, index) => (
                         <button
@@ -959,7 +955,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       ))}
                     </div>
 
-                    {/* Down Arrow */}
+                    {/* Down Arrow - Hide when no scroll needed */}
                     {currentImages.length > 3 && (
                       <button
                         onClick={scrollGalleryDown}
@@ -972,7 +968,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   </div>
                 )}
                 
-                {/* Main Image - Responsive with Zoom and Navigation Arrows */}
+                {/* Main Image - Responsive with Zoom and Navigation Arrows - ARROWS REMOVED */}
                 <div className="relative">
                   <div 
                     className="relative overflow-hidden bg-white flex-shrink-0 cursor-zoom-in"
@@ -1010,32 +1006,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     </div>
                   </div>
 
-                  {/* Navigation Arrows for Main Image */}
-                  {currentImages && currentImages.length > 1 && (
-                    <>
-                      <button
-                        onClick={prevImage}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
-                        style={{
-                          width: '40px',
-                          height: '40px'
-                        }}
-                      >
-                        <ChevronLeft className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={nextImage}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
-                        style={{
-                          width: '40px',
-                          height: '40px'
-                        }}
-                      >
-                        <ChevronRight className="h-5 w-5" />
-                      </button>
-                    </>
-                  )}
-
                   {/* Image Counter */}
                   {currentImages && currentImages.length > 1 && (
                     <div className="absolute bottom-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
@@ -1047,7 +1017,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
 
               {/* Mobile - Responsive */}
               <div className="md:hidden flex flex-col gap-4">
-                {/* Main Image - Mobile with Navigation */}
+                {/* Main Image - Mobile with Navigation - ARROWS REMOVED */}
                 <div className="relative w-full overflow-hidden bg-white rounded-xl" style={{ aspectRatio: '4/5', minHeight: '400px' }}>
                   <Image
                     src={currentImages && currentImages.length > 0 ? getFullImageUrl(currentImages[activeImageIndex]) : getFullImageUrl("/placeholder.svg")}
@@ -1062,32 +1032,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     priority
                     sizes="100vw"
                   />
-                  
-                  {/* Mobile Navigation Arrows */}
-                  {currentImages && currentImages.length > 1 && (
-                    <>
-                      <button
-                        onClick={prevImage}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
-                        style={{
-                          width: '40px',
-                          height: '40px'
-                        }}
-                      >
-                        <ChevronLeft className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={nextImage}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 rounded-full p-2 transition-all duration-200 shadow-lg"
-                        style={{
-                          width: '40px',
-                          height: '40px'
-                        }}
-                      >
-                        <ChevronRight className="h-5 w-5" />
-                      </button>
-                    </>
-                  )}
 
                   {/* Mobile Image Counter */}
                   {currentImages && currentImages.length > 1 && (
@@ -1097,9 +1041,9 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   )}
                 </div>
 
-                {/* Mobile Thumbnails - Horizontal Scrollable */}
+                {/* Mobile Thumbnails - Horizontal Scrollable with 4 images at a time */}
                 {currentImages && currentImages.length > 0 && (
-                  <div className="flex gap-2 overflow-x-auto pb-2 px-2">
+                  <div className="flex gap-2 overflow-x-auto pb-2 px-2 hide-scrollbar">
                     {currentImages.map((image, index) => (
                       <button
                         key={index}
@@ -1110,7 +1054,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                           borderRadius: '8px',
                           border: index === activeImageIndex ? '2px solid #3B82F6' : '2px solid #D1D5DB',
                           backgroundColor: '#FFFFFF',
-                          opacity: 1
+                          opacity: 1,
+                          minWidth: '80px'
                         }}
                         onClick={() => setActiveImageIndex(index)}
                       >
@@ -1134,17 +1079,17 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
 
             {/* Product Info - Figma Exact Spacing */}
             <div className="w-full md:w-auto md:flex-1 flex-shrink-0 flex flex-col md:justify-between md:self-stretch">
-              {/* Top Section - Aligned with Image Top */}
-              <div className="flex flex-col md:flex-shrink-0 w-full">
-                {/* Product Name & Price Row - Figma Exact */}
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between mb-4 w-full">
+              {/* Top Section - Mobile: All Left, Desktop: Name Left, Price Right */}
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between w-full mb-4">
+                {/* Product Name - Always Left */}
+                <div className="flex-1">
                   <h1 
-                    className="uppercase text-black mb-0 w-full md:w-auto"
+                    className="uppercase text-black mb-2 w-full"
                     style={{
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: 'clamp(28px, 3.2vw, 48px)',
+                      fontSize: 'clamp(36px, 8vw, 48px)',
                       fontWeight: 400,
-                      lineHeight: 'clamp(26px, 3vw, 44px)',
+                      lineHeight: 'clamp(34px, 7.5vw, 44px)',
                       letterSpacing: '0.5px',
                       color: '#000000',
                       margin: 0,
@@ -1163,115 +1108,115 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       return name;
                     })()}
                   </h1>
-                  
-                  {/* Price - Responsive and Right Aligned */}
-                  <div className="flex flex-col items-start md:items-end md:text-right mt-0 w-full md:w-auto" style={{ paddingTop: '0px', width: '100%' }}>
-                    {product.discountPercentage > 0 && basePrice > finalPrice && (
-                      <span 
-                        className="line-through md:w-full md:text-right"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: 'clamp(11px, 1.1vw, 16px)',
-                          fontWeight: 400,
-                          color: '#000000',
-                          textDecorationColor: '#EF4444',
-                          textDecorationThickness: '2px',
-                          marginBottom: '4px',
-                          lineHeight: 'clamp(28px, 3vw, 40px)',
-                          height: 'clamp(28px, 3vw, 40px)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'flex-end',
-                          width: '100%'
-                        }}
-                      >
-                        {formatCurrency(basePrice)}
-                      </span>
-                    )}
-                    <span 
-                      className="text-black md:w-full md:text-right"
-                      style={{
-                        fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
-                        fontSize: 'clamp(18px, 2vw, 28px)',
-                        fontWeight: 700,
-                        lineHeight: 'clamp(26px, 3vw, 40px)',
-                        letterSpacing: '0px',
-                        color: '#000000',
-                        height: 'clamp(26px, 3vw, 40px)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'flex-end',
-                        width: '100%'
-                      }}
-                    >
-                      {formatCurrency(finalPrice)}
-                    </span>
-                  </div>
                 </div>
 
-                {/* Description - Figma Exact Spacing */}
-                <p 
-                  className="text-black mb-6 w-full"
+                {/* Desktop Price - Right Side */}
+                <div className="hidden md:flex flex-col items-end text-right ml-4">
+                  {product.discountPercentage > 0 && basePrice > finalPrice && (
+                    <span 
+                      className="line-through"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(16px, 1.6vw, 18px)',
+                        fontWeight: 400,
+                        color: '#000000',
+                        textDecorationColor: '#EF4444',
+                        textDecorationThickness: '2px',
+                        marginBottom: '2px',
+                        lineHeight: '1.2'
+                      }}
+                    >
+                      {formatCurrency(basePrice)}
+                    </span>
+                  )}
+                  <span 
+                    className="text-black"
+                    style={{
+                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(20px, 2vw, 24px)',
+                      fontWeight: 700,
+                      lineHeight: '1.2',
+                      letterSpacing: '0px',
+                      color: '#000000'
+                    }}
+                  >
+                    {formatCurrency(finalPrice)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Description - Always Left */}
+              <p 
+                className="text-black mb-4 w-full"
+                style={{
+                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                  fontSize: 'clamp(14px, 3.5vw, 16px)',
+                  fontWeight: 400,
+                  lineHeight: '1.4',
+                  letterSpacing: '0px',
+                  color: '#000000',
+                  maxWidth: '100%',
+                  margin: 0,
+                  overflow: 'hidden',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical'
+                }}
+              >
+                {product.description || "Designed for a boxy, oversized look—size down if you prefer a closer fit."}
+              </p>
+
+              {/* Mobile Price - Left Side */}
+              <div className="flex flex-col items-start mb-6 w-full md:hidden">
+                {product.discountPercentage > 0 && basePrice > finalPrice && (
+                  <span 
+                    className="line-through"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: 'clamp(16px, 4vw, 18px)',
+                      fontWeight: 400,
+                      color: '#000000',
+                      textDecorationColor: '#EF4444',
+                      textDecorationThickness: '2px',
+                      marginBottom: '4px',
+                      lineHeight: '1.2'
+                    }}
+                  >
+                    {formatCurrency(basePrice)}
+                  </span>
+                )}
+                <span 
+                  className="text-black"
                   style={{
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: 'clamp(12px, 1.1vw, 14px)',
-                    fontWeight: 400,
-                    lineHeight: '1.4',
+                    fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(20px, 5vw, 24px)',
+                    fontWeight: 700,
+                    lineHeight: '1.2',
                     letterSpacing: '0px',
-                    color: '#000000',
-                    maxWidth: '100%',
-                    margin: 0,
-                    overflow: 'hidden',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 3,
-                    WebkitBoxOrient: 'vertical'
+                    color: '#000000'
                   }}
                 >
-                  {product.description || "Designed for a boxy, oversized look—size down if you prefer a closer fit."}
-                </p>
+                  {formatCurrency(finalPrice)}
+                </span>
               </div>
 
               {/* Middle Section - Centered between Top and Bottom */}
               <div className="flex flex-col md:justify-center md:py-4 w-full">
 
-                {/* Size Selection - Figma Exact Alignment */}
-                <div className="mb-6 w-full">
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center" style={{ gap: '12px' }}>
-                      <span 
-                        className="uppercase text-black"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: 'clamp(12px, 1.2vw, 14px)',
-                          fontWeight: 600,
-                          lineHeight: '1'
-                        }}
-                      >
-                        SIZE:
-                      </span>
-                      {sizeOptions.map((size) => (
-                        <button 
-                          key={size}
-                          className="transition-colors cursor-pointer flex items-center justify-center flex-shrink-0"
-                          style={{
-                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: 'clamp(12px, 1.2vw, 14px)',
-                            fontWeight: 600,
-                            width: 'clamp(50px, 5vw, 75px)',
-                            height: 'clamp(40px, 4vw, 38px)',
-                            borderRadius: '30px',
-                            border: '2px solid #000000',
-                            backgroundColor: selectedSize === size ? '#000000' : '#FFFFFF',
-                            color: selectedSize === size ? '#FFFFFF' : '#000000',
-                            lineHeight: '1',
-                            padding: 0
-                          }}
-                          onClick={() => setSelectedSize(size)}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
+                {/* Size Selection - Mobile Layout */}
+                <div className="mb-4 w-full">
+                  <div className="flex items-center justify-between w-full mb-3">
+                    <span 
+                      className="uppercase text-black"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: 'clamp(14px, 3.5vw, 16px)',
+                        fontWeight: 600,
+                        lineHeight: '1'
+                      }}
+                    >
+                      SIZE:
+                    </span>
                     {hasSizeGuideImage && (
                       <div
                         className="flex items-center gap-2 cursor-pointer"
@@ -1290,7 +1235,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                           className="uppercase text-black whitespace-nowrap"
                           style={{
                             fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: 'clamp(12px, 1.2vw, 14px)',
+                            fontSize: 'clamp(12px, 3vw, 14px)',
                             fontWeight: 600,
                             lineHeight: '1'
                           }}
@@ -1301,22 +1246,48 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       </div>
                     )}
                   </div>
+                  <div className="flex flex-wrap gap-2">
+                    {sizeOptions.map((size) => (
+                      <button 
+                        key={size}
+                        className="transition-colors cursor-pointer flex items-center justify-center flex-shrink-0"
+                        style={{
+                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                          fontSize: 'clamp(14px, 3.5vw, 16px)',
+                          fontWeight: 600,
+                          width: 'clamp(60px, 15vw, 80px)',
+                          height: 'clamp(44px, 11vw, 50px)',
+                          borderRadius: '30px',
+                          border: '2px solid #000000',
+                          backgroundColor: selectedSize === size ? '#000000' : '#FFFFFF',
+                          color: selectedSize === size ? '#FFFFFF' : '#000000',
+                          lineHeight: '1',
+                          padding: 0
+                        }}
+                        onClick={() => setSelectedSize(size)}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Color Selection - Figma Exact Alignment */}
+                {/* Color Selection - Mobile Layout */}
                 <div className="mb-6 w-full">
-                  <div className="flex items-center" style={{ gap: '12px' }}>
+                  <div className="flex items-center justify-between w-full mb-3">
                     <span 
                       className="uppercase text-black"
                       style={{
                         fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                        fontSize: 'clamp(12px, 1.2vw, 14px)',
+                        fontSize: 'clamp(14px, 3.5vw, 16px)',
                         fontWeight: 600,
                         lineHeight: '1'
                       }}
                     >
                       COLOR:
                     </span>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
                     {colorOptions.map((color, idx) => {
                       const defaultColors = ['#808080', '#000000', '#FFFF00', '#0066FF']
                       const colorHex = color.hex || defaultColors[idx] || '#808080'
@@ -1326,8 +1297,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                           key={color.name}
                           className="transition-colors cursor-pointer flex-shrink-0"
                           style={{
-                            width: 'clamp(28px, 2.8vw, 32px)',
-                            height: 'clamp(28px, 2.8vw, 32px)',
+                            width: 'clamp(40px, 10vw, 48px)',
+                            height: 'clamp(40px, 10vw, 48px)',
                             borderRadius: '8px',
                             border: selectedColor === color.name
                               ? '2px solid #000000'
@@ -1349,19 +1320,19 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               {/* Bottom Section - Aligned with Image Bottom */}
               <div className="flex flex-col md:flex-shrink-0 w-full">
 
-                {/* Quantity Selection & Action Buttons - Figma Exact Spacing */}
-                <div className="flex flex-col sm:flex-row gap-3 items-stretch w-full">
-                  {/* Quantity Selector - Figma Exact */}
+                {/* Quantity Selection & Action Buttons - Mobile: One Line */}
+                <div className="flex flex-row gap-3 items-stretch w-full">
+                  {/* Quantity Selector */}
                   <div 
                     className="flex items-center justify-between"
                     style={{
-                      width: '100%',
-                      maxWidth: 'clamp(100px, 11vw, 120px)',
-                      height: 'clamp(42px, 4.5vw, 50px)',
+                      width: 'clamp(140px, 35vw, 160px)',
+                      height: 'clamp(50px, 12.5vw, 56px)',
                       borderRadius: '20px',
                       border: '2px solid #000000',
                       backgroundColor: '#FFFFFF',
-                      padding: '0 clamp(16px, 1.8vw, 20px)'
+                      padding: '0 clamp(20px, 5vw, 24px)',
+                      flexShrink: 0
                     }}
                   >
                     <Button
@@ -1382,7 +1353,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       className="text-center"
                       style={{
                         fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                        fontSize: 'clamp(16px, 1.6vw, 18px)',
+                        fontSize: 'clamp(18px, 4.5vw, 20px)',
                         fontWeight: 600,
                         color: '#000000'
                       }}
@@ -1405,40 +1376,39 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     </Button>
                   </div>
 
-                  {/* Action Buttons - Figma Exact */}
-                  <div className="flex gap-3 flex-1 w-full">
+                  {/* Action Buttons - Mobile Layout */}
+                  <div className="flex gap-3 flex-1">
                     <Button
                       size="lg"
-                      className="uppercase font-semibold transition-all duration-300"
+                      className="uppercase font-semibold transition-all duration-300 flex-1"
                       style={{
                         fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                        fontSize: 'clamp(12px, 1.2vw, 14px)',
+                        fontSize: 'clamp(14px, 3.5vw, 16px)',
                         fontWeight: 600,
                         color: '#EBFF00',
                         backgroundColor: '#000000',
-                        width: 'clamp(240px, 26vw, 300px)',
-                        height: 'clamp(45px, 4.8vw, 52px)',
+                        height: 'clamp(50px, 12.5vw, 56px)',
                         borderRadius: '20px',
                         border: 'none',
-                        padding: 'clamp(4px, 0.5vw, 6px) clamp(20px, 2.2vw, 24px)',
-                        gap: 'clamp(4px, 0.5vw, 6px)'
+                        padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 20px)',
+                        gap: 'clamp(4px, 1vw, 6px)'
                       }}
                       onClick={handleAddToCart}
                     >
                       ADD TO BAG
                     </Button>
                     
-                    {/* Wishlist Button - Figma Exact */}
+                    {/* Wishlist Button */}
                     <div
                       className="flex items-center justify-center flex-shrink-0"
                       style={{
-                        width: 'clamp(60px, 6.5vw, 70px)',
-                        height: 'clamp(42px, 4.5vw, 50px)',
+                        width: 'clamp(60px, 15vw, 70px)',
+                        height: 'clamp(50px, 12.5vw, 56px)',
                         borderRadius: '20px',
                         border: '2px solid #000000',
                         backgroundColor: '#FFFFFF',
-                        padding: 'clamp(8px, 0.9vw, 10px)',
-                        gap: 'clamp(8px, 0.9vw, 10px)',
+                        padding: 'clamp(8px, 2vw, 10px)',
+                        gap: 'clamp(8px, 2vw, 10px)',
                         cursor: 'pointer'
                       }}
                       onClick={handleWishlistToggle}
@@ -1814,7 +1784,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     />
                     {bundle.shortDescription && (
                       <div
-                        className="absolute left-0 right-0 bottom-[72px] bg-gradient-to-t from-black/80 to-transparent text-white px-6 pb-10 pt-6 z-20"
                         style={{
                           borderBottomLeftRadius: '32px',
                           borderBottomRightRadius: '32px'
@@ -1895,7 +1864,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
         </div>
       </section>
 
-      {/* MOVE WITH US Section */}
+      {/* MOVE WITH US Section - Font Weight 500, Size 50px on Mobile */}
       <section className="bg-white text-[#212121] py-12">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-8 gap-6">
@@ -1903,8 +1872,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               className="uppercase text-black leading-none"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
-                fontWeight: 400,
-                fontSize: '90px',
+                fontWeight: 500,
+                fontSize: 'clamp(40px, 8vw, 50px)',
                 letterSpacing: '0.5px'
               }}
             >
@@ -1971,11 +1940,9 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             ) : moveWithUsImages.length > 0 ? (
               <div 
                 ref={moveWithUsCarouselRef}
-                className="flex overflow-x-auto scroll-smooth gap-4 md:gap-6 px-4"
+                className="flex overflow-x-auto scroll-smooth gap-4 md:gap-6 px-4 hide-scrollbar"
                 style={{
                   scrollSnapType: 'x mandatory',
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
                   WebkitOverflowScrolling: 'touch'
                 }}
                 onMouseEnter={() => setIsMoveWithUsHovered(true)}
@@ -2048,7 +2015,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
         </div>
       </section>
 
-      {/* YOU MAY ALSO LIKE Section */}
+      {/* YOU MAY ALSO LIKE Section - Font Weight 500, Size 50px on Mobile */}
       <div className="bg-white text-[#212121] pt-0 pb-20">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Top Section - YOU MAY ALSO LIKE heading and Lorem ipsum */}
@@ -2059,8 +2026,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 className="uppercase mb-6 text-black leading-none"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
-                  fontWeight: 400,
-                  fontSize: '90px',
+                  fontWeight: 500,
+                  fontSize: 'clamp(40px, 8vw, 50px)',
                   letterSpacing: '0.5px'
                 }}
               >
@@ -2079,7 +2046,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   fontWeight: 500
                 }}
               >
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation.
               </p>
             </div>
           </div>
@@ -2241,6 +2207,17 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
           </div>
         </div>
         )}
+
+      {/* Hide Scrollbar CSS */}
+      <style jsx global>{`
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   )
 }
