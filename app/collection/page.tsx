@@ -6,7 +6,7 @@ import Footer from "@/components/layout/footer"
 import ProductCard from "@/components/ui/product-card"
 import type { Product } from "@/lib/types"
 
-// --- Reusable Product Grid Component (No changes needed) ---
+// --- Reusable Product Grid Component (Fixed grid classes) ---
 const ProductGrid = ({ products, loading }: { products: Product[]; loading: boolean }) => {
   if (loading) {
     return (
@@ -26,7 +26,7 @@ const ProductGrid = ({ products, loading }: { products: Product[]; loading: bool
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg-grid-cols-3 xl:grid-cols-4 gap-6 px-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8">
       {products.map((product) => (
         <ProductCard
           key={product.id}
@@ -36,13 +36,11 @@ const ProductGrid = ({ products, loading }: { products: Product[]; loading: bool
           originalPrice={product.originalPrice}
           discount={product.isOnSale ? product.discountPercentage : undefined}
           image={product.image}
-          
         />
       ))}
     </div>
   );
 };
-
 
 // --- Main Page Component (NO BANNER) ---
 export default function AllProductsPage() {
@@ -74,13 +72,13 @@ export default function AllProductsPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-white"> {/* Changed background color to white */}
+    <div className="min-h-screen bg-white">
       <Header />
       
       {/* --- UNIFIED COLLECTION SECTION --- */}
-      <section id="all-products-collection" className="py-16">
+      <section id="all-products-collection" className="py-8 sm:py-12 lg:py-16">
         <div>
-          <h2 className="text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-10"> {/* Changed text color to black for contrast */}
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold uppercase tracking-wider text-black text-center mb-6 sm:mb-8 lg:mb-10">
             Our Entire Collection
           </h2>
           <ProductGrid products={allProducts} loading={loading} />

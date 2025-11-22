@@ -290,23 +290,24 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-[#0f1013] text-white sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo - Increased size for desktop */}
+    <header className="bg-[#0f1013] text-white sticky top-0 z-50 w-full overflow-hidden">
+      <div className="container mx-auto px-4 w-full">
+        {/* Main Header Row - Fixed height and proper spacing */}
+        <div className="flex items-center justify-between h-20 w-full">
+          {/* Logo - Responsive sizing */}
           <Link href="/" className="flex items-center flex-shrink-0">
             <Image 
               src="/logos.png" 
               alt="ATHLEKT" 
-              width={160} 
-              height={40} 
-              className="h-10 w-auto max-w-[160px] object-contain"
+              width={140}
+              height={35}
+              className="h-8 w-auto sm:h-9 md:h-10 object-contain max-w-[140px] md:max-w-[160px]"
               priority 
             />
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center space-x-8 flex-shrink-0">
             <Link
               href="/collection"
               className={`transition-colors font-medium uppercase text-[15px] ${
@@ -358,16 +359,16 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* Search and Icons */}
-          <div className="flex items-center space-x-4">
-            {/* Desktop Search Bar - Black background */}
+          {/* Search and Icons - Proper spacing and wrapping */}
+          <div className="flex items-center space-x-3 sm:space-x-4 flex-shrink-0">
+            {/* Desktop Search Bar - Hidden on mobile */}
             <div className="hidden md:flex items-center search-container">
               <div className="relative">
                 <div className="flex items-center bg-black border border-white rounded-full overflow-hidden">
                   <input
                     type="search"
                     placeholder="Search for products..."
-                    className="px-4 py-2 w-64 bg-black text-white border-none outline-none h-10 placeholder:text-gray-400 text-[11px]"
+                    className="px-4 py-2 w-48 lg:w-64 bg-black text-white border-none outline-none h-10 placeholder:text-gray-400 text-[11px]"
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value)
@@ -445,9 +446,9 @@ export default function Header() {
               </div>
             </div>
 
-            {/* Icons */}
-            <div className="flex items-center space-x-3">
-              <Button variant="ghost" size="icon" className="relative hover:bg-[#141619] text-white group" asChild>
+            {/* Icons - Proper spacing */}
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <Button variant="ghost" size="icon" className="relative hover:bg-[#141619] text-white group w-10 h-10" asChild>
                 <Link href="/wishlist">
                   <Heart className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
                   {wishlistCount > 0 && (
@@ -458,13 +459,13 @@ export default function Header() {
                 </Link>
               </Button>
 
-              <Button variant="ghost" size="icon" className="hover:bg-[#141619] text-white group" asChild>
+              <Button variant="ghost" size="icon" className="hover:bg-[#141619] text-white group w-10 h-10" asChild>
                 <Link href="/profile">
                   <User className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
                 </Link>
               </Button>
 
-              <Button variant="ghost" size="icon" className="relative hover:bg-[#141619] text-white group" asChild>
+              <Button variant="ghost" size="icon" className="relative hover:bg-[#141619] text-white group w-10 h-10" asChild>
                 <Link href="/cart">
                   <ShoppingBag className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
                   <span className="absolute -top-1 -right-1 bg-[#cbf26c] text-[#212121] text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
@@ -473,10 +474,11 @@ export default function Header() {
                 </Link>
               </Button>
 
+              {/* Hamburger Button - Fixed positioning and size */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden hover:bg-[#141619] text-white"
+                className="lg:hidden hover:bg-[#141619] text-white w-10 h-10 flex items-center justify-center"
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
               >
                 {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -485,95 +487,97 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Mobile Search Bar - White background line */}
-        <div className="lg:hidden pb-4 search-container">
-          <div className="relative">
-            <div className="flex items-center bg-white border border-gray-300 rounded-full overflow-hidden">
-              <input
-                type="search"
-                placeholder="Search for products..."
-                className="px-4 py-2 w-full bg-white text-black border-none outline-none h-10 placeholder:text-gray-500 text-[11px]"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value)
-                  if (e.target.value.trim().length >= 2) {
-                    setIsSearchDropdownOpen(true)
-                  } else {
-                    setIsSearchDropdownOpen(false)
-                  }
-                }}
-                onKeyDown={handleSearch}
-                onFocus={() => searchQuery.trim().length >= 2 && setIsSearchDropdownOpen(true)}
-              />
-              <button 
-                onClick={handleSearchIconClick}
-                className="px-4 py-2 hover:bg-gray-100 transition-colors"
-              >
-                <Search className="text-gray-600 h-4 w-4" />
-              </button>
-            </div>
-            
-            {/* Mobile Search Suggestions Dropdown */}
-            {isSearchDropdownOpen && (
-              <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
-                {!productsLoaded ? (
-                  <div className="p-4 text-center text-gray-500 text-[11px]">Loading products...</div>
-                ) : isSearchLoading ? (
-                  <div className="p-4 text-center text-gray-500 text-[11px]">Searching...</div>
-                ) : searchResults.length > 0 ? (
-                  <>
-                    <div className="p-2 bg-gray-50 border-b">
-                      <p className="text-[11px] text-gray-500">
-                        Found {searchResults.length} results for "{searchQuery}"
-                      </p>
-                    </div>
-                    {searchResults.map((product) => (
-                      <button
-                        key={product._id}
-                        onClick={() => handleSuggestionClick(product.slug || product._id)}
-                        className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0 w-full text-left"
-                      >
-                        <div className="w-12 h-12 bg-gray-200 rounded-md mr-3 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                          <Image 
-                            src={getImageUrl(product)}
-                            alt={product.title}
-                            width={48}
-                            height={48}
-                            className="w-12 h-12 object-cover"
-                            onError={(e) => {
-                              const target = e.target as HTMLImageElement
-                              target.src = "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
-                            }}
-                          />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <span className="text-[#212121] text-[11px] font-medium block truncate">
-                            {product.title}
-                          </span>
-                          <div className="flex justify-between items-center mt-1">
-                            <span className="text-[#cbf26c] text-[11px] font-bold">${product.basePrice}</span>
-                            <span className="text-[11px] text-gray-500 capitalize truncate ml-2">
-                              {product.category} • {product.subCategory}
-                            </span>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
-                  </>
-                ) : searchQuery.trim().length >= 2 ? (
-                  <div className="p-4 text-center text-gray-500 text-[11px]">
-                    No products found for "{searchQuery}"
-                  </div>
-                ) : null}
+        {/* Mobile Search Bar - Only show when menu is closed */}
+        {!isMenuOpen && (
+          <div className="lg:hidden pb-4 search-container w-full">
+            <div className="relative w-full">
+              <div className="flex items-center bg-white border border-gray-300 rounded-full overflow-hidden w-full">
+                <input
+                  type="search"
+                  placeholder="Search for products..."
+                  className="px-4 py-2 w-full bg-white text-black border-none outline-none h-10 placeholder:text-gray-500 text-[11px]"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value)
+                    if (e.target.value.trim().length >= 2) {
+                      setIsSearchDropdownOpen(true)
+                    } else {
+                      setIsSearchDropdownOpen(false)
+                    }
+                  }}
+                  onKeyDown={handleSearch}
+                  onFocus={() => searchQuery.trim().length >= 2 && setIsSearchDropdownOpen(true)}
+                />
+                <button 
+                  onClick={handleSearchIconClick}
+                  className="px-4 py-2 hover:bg-gray-100 transition-colors flex-shrink-0"
+                >
+                  <Search className="text-gray-600 h-4 w-4" />
+                </button>
               </div>
-            )}
+              
+              {/* Mobile Search Suggestions Dropdown */}
+              {isSearchDropdownOpen && (
+                <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
+                  {!productsLoaded ? (
+                    <div className="p-4 text-center text-gray-500 text-[11px]">Loading products...</div>
+                  ) : isSearchLoading ? (
+                    <div className="p-4 text-center text-gray-500 text-[11px]">Searching...</div>
+                  ) : searchResults.length > 0 ? (
+                    <>
+                      <div className="p-2 bg-gray-50 border-b">
+                        <p className="text-[11px] text-gray-500">
+                          Found {searchResults.length} results for "{searchQuery}"
+                        </p>
+                      </div>
+                      {searchResults.map((product) => (
+                        <button
+                          key={product._id}
+                          onClick={() => handleSuggestionClick(product.slug || product._id)}
+                          className="flex items-center p-3 hover:bg-gray-100 transition-colors border-b last:border-b-0 w-full text-left"
+                        >
+                          <div className="w-12 h-12 bg-gray-200 rounded-md mr-3 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                            <Image 
+                              src={getImageUrl(product)}
+                              alt={product.title}
+                              width={48}
+                              height={48}
+                              className="w-12 h-12 object-cover"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement
+                                target.src = "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"
+                              }}
+                            />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[#212121] text-[11px] font-medium block truncate">
+                              {product.title}
+                            </span>
+                            <div className="flex justify-between items-center mt-1">
+                              <span className="text-[#cbf26c] text-[11px] font-bold">${product.basePrice}</span>
+                              <span className="text-[11px] text-gray-500 capitalize truncate ml-2">
+                                {product.category} • {product.subCategory}
+                              </span>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </>
+                  ) : searchQuery.trim().length >= 2 ? (
+                    <div className="p-4 text-center text-gray-500 text-[11px]">
+                      No products found for "{searchQuery}"
+                    </div>
+                  ) : null}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Mobile Menu */}
         {isMenuOpen && (
-          <div className="lg:hidden py-6 border-t border-[#141619]">
-            <nav className="flex flex-col space-y-6">
+          <div className="lg:hidden py-6 border-t border-[#141619] w-full">
+            <nav className="flex flex-col space-y-6 w-full">
               <Link
                 href="/collection"
                 className={`transition-colors font-medium uppercase text-[15px] ${

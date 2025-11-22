@@ -119,6 +119,14 @@ export default function ProductDetail({ product }: { product: Product }) {
   const moveWithUsCarouselRef = useRef<HTMLDivElement>(null)
   const [isMoveWithUsHovered, setIsMoveWithUsHovered] = useState(false)
 
+  // BUNDLES carousel state
+  const [currentBundleIndex, setCurrentBundleIndex] = useState(0)
+  const bundlesCarouselRef = useRef<HTMLDivElement>(null)
+
+  // YOU MAY ALSO LIKE carousel state
+  const [currentRecommendedIndex, setCurrentRecommendedIndex] = useState(0)
+  const recommendedCarouselRef = useRef<HTMLDivElement>(null)
+
   // NEW: Zoom functionality state
   const [isZoomed, setIsZoomed] = useState(false)
   const [zoomPosition, setZoomPosition] = useState({ x: 0, y: 0 })
@@ -480,6 +488,54 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
     setCurrentMoveWithUsIndex(index)
     moveWithUsCarouselRef.current.scrollTo({
       left: scrollPosition,
+      behavior: 'smooth'
+    })
+  }
+
+  // BUNDLES carousel functions
+  const scrollBundlesCarousel = (direction: 'left' | 'right') => {
+    if (!bundlesCarouselRef.current) return;
+
+    const gap = 24
+    const cardWidth = Math.max(280, Math.min(320, bundlesCarouselRef.current.clientWidth * 0.8))
+    const scrollAmount = cardWidth + gap
+    const currentScroll = bundlesCarouselRef.current.scrollLeft
+    
+    const newScroll = direction === 'left' 
+      ? Math.max(0, currentScroll - scrollAmount)
+      : currentScroll + scrollAmount
+    
+    const newIndex = direction === 'left' 
+      ? Math.max(0, currentBundleIndex - 1)
+      : Math.min(remainingBundles.length - 1, currentBundleIndex + 1)
+    
+    setCurrentBundleIndex(newIndex)
+    bundlesCarouselRef.current.scrollTo({
+      left: newScroll,
+      behavior: 'smooth'
+    })
+  }
+
+  // YOU MAY ALSO LIKE carousel functions
+  const scrollRecommendedCarousel = (direction: 'left' | 'right') => {
+    if (!recommendedCarouselRef.current) return;
+
+    const gap = 24
+    const cardWidth = Math.max(280, Math.min(320, recommendedCarouselRef.current.clientWidth * 0.8))
+    const scrollAmount = cardWidth + gap
+    const currentScroll = recommendedCarouselRef.current.scrollLeft
+    
+    const newScroll = direction === 'left' 
+      ? Math.max(0, currentScroll - scrollAmount)
+      : currentScroll + scrollAmount
+    
+    const newIndex = direction === 'left' 
+      ? Math.max(0, currentRecommendedIndex - 1)
+      : Math.min(recommendedProducts.length - 1, currentRecommendedIndex + 1)
+    
+    setCurrentRecommendedIndex(newIndex)
+    recommendedCarouselRef.current.scrollTo({
+      left: newScroll,
       behavior: 'smooth'
     })
   }
@@ -894,7 +950,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
   }
 
   return (
-    <div className="bg-white overflow-x-hidden">
+    <div className="bg-white overflow-x-hidden" style={{ overflowX: 'hidden' }}>
       {/* Main Product Section - Figma Design */}
       <section className="py-4 md:py-6 lg:py-8 xl:py-10 bg-white text-[#212121]">
         <div className="container mx-auto px-4 max-w-[1250px]">
@@ -1700,7 +1756,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
         </div>
       </section>
 
-      {/* Bundles Section */}
+      {/* Bundles Section - WITH SLIDER */}
       <section className="bg-white text-[#212121] py-8">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6 gap-6 lg:gap-8">
@@ -1731,100 +1787,135 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               
             </p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-            {loadingBundles ? (
-              [1, 2, 3, 4].map((idx) => (
-                <div
-                  key={`bundle-skeleton-${idx}`}
-                  className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
-                  style={{
-                    aspectRatio: '307/450',
-                    borderRadius: '32px'
-                  }}
-                />
-              ))
-            ) : remainingBundles.length > 0 ? (
-              remainingBundles.map((bundle) => {
-                const bundleName = (bundle.name || bundle.title || 'Bundle').toUpperCase();
-                const nameLines = splitBundleName(bundleName);
-                const bundlePrice = getBundlePriceValue(bundle);
-                const bundleImage = getBundleImage(bundle);
-                const bundleHref = getBundleProductHref(bundle);
 
-                return (
-                  <Link
-                    key={bundle._id || bundle.id || bundle.name}
-                    href={bundleHref}
-                    className="bg-white relative overflow-hidden w-full"
+          {/* Bundles Carousel */}
+          <div className="relative mt-12">
+            {/* Navigation Arrows */}
+            {remainingBundles.length > 1 && (
+              <>
+                <button
+                  onClick={() => scrollBundlesCarousel('left')}
+                  className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                  style={{
+                    left: '-12px',
+                    width: 'clamp(32px, 3.5vw, 48px)',
+                    height: 'clamp(32px, 3.5vw, 48px)',
+                    border: '1px solid #000000',
+                    backgroundColor: '#FFFFFF'
+                  }}
+                  aria-label="Previous bundle"
+                >
+                  <ChevronLeft className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
+                </button>
+                <button
+                  onClick={() => scrollBundlesCarousel('right')}
+                  className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                  style={{
+                    right: '-12px',
+                    width: 'clamp(32px, 3.5vw, 48px)',
+                    height: 'clamp(32px, 3.5vw, 48px)',
+                    border: '1px solid #000000',
+                    backgroundColor: '#FFFFFF'
+                  }}
+                  aria-label="Next bundle"
+                >
+                  <ChevronRight className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
+                </button>
+              </>
+            )}
+
+            {/* Bundles Carousel Container */}
+            <div 
+              ref={bundlesCarouselRef}
+              className="flex overflow-x-auto scroll-smooth gap-6 px-4 hide-scrollbar"
+              style={{
+                scrollSnapType: 'x mandatory',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              {loadingBundles ? (
+                [1, 2, 3, 4].map((idx) => (
+                  <div
+                    key={`bundle-skeleton-${idx}`}
+                    className="bg-gray-200 relative overflow-hidden flex-shrink-0 animate-pulse"
                     style={{
-                      aspectRatio: '307/450'
+                      width: 'clamp(280px, 70vw, 320px)',
+                      aspectRatio: '307/450',
+                      borderRadius: '32px'
                     }}
-                  >
-                    {bundle.badgeText && (
-                      <span
-                        className="absolute top-4 left-4 z-30 bg-white/90 text-black uppercase tracking-[0.2em] text-sm font-semibold px-3 py-1 rounded-full shadow-md"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
-                        }}
-                      >
-                        {bundle.badgeText}
-                      </span>
-                    )}
-                    <img
-                      src={bundleImage}
-                      alt={bundle.name || 'Bundle Product'}
-                      className="w-full h-full object-cover"
+                  />
+                ))
+              ) : remainingBundles.length > 0 ? (
+                remainingBundles.map((bundle) => {
+                  const bundleName = (bundle.name || bundle.title || 'Bundle').toUpperCase();
+                  const nameLines = splitBundleName(bundleName);
+                  const bundlePrice = getBundlePriceValue(bundle);
+                  const bundleImage = getBundleImage(bundle);
+                  const bundleHref = getBundleProductHref(bundle);
+
+                  return (
+                    <Link
+                      key={bundle._id || bundle.id || bundle.name}
+                      href={bundleHref}
+                      className="bg-white relative overflow-hidden flex-shrink-0"
                       style={{
-                        borderRadius: '32px'
-                      }}
-                      onError={(event) => {
-                        const target = event.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                      }}
-                    />
-                    {bundle.shortDescription && (
-                      <div
-                        style={{
-                          borderBottomLeftRadius: '32px',
-                          borderBottomRightRadius: '32px'
-                        }}
-                      >
-                        <p
-                          className="text-sm leading-snug"
-                          style={{
-                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            letterSpacing: '0px',
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden'
-                          }}
-                        >
-                          {bundle.shortDescription}
-                        </p>
-                      </div>
-                    )}
-                    <div 
-                      className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                      style={{
-                        height: '72px',
-                        zIndex: 30
+                        width: 'clamp(280px, 70vw, 320px)',
+                        aspectRatio: '307/450',
+                        scrollSnapAlign: 'start'
                       }}
                     >
-                      <div className="flex flex-col text-left">
-                        <span 
-                          className="uppercase text-white"
+                      {bundle.badgeText && (
+                        <span
+                          className="absolute top-4 left-4 z-30 bg-white/90 text-black uppercase tracking-[0.2em] text-sm font-semibold px-3 py-1 rounded-full shadow-md"
                           style={{
-                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: '13.41px',
-                            lineHeight: '14.6px',
-                            letterSpacing: '0px',
-                            fontWeight: 500
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
                           }}
                         >
-                          {nameLines.line1}
+                          {bundle.badgeText}
                         </span>
-                        {nameLines.line2 && (
+                      )}
+                      <img
+                        src={bundleImage}
+                        alt={bundle.name || 'Bundle Product'}
+                        className="w-full h-full object-cover"
+                        style={{
+                          borderRadius: '32px'
+                        }}
+                        onError={(event) => {
+                          const target = event.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                      {bundle.shortDescription && (
+                        <div
+                          style={{
+                            borderBottomLeftRadius: '32px',
+                            borderBottomRightRadius: '32px'
+                          }}
+                        >
+                          <p
+                            className="text-sm leading-snug"
+                            style={{
+                              fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                              letterSpacing: '0px',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            {bundle.shortDescription}
+                          </p>
+                        </div>
+                      )}
+                      <div 
+                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                        style={{
+                          height: '72px',
+                          zIndex: 30
+                        }}
+                      >
+                        <div className="flex flex-col text-left">
                           <span 
                             className="uppercase text-white"
                             style={{
@@ -1835,31 +1926,45 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                               fontWeight: 500
                             }}
                           >
-                            {nameLines.line2}
+                            {nameLines.line1}
                           </span>
-                        )}
+                          {nameLines.line2 && (
+                            <span 
+                              className="uppercase text-white"
+                              style={{
+                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                                fontSize: '13.41px',
+                                lineHeight: '14.6px',
+                                letterSpacing: '0px',
+                                fontWeight: 500
+                              }}
+                            >
+                              {nameLines.line2}
+                            </span>
+                          )}
+                        </div>
+                        <p 
+                          className="text-white font-bold text-right"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '22px',
+                            lineHeight: '26px',
+                            letterSpacing: '0px',
+                            fontWeight: 600
+                          }}
+                        >
+                          {formatCurrency(bundlePrice)}
+                        </p>
                       </div>
-                      <p 
-                        className="text-white font-bold text-right"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: '22px',
-                          lineHeight: '26px',
-                          letterSpacing: '0px',
-                          fontWeight: 600
-                        }}
-                      >
-                        {formatCurrency(bundlePrice)}
-                      </p>
-                    </div>
-                  </Link>
-                );
-              })
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <p className="text-gray-500">No additional bundles available right now.</p>
-              </div>
-            )}
+                    </Link>
+                  );
+                })
+              ) : (
+                <div className="col-span-full text-center py-12 w-full">
+                  <p className="text-gray-500">No additional bundles available right now.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -2015,7 +2120,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
         </div>
       </section>
 
-      {/* YOU MAY ALSO LIKE Section - Font Weight 500, Size 50px on Mobile */}
+      {/* YOU MAY ALSO LIKE Section - WITH SLIDER */}
       <div className="bg-white text-[#212121] pt-0 pb-20">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Top Section - YOU MAY ALSO LIKE heading and Lorem ipsum */}
@@ -2050,69 +2155,102 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             </div>
           </div>
 
-          {/* Product Grid - 4 Products */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
-            {loadingRecommended ? (
-              [1, 2, 3, 4].map((idx) => (
-                <div
-                  key={`recommended-skeleton-${idx}`}
-                  className="bg-gray-200 relative overflow-hidden w-full animate-pulse"
+          {/* YOU MAY ALSO LIKE Carousel */}
+          <div className="relative mt-12">
+            {/* Navigation Arrows */}
+            {recommendedProducts.length > 1 && (
+              <>
+                <button
+                  onClick={() => scrollRecommendedCarousel('left')}
+                  className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                   style={{
-                    aspectRatio: '307/450',
-                    borderRadius: '32px'
+                    left: '-12px',
+                    width: 'clamp(32px, 3.5vw, 48px)',
+                    height: 'clamp(32px, 3.5vw, 48px)',
+                    border: '1px solid #000000',
+                    backgroundColor: '#FFFFFF'
                   }}
-                />
-              ))
-            ) : recommendedProducts.length > 0 ? (
-              recommendedProducts.map((item) => {
-                const productName = (item.name || item.title || 'Product').toUpperCase()
-                const nameLines = splitBundleName(productName)
-                const priceValue = getProductCardPrice(item)
-                const productHref = getProductCardHref(item)
-                const productImage = getProductCardImage(item)
-                const productId = getProductCardId(item) || productName
+                  aria-label="Previous product"
+                >
+                  <ChevronLeft className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
+                </button>
+                <button
+                  onClick={() => scrollRecommendedCarousel('right')}
+                  className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                  style={{
+                    right: '-12px',
+                    width: 'clamp(32px, 3.5vw, 48px)',
+                    height: 'clamp(32px, 3.5vw, 48px)',
+                    border: '1px solid #000000',
+                    backgroundColor: '#FFFFFF'
+                  }}
+                  aria-label="Next product"
+                >
+                  <ChevronRight className="text-black" style={{ width: 'clamp(16px, 1.8vw, 24px)', height: 'clamp(16px, 1.8vw, 24px)' }} />
+                </button>
+              </>
+            )}
 
-                return (
-                  <Link
-                    key={productId}
-                    href={productHref}
-                    className="bg-white relative overflow-hidden w-full"
+            {/* YOU MAY ALSO LIKE Carousel Container */}
+            <div 
+              ref={recommendedCarouselRef}
+              className="flex overflow-x-auto scroll-smooth gap-6 px-4 hide-scrollbar"
+              style={{
+                scrollSnapType: 'x mandatory',
+                WebkitOverflowScrolling: 'touch'
+              }}
+            >
+              {loadingRecommended ? (
+                [1, 2, 3, 4].map((idx) => (
+                  <div
+                    key={`recommended-skeleton-${idx}`}
+                    className="bg-gray-200 relative overflow-hidden flex-shrink-0 animate-pulse"
                     style={{
-                      aspectRatio: '307/450'
+                      width: 'clamp(280px, 70vw, 320px)',
+                      aspectRatio: '307/450',
+                      borderRadius: '32px'
                     }}
-                  >
-                    <img
-                      src={productImage}
-                      alt={item.name || item.title || 'Product'}
-                      className="w-full h-full object-cover"
+                  />
+                ))
+              ) : recommendedProducts.length > 0 ? (
+                recommendedProducts.map((item) => {
+                  const productName = (item.name || item.title || 'Product').toUpperCase()
+                  const nameLines = splitBundleName(productName)
+                  const priceValue = getProductCardPrice(item)
+                  const productHref = getProductCardHref(item)
+                  const productImage = getProductCardImage(item)
+                  const productId = getProductCardId(item) || productName
+
+                  return (
+                    <Link
+                      key={productId}
+                      href={productHref}
+                      className="bg-white relative overflow-hidden flex-shrink-0"
                       style={{
-                        borderRadius: '32px'
-                      }}
-                      onError={(event) => {
-                        const target = event.target as HTMLImageElement;
-                        target.src = '/placeholder.svg';
-                      }}
-                    />
-                    <div 
-                      className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
-                      style={{
-                        height: '60px'
+                        width: 'clamp(280px, 70vw, 320px)',
+                        aspectRatio: '307/450',
+                        scrollSnapAlign: 'start'
                       }}
                     >
-                      <div className="flex flex-col text-left">
-                        <span 
-                          className="uppercase text-white"
-                          style={{
-                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            fontSize: '13.41px',
-                            lineHeight: '14.6px',
-                            letterSpacing: '0px',
-                            fontWeight: 500
-                          }}
-                        >
-                          {nameLines.line1}
-                        </span>
-                        {nameLines.line2 && (
+                      <img
+                        src={productImage}
+                        alt={item.name || item.title || 'Product'}
+                        className="w-full h-full object-cover"
+                        style={{
+                          borderRadius: '32px'
+                        }}
+                        onError={(event) => {
+                          const target = event.target as HTMLImageElement;
+                          target.src = '/placeholder.svg';
+                        }}
+                      />
+                      <div 
+                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                        style={{
+                          height: '60px'
+                        }}
+                      >
+                        <div className="flex flex-col text-left">
                           <span 
                             className="uppercase text-white"
                             style={{
@@ -2123,31 +2261,45 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                               fontWeight: 500
                             }}
                           >
-                            {nameLines.line2}
+                            {nameLines.line1}
                           </span>
-                        )}
+                          {nameLines.line2 && (
+                            <span 
+                              className="uppercase text-white"
+                              style={{
+                                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                                fontSize: '13.41px',
+                                lineHeight: '14.6px',
+                                letterSpacing: '0px',
+                                fontWeight: 500
+                              }}
+                            >
+                              {nameLines.line2}
+                            </span>
+                          )}
+                        </div>
+                        <p 
+                          className="text-white font-bold text-right"
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '22px',
+                            lineHeight: '26px',
+                            letterSpacing: '0px',
+                            fontWeight: 600
+                          }}
+                        >
+                          {formatCurrency(priceValue)}
+                        </p>
                       </div>
-                      <p 
-                        className="text-white font-bold text-right"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: '22px',
-                          lineHeight: '26px',
-                          letterSpacing: '0px',
-                          fontWeight: 600
-                        }}
-                      >
-                        {formatCurrency(priceValue)}
-                      </p>
-                    </div>
-                  </Link>
-                )
-              })
-            ) : (
-              <div className="col-span-full text-center py-12">
-                <p className="text-gray-500">No recommendations available right now.</p>
-              </div>
-            )}
+                    </Link>
+                  )
+                })
+              ) : (
+                <div className="col-span-full text-center py-12 w-full">
+                  <p className="text-gray-500">No recommendations available right now.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
