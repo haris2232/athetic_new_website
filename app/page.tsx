@@ -881,7 +881,7 @@ export default function HomePage() {
       {/* Section 2: DISCOVER YOUR FIT */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8 text-center md:text-left">
+          <div className="mb-6 md:mb-8 text-left md:text-left">
             <h1 
               className="uppercase mb-4 md:mb-6 text-black leading-none"
               style={{
@@ -1057,7 +1057,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
       {/* Section 3: WHAT'S NEW */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8 text-center md:text-left">
+          <div className="mb-6 md:mb-8 text-left md:text-left">
             <h1 
               className="uppercase mb-4 md:mb-6 text-black leading-none"
               style={{
@@ -1202,7 +1202,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 md:py-12 mt-8 md:mt-12">
+            <div className="text-left py-8 md:py-12 mt-8 md:mt-12">
               <p className="text-gray-500">No recent products available</p>
             </div>
           )}
@@ -1231,7 +1231,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
 
       {/* Section 4: WHAT MAKE US MOVE */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px] text-center md:text-left">
+        <div className="container mx-auto px-4 max-w-[1250px] text-left md:text-left">
           <h1 
             className="uppercase mb-4 md:mb-6 text-black leading-none"
             style={{
@@ -1292,7 +1292,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
       {/* Section 5: COMMUNITY FAVOURITES */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8 text-center md:text-left">
+          <div className="mb-6 md:mb-8 text-left md:text-left">
             <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6 justify-center md:justify-start">
               <h1 
                 className="uppercase text-black leading-none"
@@ -1484,7 +1484,7 @@ move with you from workouts to weekends.            </p>
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 md:py-12 mt-8 md:mt-12">
+            <div className="text-left py-8 md:py-12 mt-8 md:mt-12">
               <p className="text-gray-500">No community favorites available</p>
             </div>
           )}
@@ -1493,9 +1493,9 @@ move with you from workouts to weekends.            </p>
 
       {/* Section 6: WHY ATHLEKT */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px]">
+        <div className="container mx-auto px-0 max-w-[1250px]">
           {/* Mobile Layout */}
-          <div className="flex flex-col items-center gap-6 py-8 lg:hidden text-center">
+          <div className="flex flex-col items-center gap-6 py-8 lg:hidden text-left">
             <div className="relative w-full max-w-sm">
               <div className="relative z-10 overflow-hidden bg-white shadow-lg rounded-2xl">
                 <img
@@ -1505,9 +1505,9 @@ move with you from workouts to weekends.            </p>
                 />
               </div>
             </div>
-            <div className="flex w-full max-w-sm flex-col items-center gap-4 px-4">
+            <div className="flex w-full max-w-sm flex-col items-center gap-4 px-0">
               <h2
-                className="text-black uppercase w-full text-center"
+                className="text-black uppercase w-full text-left"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontSize: "clamp(2rem, 8vw, 2.875rem)",
@@ -1519,7 +1519,7 @@ move with you from workouts to weekends.            </p>
                 OUR STORY
               </h2>
               <div
-                className="text-black w-full text-center"
+                className="text-black w-full text-left"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                   fontSize: "clamp(0.875rem, 3vw, 0.9375rem)",
@@ -1647,7 +1647,7 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
       {/* Section 7: COMPLETE THE LOOK */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8 text-center md:text-left">
+          <div className="mb-6 md:mb-8 text-left md:text-left">
             <h1 
               className="uppercase mb-4 md:mb-6 text-black leading-none"
               style={{
@@ -1831,7 +1831,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 md:py-12 mt-8 md:mt-12">
+            <div className="text-left py-8 md:py-12 mt-8 md:mt-12">
               <p className="text-gray-500">No bundles available</p>
             </div>
           )}
@@ -1842,7 +1842,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Heading and Subtitle */}
-          <div className="mb-6 md:mb-8 text-center md:text-left">
+          <div className="mb-6 md:mb-8 text-left md:text-left">
             <h1 
               className="uppercase mb-4 md:mb-6 text-black leading-none"
               style={{
@@ -1968,7 +1968,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 md:py-12 px-4">
+              <div className="text-left py-8 md:py-12 px-4">
                 <p className="text-gray-500">No images available at the moment.</p>
               </div>
             )}
