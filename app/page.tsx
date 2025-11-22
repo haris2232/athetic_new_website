@@ -1126,7 +1126,7 @@ export default function HomePage() {
       </section>
 
       {/* Section 5: COMMUNITY FAVOURITES */}
-      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
+      <section className="bg-white text-[#212121] py-8 ">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="mb-6 md:mb-8 text-left md:text-left">
             <div className="flex items-left center gap-2 md:gap-3 mb-4 md:mb-6  md:justify-start">
@@ -1488,7 +1488,7 @@ export default function HomePage() {
       </section>
 
       {/* Section 7: COMPLETE THE LOOK */}
-      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
+      <section className="bg-white text-[#212121]">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="mb-6 md:mb-8 text-left md:text-left">
             <h1 
