@@ -114,6 +114,7 @@ export default function HomePage() {
   const mobileVideoRef = useRef<HTMLVideoElement>(null);
   const desktopVideoRef = useRef<HTMLVideoElement>(null);
   const [videosLoaded, setVideosLoaded] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
 
   // Community favorites products state
   const [communityFavorites, setCommunityFavorites] = useState<Product[]>([])
@@ -134,39 +135,49 @@ export default function HomePage() {
   // Auto-scroll pause state
   const [isCarouselHovered, setIsCarouselHovered] = useState(false)
 
-  // Video play handling for iOS
+  // Detect iOS
   useEffect(() => {
-    const playVideos = () => {
-      if (mobileVideoRef.current) {
-        mobileVideoRef.current.play().catch(error => {
-          console.log('Mobile video play failed:', error);
-        });
+    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    setIsIOS(isIOSDevice);
+  }, []);
+
+  // Enhanced Video play handling for iOS
+  useEffect(() => {
+    const playVideos = async () => {
+      try {
+        if (mobileVideoRef.current) {
+          await mobileVideoRef.current.play();
+        }
+        if (desktopVideoRef.current) {
+          await desktopVideoRef.current.play();
+        }
+        setVideosLoaded(true);
+      } catch (error) {
+        console.log('Video play failed, will retry on user interaction:', error);
       }
-      if (desktopVideoRef.current) {
-        desktopVideoRef.current.play().catch(error => {
-          console.log('Desktop video play failed:', error);
-        });
-      }
-      setVideosLoaded(true);
     };
 
     // Try to play videos immediately
-    const timer = setTimeout(playVideos, 100);
+    playVideos();
 
-    // Add click event listener to play videos on user interaction (for iOS)
+    // For iOS, we need to play videos on user interaction
     const handleUserInteraction = () => {
       playVideos();
+      // Remove listeners after first interaction
       document.removeEventListener('click', handleUserInteraction);
       document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('scroll', handleUserInteraction);
     };
 
+    // Add multiple event listeners for iOS
     document.addEventListener('click', handleUserInteraction);
     document.addEventListener('touchstart', handleUserInteraction);
+    document.addEventListener('scroll', handleUserInteraction);
 
     return () => {
-      clearTimeout(timer);
       document.removeEventListener('click', handleUserInteraction);
       document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('scroll', handleUserInteraction);
     };
   }, []);
 
@@ -811,11 +822,13 @@ export default function HomePage() {
                 objectFit: 'contain',
                 objectPosition: 'center center',
               }}
-              // iOS specific attributes
+              // Enhanced iOS specific attributes
               webkit-playsinline="true"
               x5-playsinline="true"
               x5-video-player-type="h5"
               x5-video-player-fullscreen="false"
+              // Add poster for better loading
+              poster="/placeholder-mobile.jpg"
             >
               Your browser does not support the video tag.
             </video>
@@ -836,20 +849,30 @@ export default function HomePage() {
                 objectFit: 'cover',
                 objectPosition: 'center center',
               }}
-              // iOS specific attributes
+              // Enhanced iOS specific attributes
               webkit-playsinline="true"
               x5-playsinline="true"
               x5-video-player-type="h5"
               x5-video-player-fullscreen="false"
+              // Add poster for better loading
+              poster="/placeholder-desktop.jpg"
             >
               Your browser does not support the video tag.
             </video>
           </div>
 
-          {/* Fallback for videos that don't load */}
-          {!videosLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-              <p className="text-gray-500">Loading video...</p>
+          {/* iOS Specific Play Button */}
+          {isIOS && !videosLoaded && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+              <button
+                onClick={() => {
+                  if (mobileVideoRef.current) mobileVideoRef.current.play();
+                  if (desktopVideoRef.current) desktopVideoRef.current.play();
+                }}
+                className="bg-white/90 text-black px-6 py-3 rounded-full font-semibold text-lg shadow-lg hover:bg-white transition-colors"
+              >
+                Tap to Play Video
+              </button>
             </div>
           )}
         </div>
@@ -858,9 +881,9 @@ export default function HomePage() {
       {/* Section 2: DISCOVER YOUR FIT */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8">
+          <div className="mb-6 md:mb-8 text-center md:text-left">
             <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
+              className="uppercase mb-4 md:mb-6 text-black leading-none"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
@@ -871,7 +894,7 @@ export default function HomePage() {
               DISCOVER YOUR FIT
             </h1>
             <p 
-              className="text-black leading-normal text-left"
+              className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                 fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
@@ -913,7 +936,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
                   <Link 
                     key={category._id}
                     href={getCategoryUrl(category)}
-                    className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity block"
                     style={{
                       width: '100%',
                       aspectRatio: '642/230',
@@ -928,7 +951,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
                     <div className="absolute inset-0 flex items-start justify-start p-4 md:p-6 lg:p-8">
                       <div className="z-10">
                         <h3 
-                          className="text-white uppercase text-left"
+                          className="text-white uppercase"
                           style={{
                             fontFamily: "'Bebas Neue', sans-serif",
                             fontSize: 'clamp(1.5rem, 6vw, 4rem)',
@@ -945,7 +968,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
                         </h3>
                         {categoryName.line2 && (
                           <h3 
-                            className="text-white uppercase text-left"
+                            className="text-white uppercase"
                             style={{
                               fontFamily: "'Bebas Neue', sans-serif",
                               fontSize: 'clamp(1.5rem, 6vw, 4rem)',
@@ -975,7 +998,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
                   <Link 
                     key={label}
                     href={getCategoryUrl({ _id: label, name: label, isActive: true } as Category)}
-                    className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                    className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity block"
                     style={{
                       width: '100%',
                       aspectRatio: '642/230',
@@ -990,7 +1013,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
                     <div className="absolute inset-0 flex items-start justify-start p-4 md:p-6 lg:p-8">
                       <div className="z-10">
                         <h3 
-                          className="text-white uppercase text-left"
+                          className="text-white uppercase"
                           style={{
                             fontFamily: "'Bebas Neue', sans-serif",
                             fontSize: 'clamp(1.5rem, 6vw, 4rem)',
@@ -1006,7 +1029,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
                         </h3>
                         {formatted.line2 && (
                           <h3
-                            className="text-white uppercase text-left"
+                            className="text-white uppercase"
                             style={{
                               fontFamily: "'Bebas Neue', sans-serif",
                               fontSize: 'clamp(1.5rem, 6vw, 4rem)',
@@ -1034,9 +1057,9 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
       {/* Section 3: WHAT'S NEW */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8">
+          <div className="mb-6 md:mb-8 text-center md:text-left">
             <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
+              className="uppercase mb-4 md:mb-6 text-black leading-none"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
@@ -1047,7 +1070,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
               NEW ARRIVAL
             </h1>
             <p 
-              className="text-black leading-normal text-left"
+              className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                 fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
@@ -1077,7 +1100,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
               <div
                 ref={whatsNewCarouselRef}
                 onWheel={handleWhatsNewWheel}
-                className="whats-new-scroll flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-2"
+                className="whats-new-scroll flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-2 px-4 md:px-0"
               >
                 {recentProducts.map((product, index) => {
                   const productId = product.id || product._id || `product-${index}`;
@@ -1092,7 +1115,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                     <Link
                       key={productId}
                       href={`/product/${productId}`}
-                      className="flex-shrink-0 bg-white relative overflow-hidden hover:opacity-90 transition-opacity"
+                      className="flex-shrink-0 bg-white relative overflow-hidden hover:opacity-90 transition-opacity mx-2 md:mx-0"
                       style={{
                         width: 'min(280px, 70vw)',
                         aspectRatio: '307/450',
@@ -1137,7 +1160,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                             className="uppercase text-white"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
+                              fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)',
                               lineHeight: '1.2',
                               letterSpacing: '0px',
                               fontWeight: 500,
@@ -1150,7 +1173,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                               className="uppercase text-white"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
+                                fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)',
                                 lineHeight: '1.2',
                                 letterSpacing: '0px',
                                 fontWeight: 500,
@@ -1170,7 +1193,7 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
                             fontWeight: 600,
                           }}
                         >
-                          AED {Math.round(productPrice)} {/* Fixed price format */}
+                          AED {Math.round(productPrice)}
                         </p>
                       </div>
                     </Link>
@@ -1208,9 +1231,9 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
 
       {/* Section 4: WHAT MAKE US MOVE */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px]">
+        <div className="container mx-auto px-4 max-w-[1250px] text-center md:text-left">
           <h1 
-            className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
+            className="uppercase mb-4 md:mb-6 text-black leading-none"
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
               fontWeight: 400,
@@ -1224,21 +1247,21 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
           {/* Mobile Image */}
           <div className="block md:hidden">
             <div 
-              className="relative mx-auto w-full"
-style={{
-  position: 'relative',
-  width: '100%',
-  aspectRatio: '3/4',
-  minHeight: 'clamp(400px, 100vw, 600px)',
-  backgroundColor: '#FFFFFF',
-  backgroundImage: 'url(/images/move-mob.jpg)',
-  backgroundSize: 'cover',
-  backgroundPosition: 'center',
-  backgroundRepeat: 'no-repeat',
-  opacity: 1,
-  borderRadius: '20px',
-  overflow: 'hidden'
-}}
+              className="relative mx-auto w-full max-w-2xl"
+              style={{
+                position: 'relative',
+                width: '100%',
+                aspectRatio: '3/4',
+                minHeight: 'clamp(400px, 100vw, 600px)',
+                backgroundColor: '#FFFFFF',
+                backgroundImage: 'url(/images/move-mob.jpg)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                opacity: 1,
+                borderRadius: '20px',
+                overflow: 'hidden'
+              }}
             />
           </div>
           
@@ -1269,10 +1292,10 @@ style={{
       {/* Section 5: COMMUNITY FAVOURITES */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8">
-            <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6">
+          <div className="mb-6 md:mb-8 text-center md:text-left">
+            <div className="flex items-center gap-2 md:gap-3 mb-4 md:mb-6 justify-center md:justify-start">
               <h1 
-                className="uppercase text-black leading-none text-left"
+                className="uppercase text-black leading-none"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontWeight: 400,
@@ -1280,11 +1303,12 @@ style={{
                   letterSpacing: '0.5px'
                 }}
               >
-best sellers              </h1>
+                best sellers
+              </h1>
               <Star className="w-6 h-6 md:w-8 md:h-8 text-yellow-400 fill-yellow-400" />
             </div>
             <p 
-              className="text-black leading-normal text-left"
+              className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                 fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
@@ -1298,7 +1322,7 @@ move with you from workouts to weekends.            </p>
 
           {/* Community Favorites Products Slider */}
           {loadingCommunityFavorites ? (
-            <div className="flex gap-4 md:gap-6 mt-8 md:mt-12 overflow-x-hidden">
+            <div className="flex gap-4 md:gap-6 mt-8 md:mt-12 overflow-x-hidden px-4 md:px-0">
               {[1, 2, 3, 4].map((i) => (
                 <div key={i} className="flex-shrink-0 bg-gray-200 animate-pulse rounded-[32px]" 
                   style={{ 
@@ -1338,7 +1362,7 @@ move with you from workouts to weekends.            </p>
               {/* Community Favorites Slider Container */}
               <div
                 ref={communityCarouselRef}
-                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 community-slider"
+                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 community-slider px-4 md:px-0"
                 style={{
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none'
@@ -1358,7 +1382,7 @@ move with you from workouts to weekends.            </p>
                     <Link
                       key={productId}
                       href={`/product/${productId}`}
-                      className="flex-shrink-0 bg-white relative overflow-hidden hover:opacity-90 transition-opacity"
+                      className="flex-shrink-0 bg-white relative overflow-hidden hover:opacity-90 transition-opacity mx-2 md:mx-0"
                       style={{
                         width: 'min(280px, 70vw)',
                         aspectRatio: '307/450'
@@ -1402,7 +1426,7 @@ move with you from workouts to weekends.            </p>
                             className="uppercase text-white"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
+                              fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)',
                               lineHeight: '1.2',
                               letterSpacing: '0px',
                               fontWeight: 500,
@@ -1415,7 +1439,7 @@ move with you from workouts to weekends.            </p>
                               className="uppercase text-white"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
+                                fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)',
                                 lineHeight: '1.2',
                                 letterSpacing: '0px',
                                 fontWeight: 500,
@@ -1435,7 +1459,7 @@ move with you from workouts to weekends.            </p>
                             fontWeight: 600,
                           }}
                         >
-                          AED {Math.round(productPrice)} {/* Fixed price format */}
+                          AED {Math.round(productPrice)}
                         </p>
                       </div>
                     </Link>
@@ -1471,10 +1495,9 @@ move with you from workouts to weekends.            </p>
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Mobile Layout */}
-          <div className="flex flex-col items-center gap-6 py-8 lg:hidden">
+          <div className="flex flex-col items-center gap-6 py-8 lg:hidden text-center">
             <div className="relative w-full max-w-sm">
-                <div className="absolute inset-x-4 top-8 h-60  " />
-              <div className="relative z-10 overflow-hidden  bg-white shadow-lg">
+              <div className="relative z-10 overflow-hidden bg-white shadow-lg rounded-2xl">
                 <img
                   src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : "/9.png"}
                   alt="Why Athlekt"
@@ -1482,9 +1505,9 @@ move with you from workouts to weekends.            </p>
                 />
               </div>
             </div>
-            <div className="flex w-full max-w-sm flex-col items-center gap-4 px-4 text-center">
+            <div className="flex w-full max-w-sm flex-col items-center gap-4 px-4">
               <h2
-                className="text-black uppercase text-left w-full"
+                className="text-black uppercase w-full text-center"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontSize: "clamp(2rem, 8vw, 2.875rem)",
@@ -1496,7 +1519,7 @@ move with you from workouts to weekends.            </p>
                 OUR STORY
               </h2>
               <div
-                className="text-black text-left w-full"
+                className="text-black w-full text-center"
                 style={{
                   fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                   fontSize: "clamp(0.875rem, 3vw, 0.9375rem)",
@@ -1517,19 +1540,6 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
 
           {/* Desktop Layout */}
           <div className="hidden lg:block relative" style={{ paddingTop: 'clamp(100px, 10vw, 150px)', paddingBottom: '0px' }}>
-            {/* Background Rectangle */}
-            <div
-              className="absolute"
-              style={{
-                position: 'absolute',
-
-
-                opacity: 1,
-                transform: 'rotate(180deg)',
-                zIndex: 1,
-              }}
-            />
-
             {/* Main Content */}
             <div className="relative" style={{ minHeight: '30rem', zIndex: 10 }}>
               {/* Left Side - Image */}
@@ -1635,11 +1645,11 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
       </section>
 
       {/* Section 7: COMPLETE THE LOOK */}
-      <section className="bg-white text-[#212121] py-2 md:py-28 lg:py-19">
-        <div className="container mx-auto px-2 max-w-[1250px]">
-          <div className="mb-6 md:mb-8">
+      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
+        <div className="container mx-auto px-4 max-w-[1250px]">
+          <div className="mb-6 md:mb-8 text-center md:text-left">
             <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
+              className="uppercase mb-4 md:mb-6 text-black leading-none"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
@@ -1650,7 +1660,7 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
               Bundles
             </h1>
             <p 
-              className="text-black leading-normal text-left"
+              className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                 fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
@@ -1663,7 +1673,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
 
           {/* Bundle Slider */}
           {loadingBundles ? (
-            <div className="flex gap-4 md:gap-6 mt-8 md:mt-12 overflow-x-hidden">
+            <div className="flex gap-4 md:gap-6 mt-8 md:mt-12 overflow-x-hidden px-4 md:px-0">
               {[1, 2, 3, 4].map((i) => (
                 <div 
                   key={i}
@@ -1705,7 +1715,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
               {/* Bundle Slider Container */}
               <div
                 ref={bundleCarouselRef}
-                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 bundle-slider"
+                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 bundle-slider px-4 md:px-0"
                 style={{
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none'
@@ -1723,7 +1733,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                     <Link 
                       key={bundleId}
                       href={bundleHref}
-                      className="flex-shrink-0 bg-white relative overflow-hidden w-full cursor-pointer hover:opacity-90 transition-opacity"
+                      className="flex-shrink-0 bg-white relative overflow-hidden w-full cursor-pointer hover:opacity-90 transition-opacity mx-2 md:mx-0"
                       style={{
                         width: 'min(280px, 70vw)',
                         aspectRatio: '307/450'
@@ -1763,7 +1773,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                             className="uppercase text-white"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
+                              fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)',
                               lineHeight: '1.2',
                               letterSpacing: '0px',
                               fontWeight: 500
@@ -1776,7 +1786,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                               className="uppercase text-white"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)', // Smaller font size
+                                fontSize: 'clamp(0.65rem, 2.2vw, 0.75rem)',
                                 lineHeight: '1.2',
                                 letterSpacing: '0px',
                                 fontWeight: 500
@@ -1796,17 +1806,9 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
                             fontWeight: 600
                           }}
                         >
-                          AED {Math.round(bundlePrice)} {/* Fixed price format */}
+                          AED {Math.round(bundlePrice)}
                         </p>
                       </div>
-                        <div
-                          style={{
-                            zIndex: 10
-                          }}
-                        >
-
-                        </div>
-                      )}
                     </Link>
                   );
                 })}
@@ -1840,9 +1842,9 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Heading and Subtitle */}
-          <div className="mb-6 md:mb-8">
+          <div className="mb-6 md:mb-8 text-center md:text-left">
             <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none text-left"
+              className="uppercase mb-4 md:mb-6 text-black leading-none"
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
                 fontWeight: 400,
@@ -1853,7 +1855,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
               MOVE, TAG, MOTIVATE
             </h1>
             <p 
-              className="text-black leading-normal text-left"
+              className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                 fontSize: 'clamp(0.75rem, 3vw, 1.125rem)',
