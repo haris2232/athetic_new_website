@@ -293,7 +293,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
   return (
     <div className="bg-white">
       {/* New Design Section - Below Banner */}
-      <div className="bg-white text-[#212121] pt-20 pb-20">
+      <div className="bg-white text-[#212121] pt-10 pb-10">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Top Section - Gender heading and Lorem ipsum */}
           <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between mb-8 gap-6">
@@ -311,8 +311,19 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 {normalizedGender === 'women' ? 'WOMEN' : 'MEN'}
               </h1>
               
-              {/* Product Type Navigation - Dynamic from API - Horizontal Scroll */}
-              <div className="flex overflow-x-auto gap-6 mb-4 pb-2 scrollbar-hide">
+              {/* Product Type Navigation - Dynamic from API - Horizontal Scroll with Hidden Scrollbar */}
+              <div className="flex overflow-x-auto gap-6 mb-4 pb-2 hide-scrollbar">
+                {/* Hide scrollbar for webkit browsers */}
+                <style jsx>{`
+                  .hide-scrollbar::-webkit-scrollbar {
+                    display: none;
+                  }
+                  .hide-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                  }
+                `}</style>
+                
                 {/* ALL Button */}
                 <button 
                   onClick={() => setSelectedCategory('all')}
@@ -376,7 +387,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
               </p>
               
               {/* Sort By - Exactly opposite to Filter */}
-              <div className="flex items-center gap-2 justify-end mt-auto">
+              <div className="flex items-center gap-2 justify-end pt-4 mt-auto">
                 <span className="uppercase text-black font-bold" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '14px', fontWeight: 600 }}>Sort By:</span>
                 <select className="uppercase text-black font-bold bg-transparent border-none outline-none cursor-pointer" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '14px', fontWeight: 600 }}>
                   <option>Featured</option>
@@ -433,33 +444,33 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                         }}
                       />
 
-                      {/* Discount Badges */}
+                      {/* Discount Badges - Smaller on Mobile */}
                       {hasProductDiscount && (
                         <>
                           {/* SALE Tag - Top Left */}
-                          <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
+                          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-red-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-full">
                             SALE
                           </div>
                           
                           {/* Discount Percentage - Top Right */}
-                          <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-sm font-bold rounded-full">
+                          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white text-black px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-bold rounded-full">
                             {discountPercentage}% OFF
                           </div>
                         </>
                       )}
                       
                       <div 
-                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-3 sm:p-4 rounded-b-[32px] flex items-center justify-between"
                         style={{
-                          height: '60px'
+                          height: '50px sm:60px'
                         }}
                       >
                         <div className="flex flex-col text-left flex-1 min-w-0">
                           <span 
-                            className="uppercase text-white truncate text-sm sm:text-[13.41px]"
+                            className="uppercase text-white truncate text-xs sm:text-[13.41px]"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              lineHeight: '14.6px',
+                              lineHeight: '12px sm:14.6px',
                               letterSpacing: '0px',
                               fontWeight: 500
                             }}
@@ -469,10 +480,10 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           </span>
                           {secondLine && (
                             <span 
-                              className="uppercase text-white truncate text-sm sm:text-[13.41px]"
+                              className="uppercase text-white truncate text-xs sm:text-[13.41px]"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                lineHeight: '14.6px',
+                                lineHeight: '12px sm:14.6px',
                                 letterSpacing: '0px',
                                 fontWeight: 500
                               }}
@@ -483,10 +494,10 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           )}
                         </div>
                         <p 
-                          className="text-white font-bold text-right ml-2 flex-shrink-0 text-[16px] sm:text-[22px]"
+                          className="text-white font-bold text-right ml-2 flex-shrink-0 text-sm sm:text-[22px]"
                           style={{
                             fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            lineHeight: '26px',
+                            lineHeight: '20px sm:26px',
                             letterSpacing: '0px',
                             fontWeight: 600
                           }}
@@ -523,7 +534,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
                   fontWeight: 400,
-                  fontSize: '90px',
+                  fontSize: '40px',
                   letterSpacing: '0.5px'
                 }}
               >
@@ -578,33 +589,33 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                         }}
                       />
 
-                      {/* Discount Badges */}
+                      {/* Discount Badges - Smaller on Mobile */}
                       {hasProductDiscount && (
                         <>
                           {/* SALE Tag - Top Left */}
-                          <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
+                          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-red-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-full">
                             SALE
                           </div>
                           
                           {/* Discount Percentage - Top Right */}
-                          <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-sm font-bold rounded-full">
+                          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white text-black px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-bold rounded-full">
                             {discountPercentage}% OFF
                           </div>
                         </>
                       )}
                       
                       <div 
-                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 rounded-b-[32px] flex items-center justify-between"
+                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-3 sm:p-4 rounded-b-[32px] flex items-center justify-between"
                         style={{
-                          height: '60px'
+                          height: '50px sm:60px'
                         }}
                       >
                         <div className="flex flex-col text-left flex-1 min-w-0">
                           <span 
-                            className="uppercase text-white truncate text-sm sm:text-[13.41px]"
+                            className="uppercase text-white truncate text-xs sm:text-[13.41px]"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              lineHeight: '14.6px',
+                              lineHeight: '12px sm:14.6px',
                               letterSpacing: '0px',
                               fontWeight: 500
                             }}
@@ -614,10 +625,10 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           </span>
                           {secondLine && (
                             <span 
-                              className="uppercase text-white truncate text-sm sm:text-[13.41px]"
+                              className="uppercase text-white truncate text-xs sm:text-[13.41px]"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                lineHeight: '14.6px',
+                                lineHeight: '12px sm:14.6px',
                                 letterSpacing: '0px',
                                 fontWeight: 500
                               }}
@@ -628,10 +639,10 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           )}
                         </div>
                         <p 
-                          className="text-white font-bold text-right ml-2 flex-shrink-0 text-[16px] sm:text-[22px]"
+                          className="text-white font-bold text-right ml-2 flex-shrink-0 text-sm sm:text-[22px]"
                           style={{
                             fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            lineHeight: '26px',
+                            lineHeight: '20px sm:26px',
                             letterSpacing: '0px',
                             fontWeight: 600
                           }}

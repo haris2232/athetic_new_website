@@ -113,29 +113,28 @@ export default function CategoriesPage() {
     <div className="min-h-screen bg-white">
       <Header />
       
-      {/* Banner Image Section - Increased border radius */}
-      <div className="mt-4 mb-4 sm:mb-6 md:mb-8 w-full px-3 sm:px-4 md:px-6 lg:px-8 flex justify-center pt-0">
-        <div className="relative w-full max-w-[1400px]">
-          <div className="relative w-full overflow-hidden rounded-[40px] sm:rounded-[60px] md:rounded-[80px] lg:rounded-[100px] xl:rounded-[120px] bg-[#f2f2f2]">
-            <div className="relative w-full" style={{ paddingTop: "25%", minHeight: "150px" }}>
-              <img 
-                src={heroImages.background} 
-                alt={`${normalizedGender === "women" ? "Women" : "Men"} banner`} 
-                className="absolute inset-0 h-full w-full object-cover sm:object-contain"
-                onError={(event) => {
-                  const target = event.target as HTMLImageElement
-                  target.src = DEFAULT_HERO[normalizedGender].background
-                }}
-              />
-            </div>
-          </div>
+<div className="mt-4 mb-4 sm:mb-6 md:mb-8 w-full px-3 sm:px-3 md:px-5 lg:px-6 flex justify-center pt-24 sm:pt-28 md:pt-35 lg:pt-40">
+  <div className="relative w-full max-w-[1400px]">
+    <div className="relative w-full overflow-hidden rounded-[40px] sm:rounded-[60px] md:rounded-[80px] lg:rounded-[100px] xl:rounded-[120px] bg-[#f2f2f2]">
+      <div className="relative w-full" style={{ paddingTop: "25%", minHeight: "150px" }}>
+        <img 
+          src={heroImages.background} 
+          alt={`${normalizedGender === "women" ? "Women" : "Men"} banner`} 
+          className="absolute inset-0 h-full w-full object-cover sm:object-cover rounded-[80px] sm:rounded-[80px] md:rounded-[80px] lg:rounded-[100px] xl:rounded-[120px]"
+          onError={(event) => {
+            const target = event.target as HTMLImageElement
+            target.src = DEFAULT_HERO[normalizedGender].background
+          }}
+        />
+      </div>
+    </div>
           
           {/* Overlay Image */}
           <div className="absolute inset-0 flex items-end justify-center pointer-events-none">
             <img 
               src={heroImages.overlay} 
               alt={`${normalizedGender === "women" ? "Women" : "Men"} feature`} 
-              className="w-[120px] sm:w-[160px] md:w-[200px] lg:w-[240px] xl:w-[280px] 2xl:w-[320px] object-contain"
+              className="w-[220px] sm:w-[260px] md:w-[400px] lg:w-[440px] xl:w-[480px] 2xl:w-[520px] object-contain"
               onError={(event) => {
                 const target = event.target as HTMLImageElement
                 target.src = DEFAULT_HERO[normalizedGender].overlay

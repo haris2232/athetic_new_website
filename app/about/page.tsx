@@ -178,7 +178,7 @@ export default function AboutUs() {
           </div>
 
           {/* Brand Mission Paragraphs */}
-          <div className="mx-auto space-y-6 sm:space-y-8 max-w-4xl">
+          <div className="mx-auto space-y-6 sm:space-y-8 ">
             <p className="text-base sm:text-lg leading-relaxed text-left">
               <strong className="font-semibold">Athlekt</strong> is a UAE-born athleisure brand redefining what it means to live an active, balanced lifestyle for <strong className="font-semibold">every body and everyone, everywhere</strong>. Created for parents, professionals, and fitness enthusiasts alike, Athlekt celebrates movement in all its forms from school, office runs to gym runs, from studio sessions to weekend adventures.
             </p>
