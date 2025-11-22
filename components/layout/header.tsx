@@ -220,6 +220,7 @@ export default function Header() {
       } else {
         return categoryName === "men"
       }
+      return subCat.category.toLowerCase() === gender.toLowerCase();
     })
 
     const uniqueSubCategories = genderSubCategories.reduce((acc, subCat) => {
@@ -268,7 +269,7 @@ export default function Header() {
               <Link
                 key={category.id || `${gender}-${category.href}`}
                 href={`${category.href}?gender=${gender}`}
-                className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors text-[11px]"
+                className="block px-6 py-3 text-[#212121] hover:bg-gray-50 transition-colors text-[14px]"
                 onClick={() => {
                   setIsMenMenuOpen(false)
                   setIsWomenMenuOpen(false)
@@ -279,7 +280,7 @@ export default function Header() {
               </Link>
             ))}
             {categories.length === 0 && (
-              <div className="px-6 py-3 text-gray-400 text-[11px]">
+              <div className="px-6 py-3 text-gray-400 text-[14px]">
                 {loading ? "Loading..." : "No categories"}
               </div>
             )}
@@ -290,7 +291,7 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-[#0f1013] text-white sticky top-0 z-50 w-full overflow-hidden">
+    <header className="bg-[#0f1013] text-white sticky top-0 z-50 w-full">
       <div className="container mx-auto px-4 w-full">
         {/* Main Header Row - Fixed height and proper spacing */}
         <div className="flex items-center justify-between h-20 w-full">
@@ -368,7 +369,7 @@ export default function Header() {
                   <input
                     type="search"
                     placeholder="Search for products..."
-                    className="px-4 py-2 w-48 lg:w-64 bg-black text-white border-none outline-none h-10 placeholder:text-gray-400 text-[11px]"
+                    className="px-4 py-2 w-48 lg:w-64 bg-black text-white border-none outline-none h-10 placeholder:text-gray-400 text-[14px]"
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value)
@@ -393,13 +394,13 @@ export default function Header() {
                 {isSearchDropdownOpen && (
                   <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
                     {!productsLoaded ? (
-                      <div className="p-4 text-center text-gray-500 text-[11px]">Loading products...</div>
+                      <div className="p-4 text-center text-gray-500 text-[14px]">Loading products...</div>
                     ) : isSearchLoading ? (
-                      <div className="p-4 text-center text-gray-500 text-[11px]">Searching...</div>
+                      <div className="p-4 text-center text-gray-500 text-[14px]">Searching...</div>
                     ) : searchResults.length > 0 ? (
                       <>
                         <div className="p-2 bg-gray-50 border-b">
-                          <p className="text-[11px] text-gray-500">
+                          <p className="text-[14px] text-gray-500">
                             Found {searchResults.length} results for "{searchQuery}"
                           </p>
                         </div>
@@ -423,12 +424,12 @@ export default function Header() {
                               />
                             </div>
                             <div className="flex-1 min-w-0">
-                              <span className="text-[#212121] text-[11px] font-medium block truncate">
+                              <span className="text-[#212121] text-[14px] font-medium block truncate">
                                 {product.title}
                               </span>
                               <div className="flex justify-between items-center mt-1">
-                                <span className="text-[#cbf26c] text-[11px] font-bold">${product.basePrice}</span>
-                                <span className="text-[11px] text-gray-500 capitalize truncate ml-2">
+                                <span className="text-[#cbf26c] text-[14px] font-bold">${product.basePrice}</span>
+                                <span className="text-[14px] text-gray-500 capitalize truncate ml-2">
                                   {product.category} • {product.subCategory}
                                 </span>
                               </div>
@@ -437,7 +438,7 @@ export default function Header() {
                         ))}
                       </>
                     ) : searchQuery.trim().length >= 2 ? (
-                      <div className="p-4 text-center text-gray-500 text-[11px]">
+                      <div className="p-4 text-center text-gray-500 text-[14px]">
                         No products found for "{searchQuery}"
                       </div>
                     ) : null}
@@ -452,7 +453,7 @@ export default function Header() {
                 <Link href="/wishlist">
                   <Heart className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
                   {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-[#cbf26c] text-[#212121] text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    <span className="absolute -top-1 -right-1 bg-[#cbf26c] text-[#212121] text-[14px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                       {wishlistCount}
                     </span>
                   )}
@@ -468,7 +469,7 @@ export default function Header() {
               <Button variant="ghost" size="icon" className="relative hover:bg-[#141619] text-white group w-10 h-10" asChild>
                 <Link href="/cart">
                   <ShoppingBag className="h-5 w-5 group-hover:text-[#cbf26c] transition-colors" />
-                  <span className="absolute -top-1 -right-1 bg-[#cbf26c] text-[#212121] text-[11px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-[#cbf26c] text-[#212121] text-[14px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
                     {cartCount}
                   </span>
                 </Link>
@@ -495,7 +496,7 @@ export default function Header() {
                 <input
                   type="search"
                   placeholder="Search for products..."
-                  className="px-4 py-2 w-full bg-white text-black border-none outline-none h-10 placeholder:text-gray-500 text-[11px]"
+                  className="px-4 py-2 w-full bg-white text-black border-none outline-none h-10 placeholder:text-gray-500 text-[14px]"
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value)
@@ -520,13 +521,13 @@ export default function Header() {
               {isSearchDropdownOpen && (
                 <div className="absolute top-full left-0 mt-2 w-full bg-white shadow-lg rounded-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
                   {!productsLoaded ? (
-                    <div className="p-4 text-center text-gray-500 text-[11px]">Loading products...</div>
+                    <div className="p-4 text-center text-gray-500 text-[14px]">Loading products...</div>
                   ) : isSearchLoading ? (
-                    <div className="p-4 text-center text-gray-500 text-[11px]">Searching...</div>
+                    <div className="p-4 text-center text-gray-500 text-[14px]">Searching...</div>
                   ) : searchResults.length > 0 ? (
                     <>
                       <div className="p-2 bg-gray-50 border-b">
-                        <p className="text-[11px] text-gray-500">
+                        <p className="text-[14px] text-gray-500">
                           Found {searchResults.length} results for "{searchQuery}"
                         </p>
                       </div>
@@ -550,12 +551,12 @@ export default function Header() {
                             />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <span className="text-[#212121] text-[11px] font-medium block truncate">
+                            <span className="text-[#212121] text-[14px] font-medium block truncate">
                               {product.title}
                             </span>
                             <div className="flex justify-between items-center mt-1">
-                              <span className="text-[#cbf26c] text-[11px] font-bold">${product.basePrice}</span>
-                              <span className="text-[11px] text-gray-500 capitalize truncate ml-2">
+                              <span className="text-[#cbf26c] text-[14px] font-bold">${product.basePrice}</span>
+                              <span className="text-[14px] text-gray-500 capitalize truncate ml-2">
                                 {product.category} • {product.subCategory}
                               </span>
                             </div>
@@ -564,7 +565,7 @@ export default function Header() {
                       ))}
                     </>
                   ) : searchQuery.trim().length >= 2 ? (
-                    <div className="p-4 text-center text-gray-500 text-[11px]">
+                    <div className="p-4 text-center text-gray-500 text-[14px]">
                       No products found for "{searchQuery}"
                     </div>
                   ) : null}
@@ -595,14 +596,14 @@ export default function Header() {
                 <div className="pl-4 space-y-2">
                   <Link
                     href="/categories?gender=men"
-                    className="block text-white hover:text-[#cbf26c] transition-colors text-[11px]"
+                    className="block text-white hover:text-[#cbf26c] transition-colors text-[14px]"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Men
                   </Link>
                   <Link
                     href="/categories?gender=women"
-                    className="block text-white hover:text-[#cbf26c] transition-colors text-[11px]"
+                    className="block text-white hover:text-[#cbf26c] transition-colors text-[14px]"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Women
