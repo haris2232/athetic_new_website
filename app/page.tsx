@@ -1495,7 +1495,8 @@ move with you from workouts to weekends.            </p>
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-0 max-w-[1250px]">
           {/* Mobile Layout */}
-<div className="flex w-full max-w-sm flex-col items-center gap-4 px-4">
+          <div className="flex flex-col items-center gap-4 py-8 lg:hidden text-left px-4">
+            
             <div className="relative w-full max-w-sm">
               <div className="relative z-10 overflow-hidden bg-white shadow-lg rounded-2xl">
                 <img
