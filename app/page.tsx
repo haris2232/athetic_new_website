@@ -1112,7 +1112,7 @@ export default function HomePage() {
                 backgroundColor: '#FFFFFF',
                 backgroundImage: homepageSettings.homepageImage2 
                   ? `url(${getImageUrl(homepageSettings.homepageImage2)})` 
-                  : 'url(/images/move-desk.jpg)',
+                  : 'url(/images/move-desk.png)',
                 backgroundSize: 'contain',
                 backgroundPosition: 'center',
                 backgroundRepeat: 'no-repeat',
