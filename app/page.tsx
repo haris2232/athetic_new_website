@@ -1073,7 +1073,7 @@ Explore breathable, real-body fits for runs, lifts, and everything in between we
               className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
+                fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
                 letterSpacing: '0px',
                 fontWeight: 500
               }}
@@ -1311,13 +1311,12 @@ Fresh colors. Updated fits. Same all-day comfort. See what's new.            </p
               className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
+                fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
                 letterSpacing: '0px',
                 fontWeight: 500
               }}
             >
-Loved by all for breathability, performance, and perfect fits, designed to 
-move with you from workouts to weekends.            </p>
+Loved by all for breathability, performance, and perfect fits, designed to move with you from workouts to weekends.            </p>
           </div>
 
           {/* Community Favorites Products Slider */}
@@ -1664,7 +1663,7 @@ Athlekt is made for real people - for dad bods, mums, and everyone finding their
               className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(0.75rem, 3vw, 0.875rem)',
+                fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
                 letterSpacing: '0px',
                 fontWeight: 500
               }}
@@ -1859,7 +1858,7 @@ Bundle up your favorites, build your Athlekt set, and get more for less.        
               className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
               style={{
                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(0.75rem, 3vw, 1.125rem)',
+                fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
                 letterSpacing: '0px',
                 fontWeight: 500,
                 marginTop: '2px'
