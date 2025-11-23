@@ -712,182 +712,182 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section 2: DISCOVER YOUR FIT */}
-      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px]">
-          <div className="mb-6 md:mb-8 text-left md:text-left">
-            <h1 
-              className="uppercase mb-4 md:mb-6 text-black leading-none"
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontWeight: 400,
-                fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
-                letterSpacing: '0.5px'
-              }}
-            >
-              DISCOVER YOUR FIT
-            </h1>
-            <p 
-              className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
-              style={{
-                fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
-                letterSpacing: '0px',
-                fontWeight: 500
-              }}
-            >
-              Explore breathable, real-body fits for runs, lifts, and everything in between we call life.
-            </p>
-          </div>
+{/* Section 2: DISCOVER YOUR FIT */}
+<section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
+  <div className="container mx-auto px-4 max-w-[1250px]">
+    <div className="mb-6 md:mb-8 text-left md:text-left">
+      <h1 
+        className="uppercase mb-4 md:mb-6 text-black leading-none"
+        style={{
+          fontFamily: "'Bebas Neue', sans-serif",
+          fontWeight: 400,
+          fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
+          letterSpacing: '0.5px'
+        }}
+      >
+        DISCOVER YOUR FIT
+      </h1>
+      <p 
+        className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
+        style={{
+          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+          fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
+          letterSpacing: '0px',
+          fontWeight: 500
+        }}
+      >
+        Explore breathable, real-body fits for runs, lifts, and everything in between we call life.
+      </p>
+    </div>
 
-          {/* 2x2 Grid of Category Cards */}
-          {loadingCategories ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-8 md:mt-12">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="relative overflow-hidden"
-                  style={{
-                    width: '100%',
-                    aspectRatio: '642/230',
-                    borderRadius: 'clamp(12px, 2vw, 32px)',
-                    backgroundColor: '#E0E0E0',
-                    opacity: 0.5
-                  }}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-gray-400">Loading...</div>
-                  </div>
+    {/* 2x2 Grid of Category Cards */}
+    {loadingCategories ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-8 md:mt-12">
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="relative overflow-hidden"
+            style={{
+              width: '100%',
+              aspectRatio: '642/230',
+              borderRadius: 'clamp(12px, 2vw, 32px)',
+              backgroundColor: '#E0E0E0',
+              opacity: 0.5
+            }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-gray-400">Loading...</div>
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : categories.length > 0 ? (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-8 md:mt-12">
+        {categories.map((category) => {
+          const categoryName = formatCategoryName(category.name);
+          const categoryImage = getDiscoverBackgroundImage(category.name, category);
+          
+          return (
+            <Link 
+              key={category._id}
+              href={getCategoryUrl(category)}
+              className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity block"
+              style={{
+                width: '100%',
+                aspectRatio: '642/230',
+                borderRadius: 'clamp(12px, 2vw, 32px)',
+                backgroundImage: `url(${categoryImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'top center', // CHANGED: center to top center
+                backgroundColor: '#E0E0E0',
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/10 to-transparent" />
+              <div className="absolute inset-0 flex items-start justify-start p-4 md:p-6 lg:p-8">
+                <div className="z-10">
+                  <h3 
+                    className="text-white uppercase"
+                    style={{
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      fontSize: 'clamp(1.5rem, 6vw, 4rem)',
+                      fontWeight: 400,
+                      lineHeight: '1',
+                      color: '#FFFFFF',
+                      margin: '0',
+                      padding: '0',
+                      marginBottom: categoryName.line2 ? 'clamp(2px, 0.5vw, 8px)' : '0',
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
+                    }}
+                  >
+                    {categoryName.line1}
+                  </h3>
+                  {categoryName.line2 && (
+                    <h3 
+                      className="text-white uppercase"
+                      style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 'clamp(1.5rem, 6vw, 4rem)',
+                        fontWeight: 400,
+                        lineHeight: '1',
+                        color: '#FFFFFF',
+                        margin: '0',
+                        padding: '0',
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
+                      }}
+                    >
+                      {categoryName.line2}
+                    </h3>
+                  )}
                 </div>
-              ))}
-            </div>
-          ) : categories.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-8 md:mt-12">
-              {categories.map((category) => {
-                const categoryName = formatCategoryName(category.name);
-                const categoryImage = getDiscoverBackgroundImage(category.name, category);
-                
-                return (
-                  <Link 
-                    key={category._id}
-                    href={getCategoryUrl(category)}
-                    className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity block"
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-8 md:mt-12">
+        {["Men", "Women", "New Arrivals", "Sets"].map((label) => {
+          const formatted = formatCategoryName(label)
+          const categoryImage = getDiscoverBackgroundImage(label)
+          return (
+            <Link 
+              key={label}
+              href={getCategoryUrl({ _id: label, name: label, isActive: true } as Category)}
+              className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity block"
+              style={{
+                width: '100%',
+                aspectRatio: '642/230',
+                borderRadius: 'clamp(12px, 2vw, 32px)',
+                backgroundImage: `url(${categoryImage})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'top center', // CHANGED: center to top center
+                backgroundColor: '#E0E0E0',
+              }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/10 to-transparent" />
+              <div className="absolute inset-0 flex items-start justify-start p-4 md:p-6 lg:p-8">
+                <div className="z-10">
+                  <h3 
+                    className="text-white uppercase"
                     style={{
-                      width: '100%',
-                      aspectRatio: '642/230',
-                      borderRadius: 'clamp(12px, 2vw, 32px)',
-                      backgroundImage: `url(${categoryImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundColor: '#E0E0E0',
+                      fontFamily: "'Bebas Neue', sans-serif",
+                      fontSize: 'clamp(1.5rem, 6vw, 4rem)',
+                      fontWeight: 400,
+                      lineHeight: '1',
+                      color: '#FFFFFF',
+                      margin: '0',
+                      padding: '0',
+                      textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
                     }}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/10 to-transparent" />
-                    <div className="absolute inset-0 flex items-start justify-start p-4 md:p-6 lg:p-8">
-                      <div className="z-10">
-                        <h3 
-                          className="text-white uppercase"
-                          style={{
-                            fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 'clamp(1.5rem, 6vw, 4rem)',
-                            fontWeight: 400,
-                            lineHeight: '1',
-                            color: '#FFFFFF',
-                            margin: '0',
-                            padding: '0',
-                            marginBottom: categoryName.line2 ? 'clamp(2px, 0.5vw, 8px)' : '0',
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                          }}
-                        >
-                          {categoryName.line1}
-                        </h3>
-                        {categoryName.line2 && (
-                          <h3 
-                            className="text-white uppercase"
-                            style={{
-                              fontFamily: "'Bebas Neue', sans-serif",
-                              fontSize: 'clamp(1.5rem, 6vw, 4rem)',
-                              fontWeight: 400,
-                              lineHeight: '1',
-                              color: '#FFFFFF',
-                              margin: '0',
-                              padding: '0',
-                              textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                            }}
-                          >
-                            {categoryName.line2}
-                          </h3>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mt-8 md:mt-12">
-              {["Men", "Women", "New Arrivals", "Sets"].map((label) => {
-                const formatted = formatCategoryName(label)
-                const categoryImage = getDiscoverBackgroundImage(label)
-                return (
-                  <Link 
-                    key={label}
-                    href={getCategoryUrl({ _id: label, name: label, isActive: true } as Category)}
-                    className="relative overflow-hidden cursor-pointer hover:opacity-90 transition-opacity block"
-                    style={{
-                      width: '100%',
-                      aspectRatio: '642/230',
-                      borderRadius: 'clamp(12px, 2vw, 32px)',
-                      backgroundImage: `url(${categoryImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      backgroundColor: '#E0E0E0',
-                    }}
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-black/35 via-black/10 to-transparent" />
-                    <div className="absolute inset-0 flex items-start justify-start p-4 md:p-6 lg:p-8">
-                      <div className="z-10">
-                        <h3 
-                          className="text-white uppercase"
-                          style={{
-                            fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 'clamp(1.5rem, 6vw, 4rem)',
-                            fontWeight: 400,
-                            lineHeight: '1',
-                            color: '#FFFFFF',
-                            margin: '0',
-                            padding: '0',
-                            textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                          }}
-                        >
-                          {formatted.line1}
-                        </h3>
-                        {formatted.line2 && (
-                          <h3
-                            className="text-white uppercase"
-                            style={{
-                              fontFamily: "'Bebas Neue', sans-serif",
-                              fontSize: 'clamp(1.5rem, 6vw, 4rem)',
-                              fontWeight: 400,
-                              lineHeight: '1',
-                              color: '#FFFFFF',
-                              margin: '0',
-                              padding: '0',
-                              textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
-                            }}
-                          >
-                            {formatted.line2}
-                          </h3>
-                        )}
-                      </div>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-        </div>
-      </section>
+                    {formatted.line1}
+                  </h3>
+                  {formatted.line2 && (
+                    <h3
+                      className="text-white uppercase"
+                      style={{
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 'clamp(1.5rem, 6vw, 4rem)',
+                        fontWeight: 400,
+                        lineHeight: '1',
+                        color: '#FFFFFF',
+                        margin: '0',
+                        padding: '0',
+                        textShadow: '2px 2px 4px rgba(0,0,0,0.35)'
+                      }}
+                    >
+                      {formatted.line2}
+                    </h3>
+                  )}
+                </div>
+              </div>
+            </Link>
+          )
+        })}
+      </div>
+    )}
+  </div>
+</section>
 
       {/* Section 3: WHAT'S NEW */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
@@ -1381,7 +1381,7 @@ export default function HomePage() {
           {/* Desktop Layout */}
           <div className="hidden lg:block relative" style={{ paddingTop: 'clamp(100px, 10vw, 150px)', paddingBottom: '0px' }}>
             {/* Main Content */}
-            <div className="relative" style={{ minHeight: '30rem', zIndex: 10 }}>
+            <div className="relative" style={{ minHeight: '25rem', zIndex: 10 }}>
               {/* Left Side - Image */}
               <div
                 className="absolute"

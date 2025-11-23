@@ -199,29 +199,49 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
     })
   }
 
-  // Get "You May Also Like" products - Smart recommendation logic
+  // FIXED: Improved getRecommendedProducts function
   const getRecommendedProducts = () => {
-    if (products.length === 0) return []
+    if (products.length === 0) {
+      console.log("❌ No products available for recommendations")
+      return []
+    }
+    
+    console.log("🔍 Generating recommendations from", products.length, "total products")
     
     // Get IDs of currently displayed products to avoid duplicates
     const displayedProductIds = filteredProducts.map(p => p.id).filter(Boolean)
+    console.log("📋 Currently displayed product IDs:", displayedProductIds)
     
-    // Priority-based recommendation logic:
-    // 1. Same gender category products (already filtered in `products`)
-    // 2. Exclude products already shown in main grid
-    // 3. Prioritize: Featured/Highlighted > On Sale > High Rating > Others
-    // 4. Prefer different subcategories than currently displayed
-    // 5. Limit to 4 products
+    // If we have very few products, just return some from the same gender
+    if (products.length <= 4) {
+      const result = products.filter(product => !displayedProductIds.includes(product.id))
+      console.log("📦 Few products available, returning:", result.length)
+      return result
+    }
     
+    // Get current subcategories from displayed products
     const currentSubCategories = filteredProducts
-      .filter(p => p.subCategory)
       .map(p => p.subCategory?.toLowerCase().trim())
       .filter(Boolean)
     
+    console.log("📋 Current subcategories:", currentSubCategories)
+    
     // Filter out already displayed products
-    let recommended = products.filter(product => 
-      !displayedProductIds.includes(product.id)
-    )
+    let recommended = products.filter(product => {
+      const isNotDisplayed = !displayedProductIds.includes(product.id)
+      return isNotDisplayed
+    })
+    
+    console.log("📦 Filtered recommendations count:", recommended.length)
+    
+    // If no recommendations after filtering, return some random products
+    if (recommended.length === 0) {
+      console.log("⚠️ No unique products found, returning random products")
+      // Return up to 4 random products from the main list
+      return [...products]
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 4)
+    }
     
     // Sort by priority: Featured > On Sale > Rating > Random
     recommended.sort((a, b) => {
@@ -253,7 +273,11 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
     })
     
     // Take first 4 products
-    return recommended.slice(0, 4)
+    const finalRecommendations = recommended.slice(0, 4)
+    console.log("🎯 Final recommendations:", finalRecommendations.length)
+    console.log("📝 Recommended products:", finalRecommendations.map(p => ({ id: p.id, name: p.name })))
+    
+    return finalRecommendations
   }
 
   // Helper function to check if product has discount
@@ -266,29 +290,30 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
     return product.discountPercentage || 0
   }
 
-  // Format price - remove .00 from the end
+  // Format price - remove .00 from the end - FIXED: Remove extra AED
   const formatPrice = (price: string | number) => {
-    if (!price) return 'AED 0'
+    if (!price) return '0'
     
     const priceStr = price.toString()
     
     // If price ends with .00, remove it
     if (priceStr.endsWith('.00')) {
-      return ` ${priceStr.slice(0, -3)}`
+      return priceStr.slice(0, -3)
     }
     
     // If price contains decimal, check if it's .00
     if (priceStr.includes('.')) {
       const [whole, decimal] = priceStr.split('.')
       if (decimal === '00') {
-        return `AED ${whole}`
+        return whole
       }
     }
     
-    return `AED ${priceStr}`
+    return priceStr
   }
 
   const filteredProducts = getFilteredProducts()
+  const recommendedProducts = getRecommendedProducts()
 
   return (
     <div className="bg-white">
@@ -502,7 +527,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                             fontWeight: 600
                           }}
                         >
-                          {formatPrice(product.price)}
+                           {formatPrice(product.price)}
                         </p>
                       </div>
                     </div>
@@ -558,9 +583,24 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
           </div>
 
           {/* Product Grid - Dynamic Recommended Products */}
-          {getRecommendedProducts().length > 0 ? (
+          {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
-              {getRecommendedProducts().map((product) => {
+              {/* Loading skeleton */}
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div 
+                  key={index}
+                  className="bg-white relative overflow-hidden w-full animate-pulse"
+                  style={{
+                    aspectRatio: '307/450'
+                  }}
+                >
+                  <div className="w-full h-full bg-gray-200 rounded-[32px]"></div>
+                </div>
+              ))}
+            </div>
+          ) : recommendedProducts.length > 0 ? (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
+              {recommendedProducts.map((product) => {
                 // Split product name into two lines if it contains spaces
                 const nameParts = product.name.split(' ').filter(Boolean)
                 const firstLine = nameParts.slice(0, Math.ceil(nameParts.length / 2)).join(' ')
@@ -660,6 +700,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
               <div className="col-span-full text-center py-12">
                 <p className="text-black text-lg">
                   No recommended products available
+                </p>
+                <p className="text-gray-500 text-sm mt-2">
+                  Check back later for more products
                 </p>
               </div>
             </div>

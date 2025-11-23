@@ -32,9 +32,9 @@ export default function ProductCard({
   
   return (
     <Link href={href} className={cn("group block", className)}>
-      <div className="relative overflow-hidden bg-white hover:shadow-xl transition-all duration-300 rounded-[40px] border border-gray-200">
+      <div className="relative overflow-hidden bg-white hover:shadow-xl transition-all duration-300 rounded-[30px] border border-gray-200">
         {/* Product Image */}
-        <div className={cn("relative overflow-hidden rounded-t-[40px]", tall ? "aspect-[3/5]" : "aspect-[3/4]")}>
+        <div className={cn("relative overflow-hidden rounded-t-[30px]", tall ? "aspect-[3/5]" : "aspect-[3/4]")}>
           <Image
             src={image || "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=300&fit=crop"}
             alt={name}
@@ -49,7 +49,7 @@ export default function ProductCard({
 
           {/* Fit Label */}
           {fit && (
-            <div className="absolute top-4 left-4 bg-black/80 text-white px-3 py-1.5 text-sm font-medium uppercase tracking-wider rounded-full">
+            <div className="absolute top-3 left-3 bg-black/80 text-white px-2 py-1 text-xs font-medium uppercase tracking-wider rounded-full">
               {fit}
             </div>
           )}
@@ -58,12 +58,12 @@ export default function ProductCard({
           {discount && discount > 0 && (
             <>
               {/* SALE Tag - Top Left */}
-              <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
+              <div className="absolute top-3 left-3 bg-red-600 text-white px-2 py-1 text-xs font-bold uppercase tracking-wider rounded-full">
                 SALE
               </div>
               
               {/* Discount Percentage - Top Right */}
-              <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 text-sm font-bold rounded-full">
+              <div className="absolute top-3 right-3 bg-white text-black px-2 py-1 text-xs font-bold rounded-full">
                 {discount}% OFF
               </div>
             </>
@@ -71,21 +71,21 @@ export default function ProductCard({
         </div>
 
         {/* Product Info */}
-        <div className="rounded-b-[40px] bg-[#212121] text-white p-6">
+        <div className="rounded-b-[30px] bg-[#212121] text-white p-4">
           <div className="flex items-center justify-between">
             {/* Product Name - Left Side */}
-            <h3 className="text-sm font-medium leading-tight line-clamp-2 flex-1 mr-4">
+            <h3 className="text-xs font-medium leading-tight line-clamp-2 flex-1 mr-3">
               {name}
             </h3>
 
             {/* Pricing - Right Side */}
             <div className="flex flex-col items-end flex-shrink-0">
               {originalPrice && (
-                <span className="text-sm text-gray-300 line-through">
+                <span className="text-xs text-gray-300 line-through">
                   {formatPrice(parseFloat(originalPrice.replace(/[^0-9.]/g, '')))}
                 </span>
               )}
-              <span className="text-lg font-bold text-white">
+              <span className="text-sm font-bold text-white">
                 {formatPrice(Math.round(parseFloat(price.replace(/[^0-9.]/g, ''))))}
               </span>
             </div>
@@ -93,7 +93,7 @@ export default function ProductCard({
         </div>
 
         {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 rounded-[40px]" />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 rounded-[30px]" />
       </div>
     </Link>
   )

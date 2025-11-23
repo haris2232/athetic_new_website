@@ -57,8 +57,9 @@ const ProductGrid = ({
 
 // --- Sets Page Component ---
 export default function SetsPage() {
-  const [menSets, setMenSets] = useState<Product[]>([])
-  const [womenSets, setWomenSets] = useState<Product[]>([])
+  const [allSets, setAllSets] = useState<Product[]>([])
+  const [filteredSets, setFilteredSets] = useState<Product[]>([])
+  const [activeFilter, setActiveFilter] = useState<'all' | 'men' | 'women'>('all')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -70,20 +71,13 @@ export default function SetsPage() {
         if (response.ok) {
           const data = await response.json()
           if (data.success && Array.isArray(data.data)) {
-            // Filter men's sets - category "Men" and subcategory "Sets"
-            const menProducts = data.data.filter((product: Product) => 
-              product.category?.toLowerCase() === 'men' && 
+            // Filter all sets products (both men and women)
+            const setsProducts = data.data.filter((product: Product) => 
               product.subCategory?.toLowerCase() === 'sets'
             );
             
-            // Filter women's sets - category "Women" and subcategory "Sets"  
-            const womenProducts = data.data.filter((product: Product) => 
-              product.category?.toLowerCase() === 'women' && 
-              product.subCategory?.toLowerCase() === 'sets'
-            );
-
-            setMenSets(menProducts);
-            setWomenSets(womenProducts);
+            setAllSets(setsProducts);
+            setFilteredSets(setsProducts); // Initially show all sets
           }
         } else {
           console.error("API response was not ok:", response.status)
@@ -97,6 +91,20 @@ export default function SetsPage() {
 
     fetchSetsProducts()
   }, [])
+
+  // Filter products based on active filter
+  const handleFilter = (filter: 'all' | 'men' | 'women') => {
+    setActiveFilter(filter)
+    
+    if (filter === 'all') {
+      setFilteredSets(allSets)
+    } else {
+      const filtered = allSets.filter((product: Product) => 
+        product.category?.toLowerCase() === filter
+      )
+      setFilteredSets(filtered)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white">
@@ -120,23 +128,130 @@ export default function SetsPage() {
             Sets Collection
           </h2>
           
-          {/* Men's Sets */}
-          <ProductGrid 
-            products={menSets} 
-            loading={loading} 
-            title="Men's Sets" 
-          />
+          {/* Filter Buttons - Horizontal Scroll for Mobile */}
+          <div className="mb-8 sm:mb-10 md:mb-12">
+            {/* Mobile - Horizontal Scroll */}
+            <div className="flex md:hidden gap-3 px-4 overflow-x-auto pb-2 scrollbar-hide">
+              <button
+                onClick={() => handleFilter('all')}
+                className={`flex-shrink-0 px-6 py-3 rounded-lg font-semibold transition-all duration-300 whitespace-nowrap ${
+                  activeFilter === 'all' 
+                    ? 'bg-black text-white' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                All Sets
+              </button>
+              <button
+                onClick={() => handleFilter('men')}
+                className={`flex-shrink-0 px-6 py-3 rounded-lg font-semibold transition-all duration-300 whitespace-nowrap ${
+                  activeFilter === 'men' 
+                    ? 'bg-black text-white' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Men's Sets
+              </button>
+              <button
+                onClick={() => handleFilter('women')}
+                className={`flex-shrink-0 px-6 py-3 rounded-lg font-semibold transition-all duration-300 whitespace-nowrap ${
+                  activeFilter === 'women' 
+                    ? 'bg-black text-white' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Women's Sets
+              </button>
+            </div>
+
+            {/* Desktop - Normal Layout */}
+            <div className="hidden md:flex justify-center gap-4">
+              <button
+                onClick={() => handleFilter('all')}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                  activeFilter === 'all' 
+                    ? 'bg-black text-white' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                All Sets
+              </button>
+              <button
+                onClick={() => handleFilter('men')}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                  activeFilter === 'men' 
+                    ? 'bg-black text-white' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Men's Sets
+              </button>
+              <button
+                onClick={() => handleFilter('women')}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
+                  activeFilter === 'women' 
+                    ? 'bg-black text-white' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
+              >
+                Women's Sets
+              </button>
+            </div>
+          </div>
           
-          {/* Women's Sets */}
-          <ProductGrid 
-            products={womenSets} 
-            loading={loading} 
-            title="Women's Sets" 
-          />
+          {/* Results Count */}
+          <div className="text-center mb-6">
+            <p className="text-gray-600">
+              Showing {filteredSets.length} {activeFilter === 'all' ? 'sets' : activeFilter + ' sets'}
+            </p>
+          </div>
+          
+          {/* Filtered Products Grid */}
+          {loading ? (
+            <div className="text-center py-8 sm:py-12 md:py-16">
+              <p className="text-black text-base sm:text-lg">Loading sets...</p>
+            </div>
+          ) : filteredSets.length === 0 ? (
+            <div className="text-center py-8 sm:py-12 md:py-16">
+              <h3 className="text-black text-lg sm:text-xl font-semibold mb-2">
+                No {activeFilter === 'all' ? 'sets' : activeFilter + ' sets'} found
+              </h3>
+              <p className="text-gray-600 text-sm sm:text-base">
+                {activeFilter === 'all' 
+                  ? 'Check back later for new sets!' 
+                  : `No ${activeFilter}'s sets available at the moment.`}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8">
+              {filteredSets.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  id={product.id}
+                  name={product.name}
+                  price={product.price}
+                  originalPrice={product.originalPrice}
+                  discount={product.isOnSale ? product.discountPercentage : undefined}
+                  image={product.image}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
       <Footer />
+
+      {/* Hide scrollbar for mobile */}
+      <style jsx>{`
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
     </div>
   )
 }
