@@ -26,7 +26,7 @@ const paymentMethods = [
 
 const trustFeatures = [
   { icon: Shield, text: "Secure Payment" },
-  { icon: Truck, text: "Free Shipping Over 300 AED" },
+  { icon: Truck, text: "Free Shipping" },
   { icon: RotateCcw, text: "Easy Returns" }
 ];
 
@@ -43,30 +43,58 @@ export default function CartPage() {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false)
   const [lastCartHash, setLastCartHash] = useState<string>('')
 
+  // Direct backend se shipping rules fetch karne ke liye
+  const [backendShippingInfo, setBackendShippingInfo] = useState<any>(null)
+  const [loadingShipping, setLoadingShipping] = useState(false)
+
   const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
   
-  // Debug shipping info - yeh check karenge kya aa raha hai
+  // Direct backend se shipping rules fetch karo - cart items change hone par bhi
+  useEffect(() => {
+    const fetchShippingRules = async () => {
+      setLoadingShipping(true)
+      try {
+        const response = await fetch('/api/shipping/rules')
+        if (response.ok) {
+          const data = await response.json()
+          setBackendShippingInfo(data)
+          console.log('🚚 Backend Shipping Rules:', data)
+        }
+      } catch (error) {
+        console.error('Error fetching shipping rules:', error)
+      } finally {
+        setLoadingShipping(false)
+      }
+    }
+    
+    fetchShippingRules()
+  }, [cartItems]) // Cart items change hone par bhi refresh karo
+
+  // Debug shipping info
   console.log('🛒 Shipping Info from Context:', shippingInfo)
+  console.log('🛒 Backend Shipping Info:', backendShippingInfo)
   console.log('🛒 Cart Items:', cartItems)
   console.log('🛒 Subtotal:', subtotal)
 
-  // Temporary fix: Direct 300 AED logic use karte hain
-  const FREE_SHIPPING_THRESHOLD = 300
-  const isFreeShipping = subtotal >= FREE_SHIPPING_THRESHOLD
-  const remainingForFreeShipping = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
-  const shippingCost = isFreeShipping ? 0 : (shippingInfo?.shippingCost || 20)
+  // Calculate free shipping status based on backend rules with proper fallback
+  const freeShippingThreshold = backendShippingInfo?.rule?.freeShippingAt || 
+                               shippingInfo?.rule?.freeShippingAt || 
+                               300 // Final fallback
 
-  // Use context data if available, otherwise use direct logic
-  const effectiveIsFreeShipping = shippingInfo?.isFreeShipping !== undefined ? shippingInfo.isFreeShipping : isFreeShipping
-  const effectiveRemainingForFreeShipping = shippingInfo?.remainingForFreeShipping !== undefined ? shippingInfo.remainingForFreeShipping : remainingForFreeShipping
-  const effectiveFreeShippingThreshold = shippingInfo?.rule?.freeShippingAt || FREE_SHIPPING_THRESHOLD
+  const isFreeShipping = subtotal >= freeShippingThreshold
+  const remainingForFreeShipping = Math.max(0, freeShippingThreshold - subtotal)
+  
+  // Shipping cost calculation
+  const shippingCost = isFreeShipping ? 0 : (backendShippingInfo?.shippingCost || 
+                                           shippingInfo?.shippingCost || 
+                                           20) // Default shipping cost
 
   console.log('🛒 Effective Values:', {
-    effectiveIsFreeShipping,
-    effectiveRemainingForFreeShipping, 
-    effectiveFreeShippingThreshold,
-    contextIsFreeShipping: shippingInfo?.isFreeShipping,
-    contextRemaining: shippingInfo?.remainingForFreeShipping
+    freeShippingThreshold,
+    isFreeShipping,
+    remainingForFreeShipping,
+    shippingCost,
+    subtotal
   })
 
   useEffect(() => {
@@ -104,7 +132,8 @@ export default function CartPage() {
   useEffect(() => {
     const fetchSuggestedProducts = async () => {
       // Show suggestions only when NOT achieving free shipping and we have remaining amount
-      if (!effectiveIsFreeShipping && effectiveRemainingForFreeShipping > 0) {
+      // AND when we have actual products in cart (not empty)
+      if (cartItems.length > 0 && !isFreeShipping && remainingForFreeShipping > 0) {
         const cartHash = cartItems.map(item => `${item.id}-${item.quantity}`).join('|');
         
         if (cartHash === lastCartHash && suggestedProducts.length > 0) {
@@ -128,14 +157,14 @@ export default function CartPage() {
               const productPrice = product.price ? 
                 parseFloat(product.price.replace(/[^0-9.]/g, '')) : 
                 (product as any).basePrice;
-              const flexibility = Math.min(effectiveRemainingForFreeShipping * 0.3, 30);
-              return productPrice <= effectiveRemainingForFreeShipping + flexibility;
+              const flexibility = Math.min(remainingForFreeShipping * 0.3, 30);
+              return productPrice <= remainingForFreeShipping + flexibility;
             })
             .sort((a, b) => {
               const priceA = a.price ? parseFloat(a.price.replace(/[^0-9.]/g, '')) : (a as any).basePrice;
               const priceB = b.price ? parseFloat(b.price.replace(/[^0-9.]/g, '')) : (b as any).basePrice;
-              const diffA = Math.abs(effectiveRemainingForFreeShipping - priceA);
-              const diffB = Math.abs(effectiveRemainingForFreeShipping - priceB);
+              const diffA = Math.abs(remainingForFreeShipping - priceA);
+              const diffB = Math.abs(remainingForFreeShipping - priceB);
               return diffA - diffB;
             })
             .slice(0, 3);
@@ -155,7 +184,7 @@ export default function CartPage() {
     
     const timeoutId = setTimeout(fetchSuggestedProducts, 100);
     return () => clearTimeout(timeoutId);
-  }, [cartItems, effectiveIsFreeShipping, effectiveRemainingForFreeShipping, lastCartHash, suggestedProducts.length]);
+  }, [cartItems, isFreeShipping, remainingForFreeShipping, lastCartHash, suggestedProducts.length]);
 
   const handleWishlistToggle = (product: Product | any) => {
     const wishlistItem = {
@@ -177,7 +206,7 @@ export default function CartPage() {
   const promoDiscount = promoApplied ? subtotal * 0.1 : 0
   const bundleDiscountAmount = bundleDiscount?.discountAmount || 0
   const totalDiscount = promoDiscount + bundleDiscountAmount
-  const shipping = effectiveIsFreeShipping ? 0 : shippingCost
+  const shipping = isFreeShipping ? 0 : shippingCost
   const total = subtotal - totalDiscount + shipping
 
   return (
@@ -212,52 +241,54 @@ export default function CartPage() {
                 </p>
               </div>
 
-              {/* Free Shipping Banner */}
-              <div className="mb-12">
-                <div className="bg-gradient-to-r from-[#212121] to-gray-900 rounded-2xl p-6 shadow-lg">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className={`text-xl lg:text-2xl font-bold uppercase tracking-wide ${
-                      effectiveIsFreeShipping ? 'text-green-400' : 'text-[#e9fc00]'
-                    }`}>
-                      {effectiveIsFreeShipping ? (
-                        <div className="flex items-center space-x-2">
-                          <span>🎉</span>
-                          <span>CONGRATULATIONS! FREE SHIPPING ACHIEVED</span>
-                        </div>
-                      ) : (
-                        `${getCurrencySymbol()} ${Math.floor(effectiveRemainingForFreeShipping)} MORE TO GET FREE SHIPPING`
-                      )}
-                    </h2>
-                  </div>
-                  
-                  {!effectiveIsFreeShipping && (
-                    <div className="space-y-3">
-                      <div className="w-full bg-gray-700 rounded-full h-3">
-                        <div
-                          className="bg-[#e9fc00] h-3 rounded-full transition-all duration-500 ease-out"
-                          style={{ 
-                            width: `${Math.min(100, ((effectiveFreeShippingThreshold - effectiveRemainingForFreeShipping) / effectiveFreeShippingThreshold) * 100)}%` 
-                          }}
-                        />
-                      </div>
-                      <div className="flex justify-between text-sm text-gray-300">
-                        <span>{formatPrice(0)}</span>
-                        <span>{formatPrice(effectiveFreeShippingThreshold)}</span>
-                      </div>
+              {/* Free Shipping Banner - Only show when cart has items */}
+              {cartItems.length > 0 && (
+                <div className="mb-12">
+                  <div className="bg-gradient-to-r from-[#212121] to-gray-900 rounded-2xl p-6 shadow-lg">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className={`text-xl lg:text-2xl font-bold uppercase tracking-wide ${
+                        isFreeShipping ? 'text-green-400' : 'text-[#e9fc00]'
+                      }`}>
+                        {isFreeShipping ? (
+                          <div className="flex items-center space-x-2">
+                            <span>🎉</span>
+                            <span>CONGRATULATIONS! FREE SHIPPING ACHIEVED</span>
+                          </div>
+                        ) : (
+                          `${getCurrencySymbol()} ${Math.floor(remainingForFreeShipping)} MORE TO GET FREE SHIPPING`
+                        )}
+                      </h2>
                     </div>
-                  )}
+                    
+                    {!isFreeShipping && (
+                      <div className="space-y-3">
+                        <div className="w-full bg-gray-700 rounded-full h-3">
+                          <div
+                            className="bg-[#e9fc00] h-3 rounded-full transition-all duration-500 ease-out"
+                            style={{ 
+                              width: `${Math.min(100, ((freeShippingThreshold - remainingForFreeShipping) / freeShippingThreshold) * 100)}%` 
+                            }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-sm text-gray-300">
+                          <span>{formatPrice(0)}</span>
+                          <span>{formatPrice(freeShippingThreshold)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
-              {/* Suggested Products - Only show when NOT achieving free shipping */}
-              {!effectiveIsFreeShipping && effectiveRemainingForFreeShipping > 0 && (
+              {/* Suggested Products - Only show when cart has items AND NOT achieving free shipping */}
+              {cartItems.length > 0 && !isFreeShipping && remainingForFreeShipping > 0 && (
                 <div className="mb-12">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-bold text-[#000000]">
                       Complete Your Look
                     </h3>
                     <div className="text-sm text-gray-600">
-                      Add {formatPrice(effectiveRemainingForFreeShipping)} more for free shipping
+                      Add {formatPrice(remainingForFreeShipping)} more for free shipping
                     </div>
                   </div>
                   
@@ -345,7 +376,7 @@ export default function CartPage() {
               )}
 
               {/* Show celebration message when free shipping is achieved */}
-              {effectiveIsFreeShipping && (
+              {cartItems.length > 0 && isFreeShipping && (
                 <div className="mb-12 text-center">
                   <div className="bg-green-50 border border-green-200 rounded-2xl p-8">
                     <div className="text-6xl mb-4">🎉</div>
@@ -356,6 +387,24 @@ export default function CartPage() {
                       Your order qualifies for free standard shipping
                     </p>
                   </div>
+                </div>
+              )}
+
+              {/* Empty Cart Message */}
+              {cartItems.length === 0 && (
+                <div className="text-center py-16">
+                  <div className="text-6xl mb-4">🛒</div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4">Your cart is empty</h3>
+                  <p className="text-gray-600 mb-8">Add some products to see free shipping progress</p>
+                  <Button
+                    asChild
+                    size="lg"
+                    className="bg-[#e9fc00] text-[#212121] hover:bg-[#d4e600] font-semibold px-8 py-3 text-base rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+                  >
+                    <Link href="/collection">
+                      Start Shopping
+                    </Link>
+                  </Button>
                 </div>
               )}
             </div>
@@ -500,7 +549,7 @@ export default function CartPage() {
                   )}
                 </div>
 
-                {/* Order Summary */}
+                {/* Order Summary - Only show when cart has items */}
                 {cartItems.length > 0 && (
                   <>
                     {/* Discounts */}
@@ -548,8 +597,8 @@ export default function CartPage() {
                       
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-300">Shipping</span>
-                        <span className={`font-medium ${effectiveIsFreeShipping ? 'text-green-400' : 'text-white'}`}>
-                          {effectiveIsFreeShipping ? "FREE 🎉" : formatPrice(shippingCost)}
+                        <span className={`font-medium ${isFreeShipping ? 'text-green-400' : 'text-white'}`}>
+                          {isFreeShipping ? "FREE 🎉" : formatPrice(shippingCost)}
                         </span>
                       </div>
                       

@@ -24,6 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/images/fav.png" />
         <link
           href="https://fonts.googleapis.com/css2?family=Red+Wing:wght@400;500;600;700;800;900&display=swap"
           rel="stylesheet"

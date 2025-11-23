@@ -28,8 +28,22 @@ interface CategoriesGridProps {
   selectedGender?: string | null
 }
 
+// Filter types
+type FilterOption = "featured" | "best-rating" | "price-high-low" | "price-low-high" | "high-discount" | "all"
+
+const FILTER_OPTIONS: { value: FilterOption; label: string }[] = [
+  { value: "all", label: "All Products" },
+  { value: "featured", label: "Featured" },
+  { value: "best-rating", label: "Best Rating" },
+  { value: "high-discount", label: "High Discount" },
+  { value: "price-high-low", label: "High Price to Low" },
+  { value: "price-low-high", label: "Low Price to High" },
+]
+
 export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) {
   const [selectedCategory, setSelectedCategory] = useState("all")
+  const [selectedFilter, setSelectedFilter] = useState<FilterOption>("all")
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false)
   const [viewMode, setViewMode] = useState("grid")
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -79,6 +93,16 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
           ) as string[]
 
           console.log("📋 Available sub-categories:", subCategories)
+          
+          // Debug: Check discount percentages
+          console.log("💰 Discount percentages in products:", 
+            filteredProducts.map(p => ({
+              name: p.name,
+              discount: p.discountPercentage,
+              hasDiscount: p.discountPercentage && p.discountPercentage > 0
+            }))
+          )
+          
           setAvailableSubCategories(subCategories)
           setProducts(filteredProducts)
         } else {
@@ -167,36 +191,99 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
     return formatSubCategoryName(subCategory)
   }
 
-  // Filter products based on selected category
+  // Filter products based on selected category AND filter
   const getFilteredProducts = () => {
-    if (selectedCategory === "all") {
-      return products
+    let filtered = [...products]
+    
+    // First filter by category
+    if (selectedCategory !== "all") {
+      filtered = filtered.filter(product => {
+        const productSubCategory = product.subCategory?.toLowerCase().trim()
+        const selectedCategoryLower = selectedCategory.toLowerCase().trim()
+        
+        if (selectedCategoryLower === "tees" || selectedCategoryLower === "t-shirts") {
+          return productSubCategory?.includes('t-shirt') || 
+                 productSubCategory?.includes('tee') ||
+                 productSubCategory?.includes('t shirt')
+        } else if (selectedCategoryLower === "shorts") {
+          return productSubCategory?.includes('short')
+        } else if (selectedCategoryLower === "trousers") {
+          return productSubCategory?.includes('trouser') || 
+                 productSubCategory?.includes('pant')
+        } else if (selectedCategoryLower === "trainsets") {
+          return productSubCategory?.includes('train') || 
+                 productSubCategory?.includes('twin')
+        } else if (selectedCategoryLower === "tank top" || selectedCategoryLower === "tanks") {
+          return productSubCategory?.includes('tank')
+        } else if (selectedCategoryLower === "hoodie") {
+          return productSubCategory?.includes('hoodie')
+        }
+        
+        return productSubCategory === selectedCategoryLower
+      })
     }
     
-    return products.filter(product => {
-      const productSubCategory = product.subCategory?.toLowerCase().trim()
-      const selectedCategoryLower = selectedCategory.toLowerCase().trim()
-      
-      if (selectedCategoryLower === "tees" || selectedCategoryLower === "t-shirts") {
-        return productSubCategory?.includes('t-shirt') || 
-               productSubCategory?.includes('tee') ||
-               productSubCategory?.includes('t shirt')
-      } else if (selectedCategoryLower === "shorts") {
-        return productSubCategory?.includes('short')
-      } else if (selectedCategoryLower === "trousers") {
-        return productSubCategory?.includes('trouser') || 
-               productSubCategory?.includes('pant')
-      } else if (selectedCategoryLower === "trainsets") {
-        return productSubCategory?.includes('train') || 
-               productSubCategory?.includes('twin')
-      } else if (selectedCategoryLower === "tank top" || selectedCategoryLower === "tanks") {
-        return productSubCategory?.includes('tank')
-      } else if (selectedCategoryLower === "hoodie") {
-        return productSubCategory?.includes('hoodie')
-      }
-      
-      return productSubCategory === selectedCategoryLower
-    })
+    // Then apply sorting/filtering based on selected filter
+    console.log("🎯 Applying filter:", selectedFilter)
+    
+    switch (selectedFilter) {
+      case "featured":
+        filtered = filtered.filter(product => product.isProductHighlight)
+        console.log("⭐ Featured products:", filtered.length)
+        break
+        
+      case "best-rating":
+        filtered = filtered.sort((a, b) => {
+          const ratingA = a.rating || a.reviewRating || 0
+          const ratingB = b.rating || b.reviewRating || 0
+          return ratingB - ratingA
+        })
+        console.log("🌟 Best rating products sorted")
+        break
+        
+      case "high-discount":
+        // Filter products with discount > 0 and sort by highest discount first
+        filtered = filtered
+          .filter(product => {
+            const hasDiscount = product.discountPercentage && product.discountPercentage > 0
+            console.log(`💰 ${product.name}: discount=${product.discountPercentage}, hasDiscount=${hasDiscount}`)
+            return hasDiscount
+          })
+          .sort((a, b) => {
+            const discountA = a.discountPercentage || 0
+            const discountB = b.discountPercentage || 0
+            return discountB - discountA
+          })
+        console.log("💰 High discount products:", filtered.length)
+        console.log("📊 Discounted products:", filtered.map(p => ({ name: p.name, discount: p.discountPercentage })))
+        break
+        
+      case "price-high-low":
+        filtered = filtered.sort((a, b) => {
+          const priceA = parseFloat(a.price) || 0
+          const priceB = parseFloat(b.price) || 0
+          return priceB - priceA
+        })
+        console.log("📈 High to low price products sorted")
+        break
+        
+      case "price-low-high":
+        filtered = filtered.sort((a, b) => {
+          const priceA = parseFloat(a.price) || 0
+          const priceB = parseFloat(b.price) || 0
+          return priceA - priceB
+        })
+        console.log("📉 Low to high price products sorted")
+        break
+        
+      case "all":
+      default:
+        console.log("📦 Showing all products")
+        break
+    }
+    
+    console.log("✅ Final filtered products count:", filtered.length)
+    return filtered
   }
 
   // FIXED: Improved getRecommendedProducts function
@@ -315,6 +402,8 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
   const filteredProducts = getFilteredProducts()
   const recommendedProducts = getRecommendedProducts()
 
+  const selectedFilterLabel = FILTER_OPTIONS.find(option => option.value === selectedFilter)?.label || "All Products"
+
   return (
     <div className="bg-white">
       {/* New Design Section - Below Banner */}
@@ -411,15 +500,91 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 {getGenderContent()}
               </p>
               
-              {/* Sort By - Exactly opposite to Filter */}
-              <div className="flex items-center gap-2 justify-end pt-4 mt-auto">
-                <span className="uppercase text-black font-bold" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '14px', fontWeight: 600 }}>Sort By:</span>
-                <select className="uppercase text-black font-bold bg-transparent border-none outline-none cursor-pointer" style={{ fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", fontSize: '14px', fontWeight: 600 }}>
-                  <option>Featured</option>
-                </select>
-                <span className="text-base text-black font-bold">↓</span>
+              {/* Filter Dropdown - Replaced Sort By */}
+              <div className="flex items-center gap-2 justify-end pt-4 mt-auto relative">
+                <span 
+                  className="uppercase text-black font-bold" 
+                  style={{ 
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", 
+                    fontSize: '14px', 
+                    fontWeight: 600 
+                  }}
+                >
+                  Filter:
+                </span>
+                
+                {/* Filter Dropdown Button */}
+                <button
+                  onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+                  className="flex items-center gap-1 px-2 py-1 uppercase text-black font-bold bg-transparent border-none outline-none cursor-pointer"
+                  style={{ 
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif", 
+                    fontSize: '14px', 
+                    fontWeight: 600 
+                  }}
+                >
+                  <span>{selectedFilterLabel}</span>
+                  <svg 
+                    className={`w-3 h-3 text-black transition-transform duration-200 ${showFilterDropdown ? 'rotate-180' : ''}`}
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Filter Dropdown Menu */}
+                {showFilterDropdown && (
+                  <>
+                    {/* Backdrop */}
+                    <div 
+                      className="fixed inset-0 z-40"
+                      onClick={() => setShowFilterDropdown(false)}
+                    />
+                    
+                    {/* Dropdown Menu */}
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-2">
+                      {FILTER_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          onClick={() => {
+                            setSelectedFilter(option.value)
+                            setShowFilterDropdown(false)
+                          }}
+                          className={`w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors duration-150 ${
+                            selectedFilter === option.value 
+                              ? 'bg-blue-50 text-blue-600 font-bold' 
+                              : 'text-gray-700'
+                          }`}
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '14px',
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <span>{option.label}</span>
+                            {selectedFilter === option.value && (
+                              <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
+          </div>
+
+          {/* Products Count */}
+          <div className="mb-6">
+            <p className="text-gray-600 text-sm">
+              Showing {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+              {selectedFilter !== 'all' && ` • Filtered by: ${selectedFilterLabel}`}
+            </p>
           </div>
 
           {/* Product Grid - Dynamic Products from API */}
@@ -483,6 +648,13 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           </div>
                         </>
                       )}
+
+                      {/* Featured Badge */}
+                      {product.isProductHighlight && selectedFilter === 'all' && (
+                        <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-green-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-full">
+                          FEATURED
+                        </div>
+                      )}
                       
                       <div 
                         className="absolute bottom-0 left-0 right-0 bg-black text-white p-3 sm:p-4 rounded-b-[32px] flex items-center justify-between"
@@ -540,7 +712,17 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
               <div className="col-span-full text-center py-12">
                 <p className="text-black text-lg">
                   No products found for {getGenderDisplay()}
+                  {selectedFilter !== 'all' && ` with filter: ${selectedFilterLabel}`}
                 </p>
+                <button
+                  onClick={() => {
+                    setSelectedFilter('all')
+                    setSelectedCategory('all')
+                  }}
+                  className="mt-4 px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  Clear Filters
+                </button>
               </div>
             </div>
           )}
