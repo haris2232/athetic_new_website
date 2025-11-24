@@ -606,7 +606,6 @@ export default function CartPage() {
                         <div className="flex justify-between items-center">
                           <span className="text-lg font-semibold text-white">Total</span>
                           <div className="text-right">
-                            <span className="text-sm text-gray-400 mr-2">{currency}</span>
                             <span className="text-xl font-bold text-white">{formatPrice(total)}</span>
                           </div>
                         </div>
