@@ -669,19 +669,21 @@ export default function HomePage() {
     return '/bundles';
   };
 
-  // Consistent font styles for all sections
-  const headingStyle = {
+  // OUR STORY جیسا فونٹ سٹائل تمام سیکشنز کے لیے
+  const ourStoryHeadingStyle = {
     fontFamily: "'Bebas Neue', sans-serif",
+    fontSize: 'clamp(40px, 5vw, 80px)',
     fontWeight: 400,
-    fontSize: 'clamp(2.5rem, 8vw, 5.625rem)',
-    letterSpacing: '0.5px'
+    lineHeight: '1',
+    letterSpacing: 'clamp(-1.5px, -0.23vw, -3.37px)',
   };
 
-  const descriptionStyle = {
+  const ourStoryDescriptionStyle = {
     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-    fontSize: 'clamp(1.25rem, 4vw, 1.75rem)',
-    letterSpacing: '0px',
-    fontWeight: 500
+    fontSize: 'clamp(13px, 1.4vw, 22px)',
+    fontWeight: 500,
+    lineHeight: 'clamp(18px, 1.7vw, 28px)',
+    letterSpacing: 'clamp(-0.3px, -0.055vw, -0.79px)',
   };
 
   return (
@@ -733,13 +735,13 @@ export default function HomePage() {
           <div className="mb-6 md:mb-8 text-left md:text-left">
             <h1 
               className="uppercase mb-4 md:mb-6 text-black leading-none"
-              style={headingStyle}
+              style={ourStoryHeadingStyle}
             >
               DISCOVER YOUR FIT
             </h1>
             <p 
               className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
-              style={descriptionStyle}
+              style={ourStoryDescriptionStyle}
             >
               Explore breathable, real-body fits for runs, lifts, and everything in between we call life.
             </p>
@@ -900,13 +902,13 @@ export default function HomePage() {
           <div className="mb-6 md:mb-8 text-left md:text-left">
             <h1 
               className="uppercase mb-4 md:mb-6 text-black leading-none"
-              style={headingStyle}
+              style={ourStoryHeadingStyle}
             >
               NEW ARRIVAL
             </h1>
             <p 
               className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
-              style={descriptionStyle}
+              style={ourStoryDescriptionStyle}
             >
               Fresh colors. Updated fits. Same all-day comfort. See what's new.
             </p>
@@ -1065,13 +1067,13 @@ export default function HomePage() {
         <div className="container mx-auto px-4 max-w-[1250px] text-left md:text-left">
           <h1 
             className="uppercase mb-4 md:mb-6 text-black leading-none"
-            style={headingStyle}
+            style={ourStoryHeadingStyle}
           >
             WHAT MAKE US MOVE
           </h1>
           <p 
             className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
-            style={descriptionStyle}
+            style={ourStoryDescriptionStyle}
           >
             Discover the passion and purpose behind every Athlekt creation
           </p>
@@ -1119,7 +1121,7 @@ export default function HomePage() {
             <div className="flex items-left center gap-2 md:gap-3 mb-4 md:mb-6 md:justify-start">
               <h1 
                 className="uppercase text-black leading-none"
-                style={headingStyle}
+                style={ourStoryHeadingStyle}
               >
                 best sellers
               </h1>
@@ -1127,7 +1129,7 @@ export default function HomePage() {
             </div>
             <p 
               className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
-              style={descriptionStyle}
+              style={ourStoryDescriptionStyle}
             >
               Loved by all for breathability, performance, and perfect fits, designed to move with you from workouts to weekends.
             </p>
@@ -1304,7 +1306,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section 6: WHY ATHLEKT */}
+      {/* Section 6: WHY ATHLEKT - OUR STORY */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-0 max-w-[1250px]">
           {/* Mobile Layout */}
@@ -1322,25 +1324,13 @@ export default function HomePage() {
             <div className="flex w-full max-w-sm flex-col items-left gap-4 px-0">
               <h2
                 className="text-black uppercase w-full text-left"
-                style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: "clamp(2rem, 8vw, 2.875rem)",
-                  lineHeight: 1,
-                  letterSpacing: "-1px",
-                  margin: 0,
-                }}
+                style={ourStoryHeadingStyle}
               >
                 OUR STORY
               </h2>
               <div
                 className="text-black w-full text-left"
-                style={{
-                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: "clamp(0.875rem, 3vw, 0.9375rem)",
-                  fontWeight: 500,
-                  lineHeight: "1.4",
-                  letterSpacing: "-0.3px",
-                }}
+                style={ourStoryDescriptionStyle}
               >
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
                     At Athlekt, we started with a simple question, why should activewear only fit a few?
@@ -1364,9 +1354,9 @@ export default function HomePage() {
                 className="absolute"
                 style={{
                   position: 'absolute',
-                  left: 'clamp(50px, 9.5vw, 111px)',
+                  left: '0px',
                   top: 'clamp(-55px, -8vw, -95px)',
-                  height: 'clamp(200px, 25.5vw, 380px)',
+                  height: 'clamp(200px, 27.5vw, 420px)',
                   opacity: 1,
                   overflow: 'hidden',
                   zIndex: 10
@@ -1393,34 +1383,15 @@ export default function HomePage() {
                   position: 'absolute',
                   left: 'clamp(450px, 60vw, 750px)',
                   top: 'clamp(-25px, -2.5vw, -12px)',
-                  width: 'clamp(250px, 32vw, 490px)',
-                  maxWidth: '490px',
+                  width: 'clamp(350px, 45vw, 600px)',
+                  maxWidth: '600px',
                   zIndex: 20
                 }}
               >
                 {/* Heading */}
                 <h2 
                   className="uppercase text-black text-left"
-                  style={{
-                    position: 'relative',
-                    width: 'clamp(200px, 20vw, 320px)',
-                    height: 'auto',
-                    minHeight: 'clamp(55px, 5.5vw, 85px)',
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: 'clamp(40px, 5vw, 80px)',
-                    fontWeight: 400,
-                    lineHeight: '1',
-                    letterSpacing: 'clamp(-1.5px, -0.23vw, -3.37px)',
-                    color: '#000000',
-                    opacity: 1,
-                    borderRadius: '0px',
-                    textAlign: 'left',
-                    whiteSpace: 'nowrap',
-                    transform: 'rotate(0deg)',
-                    margin: '0',
-                    padding: '0',
-                    marginBottom: 'clamp(5px, 0.8vw, 12px)'
-                  }}
+                  style={ourStoryHeadingStyle}
                 >
                   OUR STORY
                 </h2>
@@ -1428,25 +1399,7 @@ export default function HomePage() {
                 {/* Body Text */}
                 <div
                   className="text-black text-left"
-                  style={{
-                    position: 'relative',
-                    width: 'clamp(250px, 32vw, 490px)',
-                    height: 'auto',
-                    minHeight: 'clamp(150px, 13vw, 200px)',
-                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                    fontSize: 'clamp(13px, 1.4vw, 22px)',
-                    fontWeight: 500,
-                    lineHeight: 'clamp(18px, 1.7vw, 28px)',
-                    letterSpacing: 'clamp(-0.3px, -0.055vw, -0.79px)',
-                    color: '#000000',
-                    opacity: 1,
-                    borderRadius: '0px',
-                    textAlign: 'left',
-                    transform: 'rotate(0deg)',
-                    margin: '0',
-                    padding: '0',
-                    marginBottom: '0'
-                  }}
+                  style={ourStoryDescriptionStyle}
                 >
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
                     At Athlekt, we started with a simple question, why should activewear only fit a few?
@@ -1470,13 +1423,13 @@ export default function HomePage() {
           <div className="mb-6 md:mb-8 text-left md:text-left">
             <h1 
               className="uppercase mb-4 md:mb-6 text-black leading-none"
-              style={headingStyle}
+              style={ourStoryHeadingStyle}
             >
               Bundles
             </h1>
             <p 
               className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
-              style={descriptionStyle}
+              style={ourStoryDescriptionStyle}
             >
               Bundle up your favorites, build your Athlekt set, and get more for less.
             </p>
@@ -1656,13 +1609,13 @@ export default function HomePage() {
           <div className="mb-6 md:mb-8 text-left md:text-left">
             <h1 
               className="uppercase mb-4 md:mb-6 text-black leading-none"
-              style={headingStyle}
+              style={ourStoryHeadingStyle}
             >
               MOVE, TAG, MOTIVATE
             </h1>
             <p 
               className="text-black leading-normal max-w-4xl mx-auto md:mx-0"
-              style={descriptionStyle}
+              style={ourStoryDescriptionStyle}
             >
               Your everyday motion can motivate someone else. Post in Athlekt, tag @Athlekt, and we'll feature your move.
             </p>
