@@ -1079,49 +1079,40 @@ export default function HomePage() {
           >
             WHAT MAKE US MOVE
           </h1>
-          
-          {/* Mobile Image */}
-          <div className="block md:hidden">
-            <div 
-              className="relative mx-auto w-full max-w-2xl"
-              style={{
-                position: 'relative',
-                width: '100%',
-                aspectRatio: '3/4',
-                minHeight: 'clamp(400px, 100vw, 600px)',
-                backgroundColor: '#FFFFFF',
-                backgroundImage: 'url(/images/move-mob.jpg)',
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                opacity: 1,
-                borderRadius: '20px',
-                overflow: 'hidden'
-              }}
-            />
-          </div>
-          
-          {/* Desktop Image */}
-          <div className="hidden md:block">
-            <div 
-              className="relative mx-auto w-full"
-              style={{
-                position: 'relative',
-                width: '100%',
-                minHeight: 'clamp(300px, 45vw, 650px)',
-                backgroundColor: '#FFFFFF',
-                backgroundImage: homepageSettings.homepageImage2 
-                  ? `url(${getImageUrl(homepageSettings.homepageImage2)})` 
-                  : 'url(/images/move-desk.png)',
-                backgroundSize: 'contain',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                opacity: 1,
-                borderRadius: '0px',
-                overflow: 'visible'
-              }}
-            />
-          </div>
+        </div>
+        
+        {/* Mobile Image */}
+        <div className="block md:hidden w-full">
+          <div 
+            className="relative w-full"
+            style={{
+              position: 'relative',
+              width: '100%',
+              aspectRatio: '3/4',
+              minHeight: 'clamp(400px, 100vw, 600px)',
+              backgroundColor: '#FFFFFF',
+              backgroundImage: 'url(/images/move-mob.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              opacity: 1,
+            }}
+          />
+        </div>
+        
+        {/* Desktop Image */}
+        <div className="hidden md:block w-full">
+          <img
+            src={homepageSettings.homepageImage2 
+              ? getImageUrl(homepageSettings.homepageImage2) 
+              : '/images/move-desk.png'
+            }
+            alt="What make us move"
+            className="w-full h-auto object-cover"
+            style={{
+              objectPosition: 'center'
+            }}
+          />
         </div>
       </section>
 
