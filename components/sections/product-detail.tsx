@@ -997,6 +997,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       style={{
                         objectFit: 'cover',
                         objectPosition: 'center top',
+                        objectPosition: 'center',
                         borderRadius: '12px',
                         transform: isZoomed ? 'scale(1.5)' : 'scale(1)',
                         transformOrigin: `${zoomPosition.x}% ${zoomPosition.y}%`
@@ -1032,6 +1033,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     style={{
                       objectFit: 'cover',
                       objectPosition: 'center top',
+                      objectPosition: 'center',
                       borderRadius: '12px'
                     }}
                     priority
