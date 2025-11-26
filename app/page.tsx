@@ -1505,7 +1505,7 @@ export default function HomePage() {
                     >
                       {bundle.badgeText && (
                         <span
-                          className="absolute top-3 md:top-4 left-3 md:left-4 bg-white/90 text-black uppercase tracking-[0.2em] text-sm font-semibold px-2 md:px-3 py-1 md:py-1 rounded-full shadow-md z-20"
+                          className="absolute top-3 md:top-4 left-3 md:left-4 bg-white/90 text-black uppercase tracking-[0.2em] text-sm font-semibold px-2 md:px-3 py-1 md:py-1 rounded-full"
                           style={{
                             fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif"
                           }}
