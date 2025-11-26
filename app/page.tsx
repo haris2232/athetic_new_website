@@ -796,7 +796,7 @@ export default function HomePage() {
                           className="text-white uppercase"
                           style={{
                             fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 'clamp(3.5rem, 9vw, 8rem)',
+                            fontSize: 'clamp(1.5rem, 6vw, 4rem)',
                             fontWeight: 400,
                             lineHeight: '1',
                             color: '#FFFFFF',
