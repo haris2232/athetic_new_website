@@ -406,8 +406,50 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
 
   return (
     <div className="bg-white">
-      {/* New Design Section - Below Banner */}
-      <div className="bg-white text-[#212121] pt-10 pb-10">
+      {/* Mobile CSS Fixes - SIRF MOBILE KE LIYE */}
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          /* Mobile par product card ka border radius kam */
+          .mobile-product-card img {
+            border-radius: 16px !important;
+          }
+          
+          /* Mobile par bottom section ka border radius kam */
+          .mobile-product-bottom {
+            border-bottom-left-radius: 16px !important;
+            border-bottom-right-radius: 16px !important;
+          }
+          
+          /* Mobile par sale badges ko side mein le aaye */
+          .mobile-badge-left {
+            top: 8px !important;
+            left: 8px !important;
+          }
+          
+          .mobile-badge-right {
+            top: 8px !important;
+            right: 8px !important;
+          }
+
+          /* Mobile par sale/discount badges ka font size chhota */
+          .mobile-badge-left,
+          .mobile-badge-right {
+            font-size: 10px !important;
+            padding: 4px 6px !important;
+          }
+        }
+        
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .hide-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+
+      {/* Main Products Section */}
+      <div className="bg-white text-[#212121] pt-10 pb-20">
         <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Top Section - Gender heading and Lorem ipsum */}
           <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between mb-8 gap-6">
@@ -427,17 +469,6 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
               
               {/* Product Type Navigation - Dynamic from API - Horizontal Scroll with Hidden Scrollbar */}
               <div className="flex overflow-x-auto gap-6 mb-4 pb-2 hide-scrollbar">
-                {/* Hide scrollbar for webkit browsers */}
-                <style jsx>{`
-                  .hide-scrollbar::-webkit-scrollbar {
-                    display: none;
-                  }
-                  .hide-scrollbar {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                  }
-                `}</style>
-                
                 {/* ALL Button */}
                 <button 
                   onClick={() => setSelectedCategory('all')}
@@ -587,10 +618,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
             </p>
           </div>
 
-          {/* Product Grid - Dynamic Products from API */}
+          {/* Main Product Grid */}
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
-              {/* Loading skeleton */}
               {Array.from({ length: 8 }).map((_, index) => (
                 <div 
                   key={index}
@@ -606,7 +636,6 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
           ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
               {filteredProducts.map((product) => {
-                // Split product name into two lines if it contains spaces
                 const nameParts = product.name.split(' ').filter(Boolean)
                 const firstLine = nameParts.slice(0, Math.ceil(nameParts.length / 2)).join(' ')
                 const secondLine = nameParts.slice(Math.ceil(nameParts.length / 2)).join(' ') || ''
@@ -616,7 +645,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 return (
                   <Link key={product.id} href={`/product/${product.id}`} className="block cursor-pointer">
                     <div 
-                      className="bg-white relative overflow-hidden w-full"
+                      className="bg-white relative overflow-hidden w-full mobile-product-card"
                       style={{
                         aspectRatio: '307/450'
                       }}
@@ -624,9 +653,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       <img 
                         src={product.image || product.images?.[0] || "/3.png"} 
                         alt={product.name} 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover mobile-product-card"
                         style={{
-                          borderRadius: '32px'
+                          borderRadius: '32px' // Desktop ke liye 32px
                         }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
@@ -634,16 +663,14 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                         }}
                       />
 
-                      {/* Discount Badges - Smaller on Mobile */}
+                      {/* Discount Badges - Mobile Optimized */}
                       {hasProductDiscount && (
                         <>
-                          {/* SALE Tag - Top Left */}
-                          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-red-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-full">
+                          <div className="absolute top-4 left-4 mobile-badge-left bg-red-600 text-white px-3 py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
                             SALE
                           </div>
                           
-                          {/* Discount Percentage - Top Right */}
-                          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white text-black px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-bold rounded-full">
+                          <div className="absolute top-4 right-4 mobile-badge-right bg-white text-black px-3 py-1.5 text-sm font-bold rounded-full">
                             {discountPercentage}% OFF
                           </div>
                         </>
@@ -651,23 +678,24 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
 
                       {/* Featured Badge */}
                       {product.isProductHighlight && selectedFilter === 'all' && (
-                        <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-green-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-full">
+                        <div className="absolute top-4 left-4 mobile-badge-left bg-green-600 text-white px-3 py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
                           FEATURED
                         </div>
                       )}
                       
                       <div 
-                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-3 sm:p-4 rounded-b-[32px] flex items-center justify-between"
+                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 mobile-product-bottom flex items-center justify-between"
                         style={{
-                          height: '50px sm:60px'
+                          height: '60px',
+                          borderRadius: '0 0 32px 32px' // Desktop ke liye 32px
                         }}
                       >
                         <div className="flex flex-col text-left flex-1 min-w-0">
                           <span 
-                            className="uppercase text-white truncate text-xs sm:text-[13.41px]"
+                            className="uppercase text-white truncate text-[13.41px]"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              lineHeight: '12px sm:14.6px',
+                              lineHeight: '14.6px',
                               letterSpacing: '0px',
                               fontWeight: 500
                             }}
@@ -677,10 +705,10 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           </span>
                           {secondLine && (
                             <span 
-                              className="uppercase text-white truncate text-xs sm:text-[13.41px]"
+                              className="uppercase text-white truncate text-[13.41px]"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                lineHeight: '12px sm:14.6px',
+                                lineHeight: '14.6px',
                                 letterSpacing: '0px',
                                 fontWeight: 500
                               }}
@@ -691,10 +719,10 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           )}
                         </div>
                         <p 
-                          className="text-white font-bold text-right ml-2 flex-shrink-0 text-sm sm:text-[22px]"
+                          className="text-white font-bold text-right ml-2 flex-shrink-0 text-[15px]"
                           style={{
                             fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            lineHeight: '20px sm:26px',
+                            lineHeight: '26px',
                             letterSpacing: '0px',
                             fontWeight: 600
                           }}
@@ -732,9 +760,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
       {/* YOU MAY ALSO LIKE Section */}
       <div className="bg-white text-[#212121] pt-0 pb-20">
         <div className="container mx-auto px-4 max-w-[1250px]">
-          {/* Top Section - YOU MAY ALSO LIKE heading and Lorem ipsum */}
           <div className="flex flex-col lg:flex-row lg:items-stretch lg:justify-between mb-8 gap-6">
-            {/* Left - YOU MAY ALSO LIKE Heading */}
             <div className="flex-1 flex flex-col">
               <h1 
                 className="uppercase mb-6 text-black leading-none"
@@ -749,7 +775,6 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
               </h1>
             </div>
             
-            {/* Right - Lorem ipsum text */}
             <div className="flex-1 lg:max-w-[412px] flex flex-col">
               <p 
                 className="text-black text-left leading-normal"
@@ -764,10 +789,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
             </div>
           </div>
 
-          {/* Product Grid - Dynamic Recommended Products */}
+          {/* Recommended Products Grid */}
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
-              {/* Loading skeleton */}
               {Array.from({ length: 4 }).map((_, index) => (
                 <div 
                   key={index}
@@ -783,7 +807,6 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
           ) : recommendedProducts.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 mt-12">
               {recommendedProducts.map((product) => {
-                // Split product name into two lines if it contains spaces
                 const nameParts = product.name.split(' ').filter(Boolean)
                 const firstLine = nameParts.slice(0, Math.ceil(nameParts.length / 2)).join(' ')
                 const secondLine = nameParts.slice(Math.ceil(nameParts.length / 2)).join(' ') || ''
@@ -793,7 +816,7 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                 return (
                   <Link key={product.id} href={`/product/${product.id}`} className="block cursor-pointer">
                     <div 
-                      className="bg-white relative overflow-hidden w-full"
+                      className="bg-white relative overflow-hidden w-full mobile-product-card"
                       style={{
                         aspectRatio: '307/450'
                       }}
@@ -801,9 +824,9 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                       <img 
                         src={product.image || product.images?.[0] || "/3.png"} 
                         alt={product.name} 
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover mobile-product-card"
                         style={{
-                          borderRadius: '32px'
+                          borderRadius: '32px' // Desktop ke liye 32px
                         }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement
@@ -811,33 +834,32 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                         }}
                       />
 
-                      {/* Discount Badges - Smaller on Mobile */}
+                      {/* Discount Badges - Mobile Optimized */}
                       {hasProductDiscount && (
                         <>
-                          {/* SALE Tag - Top Left */}
-                          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 bg-red-600 text-white px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider rounded-full">
+                          <div className="absolute top-4 left-4 mobile-badge-left bg-red-600 text-white px-3 py-1.5 text-sm font-bold uppercase tracking-wider rounded-full">
                             SALE
                           </div>
                           
-                          {/* Discount Percentage - Top Right */}
-                          <div className="absolute top-2 right-2 sm:top-4 sm:right-4 bg-white text-black px-2 py-1 sm:px-3 sm:py-1.5 text-xs sm:text-sm font-bold rounded-full">
+                          <div className="absolute top-4 right-4 mobile-badge-right bg-white text-black px-3 py-1.5 text-sm font-bold rounded-full">
                             {discountPercentage}% OFF
                           </div>
                         </>
                       )}
                       
                       <div 
-                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-3 sm:p-4 rounded-b-[32px] flex items-center justify-between"
+                        className="absolute bottom-0 left-0 right-0 bg-black text-white p-4 mobile-product-bottom flex items-center justify-between"
                         style={{
-                          height: '50px sm:60px'
+                          height: '60px',
+                          borderRadius: '0 0 32px 32px' // Desktop ke liye 32px
                         }}
                       >
                         <div className="flex flex-col text-left flex-1 min-w-0">
                           <span 
-                            className="uppercase text-white truncate text-xs sm:text-[13.41px]"
+                            className="uppercase text-white truncate text-[13.41px]"
                             style={{
                               fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                              lineHeight: '12px sm:14.6px',
+                              lineHeight: '14.6px',
                               letterSpacing: '0px',
                               fontWeight: 500
                             }}
@@ -847,10 +869,10 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           </span>
                           {secondLine && (
                             <span 
-                              className="uppercase text-white truncate text-xs sm:text-[13.41px]"
+                              className="uppercase text-white truncate text-[13.41px]"
                               style={{
                                 fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                                lineHeight: '12px sm:14.6px',
+                                lineHeight: '14.6px',
                                 letterSpacing: '0px',
                                 fontWeight: 500
                               }}
@@ -861,10 +883,10 @@ export default function CategoriesGrid({ selectedGender }: CategoriesGridProps) 
                           )}
                         </div>
                         <p 
-                          className="text-white font-bold text-right ml-2 flex-shrink-0 text-sm sm:text-[22px]"
+                          className="text-white font-bold text-right ml-2 flex-shrink-0 text-[15px]"
                           style={{
                             fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                            lineHeight: '20px sm:26px',
+                            lineHeight: '26px',
                             letterSpacing: '0px',
                             fontWeight: 600
                           }}
