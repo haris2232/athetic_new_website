@@ -796,7 +796,7 @@ export default function HomePage() {
                           className="text-white uppercase"
                           style={{
                             fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 'clamp(1.5rem, 6vw, 4rem)',
+                            fontSize: 'clamp(2.5rem, 8vw, 4rem)',
                             fontWeight: 400,
                             lineHeight: '1',
                             color: '#FFFFFF',
@@ -813,7 +813,7 @@ export default function HomePage() {
                             className="text-white uppercase"
                             style={{
                               fontFamily: "'Bebas Neue', sans-serif",
-                              fontSize: 'clamp(1.5rem, 6vw, 4rem)',
+                              fontSize: 'clamp(2.5rem, 8vw, 4rem)',
                               fontWeight: 400,
                               lineHeight: '1',
                               color: '#FFFFFF',
@@ -858,7 +858,7 @@ export default function HomePage() {
                           className="text-white uppercase"
                           style={{
                             fontFamily: "'Bebas Neue', sans-serif",
-                            fontSize: 'clamp(1.5rem, 6vw, 4rem)',
+                            fontSize: 'clamp(2.5rem, 8vw, 4rem)',
                             fontWeight: 400,
                             lineHeight: '1',
                             color: '#FFFFFF',
@@ -874,7 +874,7 @@ export default function HomePage() {
                             className="text-white uppercase"
                             style={{
                               fontFamily: "'Bebas Neue', sans-serif",
-                              fontSize: 'clamp(1.5rem, 6vw, 4rem)',
+                              fontSize: 'clamp(2.5rem, 8vw, 4rem)',
                               fontWeight: 400,
                               lineHeight: '1',
                               color: '#FFFFFF',
@@ -1688,7 +1688,7 @@ export default function HomePage() {
                     onClick={() => openLightbox(index)}
                     style={{
                       scrollSnapAlign: 'start',
-                      width: 'clamp(160px, 40vw, 240px)',
+                      width: 'clamp(280px, 25vw, 380px)',
                       height: 'clamp(240px, 60vw, 380px)',
                       minWidth: '160px',
                       minHeight: '240px'

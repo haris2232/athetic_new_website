@@ -940,6 +940,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     <div 
                       ref={galleryScrollRef}
                       className="flex flex-col gap-4 max-h-[500px] overflow-y-auto hide-scrollbar"
+                      className="flex flex-col gap-4 max-h-[400px] overflow-y-auto hide-scrollbar"
                       style={{ scrollBehavior: 'smooth' }}
                     >
                       {currentImages.map((image, index) => (
@@ -979,7 +980,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     className="relative overflow-hidden bg-white flex-shrink-0 cursor-zoom-in"
                     style={{
                       width: '500px',
-                      height: '500px',
+                      height: '395px',
                       borderRadius: '12px',
                       backgroundColor: '#FFFFFF'
                     }}
@@ -1082,14 +1083,14 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             <div className="w-full lg:w-1/2 flex-shrink-0 flex flex-col">
               
               {/* Top Section */}
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between w-full mb-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between w-full mb-6">
                 {/* Product Name */}
                 <div className="flex-1">
                   <h1 
                     className="uppercase text-black mb-4 w-full"
                     style={{
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: 'clamp(42px, 8vw, 56px)',
+                      fontSize: 'clamp(41px, 8vw, 50px)',
                       fontWeight: 400,
                       lineHeight: 'clamp(40px, 7.5vw, 52px)',
                       letterSpacing: '0.5px',
@@ -1101,7 +1102,13 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     }}
                   >
                     {(() => {
-                      const name = product.name || "MEN'S HYBRID CLASSIC";
+                      let name = product.name || "MEN'S HYBRID CLASSIC";
+
+                      // Limit product name to 22 characters
+                      if (name.length > 22) {
+                        name = name.substring(0, 22) + '';
+                      }
+
                       if (name.startsWith("MEN'S ")) {
                         const rest = name.replace("MEN'S ", "");
                         const restWithNonBreakingSpace = rest.replace(/HYBRID CLASSIC/g, 'HYBRID\u00A0CLASSIC');
@@ -1113,7 +1120,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 </div>
 
                 {/* Desktop Price - INCREASED SIZE */}
-                <div className="hidden md:flex flex-col items-end text-right ml-4 mt-2">
+                <div className="hidden md:flex flex-col items-end text-right ml-4 mt-0 ">
                   {product.discountPercentage > 0 && basePrice > finalPrice && (
                     <span 
                       className="line-through mb-1"
@@ -1147,7 +1154,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               </div>
 
               {/* Description - LIMITED TO 100 CHARACTERS */}
-              <div className="mb-8">
+              <div className="mb-5">
                 <p 
                   className="text-black"
                   style={{
@@ -1166,7 +1173,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               </div>
 
               {/* Mobile Price - INCREASED SIZE WITH SPACING */}
-              <div className="flex flex-col items-start mb-8 w-full md:hidden">
+              <div className="flex flex-col items-start mb-5 w-full md:hidden">
                 {product.discountPercentage > 0 && basePrice > finalPrice && (
                   <span 
                     className="line-through mb-2"
@@ -1199,7 +1206,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
               </div>
 
               {/* Middle Section */}
-              <div className="flex flex-col mb-8 w-full">
+              <div className="flex flex-col mb-5 w-full">
 
                 {/* Size Selection - SMALLER SIZE */}
                 <div className="mb-6 w-full">
@@ -1271,7 +1278,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 </div>
 
                 {/* Color Selection - SMALLER SIZE */}
-                <div className="mb-8 w-full">
+                <div className="mb-0 w-full">
                   <div className="flex items-center justify-between w-full mb-4">
                     <span 
                       className="uppercase text-black"
