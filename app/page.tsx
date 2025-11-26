@@ -692,7 +692,7 @@ export default function HomePage() {
       
       {/* Section 1: CLOUDINARY GIF SECTION */}
       <section className="relative w-full overflow-x-hidden">
-        <div className="w-full h-3 bg-black"></div>
+        <div className="w-full h-3"></div>
         
         <div className="bg-white relative w-full overflow-hidden mx-auto"
           style={{
