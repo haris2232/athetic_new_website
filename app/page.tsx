@@ -692,7 +692,7 @@ export default function HomePage() {
       
       {/* Section 1: CLOUDINARY GIF SECTION */}
       <section className="relative w-full overflow-x-hidden">
-        <div className="w-full h-3"></div>
+        <div className=""></div>
         
         <div className="bg-white relative w-full overflow-hidden mx-auto"
           style={{
@@ -1355,7 +1355,7 @@ export default function HomePage() {
                 style={{
                   position: 'absolute',
                   left: '0px',
-                  top: 'clamp(-55px, -8vw, -95px)',
+                  top: 'clamp(-95px, -15vw, -125px)',
                   height: 'clamp(200px, 27.5vw, 420px)',
                   opacity: 1,
                   overflow: 'hidden',
