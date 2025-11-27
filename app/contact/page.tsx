@@ -190,8 +190,8 @@ export default function ContactUs() {
                             <div className="mb-3 sm:mb-4 p-3 sm:p-4 rounded-full bg-black"> 
                                 <Phone className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: '#D5FB32' }} />
                             </div>
-                            <h2 className="text-lg sm:text-xl font-medium mb-2 sm:mb-3 uppercase tracking-wider">CALL US FOR SUPPORT:</h2>
-                            <p className="text-xl sm:text-2xl font-extrabold tracking-wider">000 0644267</p>
+                            <h2 className="text-lg sm:text-xl font-extrabold mb-2 sm:mb-3 uppercase tracking-wider">CALL US FOR SUPPORT:</h2>
+                            <p className="text-xl sm:text-2xl font-medium tracking-wider">000 0644267</p>
                         </div>
 
                         {/* Email Us Block */}
@@ -199,10 +199,10 @@ export default function ContactUs() {
                             <div className="mb-3 sm:mb-4 p-3 sm:p-4 rounded-full bg-black"> 
                                 <Mail className="w-6 h-6 sm:w-8 sm:h-8" style={{ color: '#D5FB32' }} />
                             </div>
-                            <h2 className="text-lg sm:text-xl font-medium mb-2 sm:mb-3 uppercase tracking-wider">EMAIL US ANYTIME:</h2>
+                            <h2 className="text-lg sm:text-xl font-extrabold mb-2 sm:mb-3 uppercase tracking-wider">EMAIL US ANYTIME:</h2>
                             <a 
                                 href="mailto:info@athlekt.com" 
-                                className="text-lg sm:text-xl md:text-2xl font-extrabold tracking-wider hover:text-blue-600 transition-colors break-words px-2"
+                                className="text-lg sm:text-xl md:text-2xl font-medium tracking-wider hover:text-blue-600 transition-colors break-words px-2"
                             >
                                 info@athlekt.com
                             </a>

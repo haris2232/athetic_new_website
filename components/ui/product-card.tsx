@@ -33,7 +33,7 @@ export default function ProductCard({
   // Temporary fix for .00 issue
   const displayPrice = `AED ${Math.round(parseFloat(price.replace(/[^0-9.]/g, '')))}`
   const displayOriginalPrice = originalPrice ? 
-    `₹${Math.round(parseFloat(originalPrice.replace(/[^0-9.]/g, '')))}` : null
+    `AED ${Math.round(parseFloat(originalPrice.replace(/[^0-9.]/g, '')))}` : null
   
   return (
     <Link href={href} className={cn("group block", className)}>

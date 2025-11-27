@@ -1040,23 +1040,66 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* View All Button */}
+          {/* View All Button with Arrows */}
           {!loadingProducts && recentProducts.length > 0 && (
             <div className="flex justify-center items-center mt-6 md:mt-8">
-              <Link
-                href="/collection"
-                className="bg-black text-white uppercase px-6 md:px-8 py-2 md:py-3 rounded-lg hover:opacity-90 transition-opacity font-medium inline-block"
-                style={{
-                  fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                  fontSize: 'clamp(0.75rem, 2.5vw, 0.875rem)',
-                  letterSpacing: '0.5px',
-                  fontWeight: 500,
-                  minWidth: '120px',
-                  textAlign: 'center',
-                }}
-              >
-                view all
-              </Link>
+              <div className="flex items-center gap-4 md:gap-6">
+                {/* Left Arrow */}
+                <button
+                  onClick={() => {
+                    if (whatsNewCarouselRef.current) {
+                      whatsNewCarouselRef.current.scrollBy({
+                        left: -300,
+                        behavior: 'smooth'
+                      });
+                    }
+                  }}
+                  className="bg-white text-black border border-black rounded-full p-2 hover:bg-gray-100 transition-colors flex items-center justify-center"
+                  style={{
+                    width: 'clamp(40px, 10vw, 48px)',
+                    height: 'clamp(40px, 10vw, 48px)',
+                  }}
+                  aria-label="Scroll left"
+                >
+                  <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
+                </button>
+
+                {/* View All Button */}
+                <Link
+                  href="/collection"
+                  className="bg-white text-black  uppercase px-6 md:px-8 py-3 md:py-4 rounded-lg hover:bg-gray-100 transition-colors font-medium inline-block"
+                  style={{
+                    fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                    fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
+                    letterSpacing: '0.5px',
+                    fontWeight: 500,
+                    minWidth: '50px',
+                    textAlign: 'center',
+                  }}
+                >
+                  view all
+                </Link>
+
+                {/* Right Arrow */}
+                <button
+                  onClick={() => {
+                    if (whatsNewCarouselRef.current) {
+                      whatsNewCarouselRef.current.scrollBy({
+                        left: 300,
+                        behavior: 'smooth'
+                      });
+                    }
+                  }}
+                  className="bg-white text-black border border-black rounded-full p-2 hover:bg-gray-100 transition-colors flex items-center justify-center"
+                  style={{
+                    width: 'clamp(40px, 10vw, 48px)',
+                    height: 'clamp(40px, 10vw, 48px)',
+                  }}
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                </button>
+              </div>
             </div>
           )}
         </div>

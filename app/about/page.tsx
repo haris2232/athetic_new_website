@@ -164,11 +164,11 @@ export default function AboutUs() {
           </div>
         </div>
 
-        {/* Content Section */}
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 bg-white">
+        {/* Content Section - WITH PADDING */}
+        <div className="container mx-auto px-8 sm:px-12 lg:px-16 py-8 sm:py-12 bg-white">
           
-          {/* Header */}
-          <div className="text-left mb-8 sm:mb-12">
+          {/* Header - WITH PADDING ADDED */}
+          <div className="text-left mb-8 sm:mb-12 px-4 sm:px-6 lg:px-8">
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-4" style={{ fontFamily: 'Bebas Neue, sans-serif' }}>
               ABOUT ATHLEKT
             </h1>
@@ -177,8 +177,8 @@ export default function AboutUs() {
             </p>
           </div>
 
-          {/* Brand Mission Paragraphs */}
-          <div className="mx-auto space-y-6 sm:space-y-8 ">
+          {/* Brand Mission Paragraphs - WITH PROPER PADDING */}
+          <div className="mx-auto space-y-6 sm:space-y-8 px-4 sm:px-6 lg:px-8">
             <p className="text-base sm:text-lg leading-relaxed text-left">
               <strong className="font-semibold">Athlekt</strong> is a UAE-born athleisure brand redefining what it means to live an active, balanced lifestyle for <strong className="font-semibold">every body and everyone, everywhere</strong>. Created for parents, professionals, and fitness enthusiasts alike, Athlekt celebrates movement in all its forms from school, office runs to gym runs, from studio sessions to weekend adventures.
             </p>

@@ -2,10 +2,10 @@ const ProductCard = ({ id, name, price, originalPrice, discount, image }) => {
   // Format price function to remove decimals
   const formatPrice = (price) => {
     if (typeof price === 'number') {
-      return `₹${Math.round(price)}`;
+      return `AED ${Math.round(price)}`;
     }
     if (typeof price === 'string') {
-      // If price is already a string like "₹80.00", remove the decimal part
+      // If price is already a string like "AED 80.00", remove the decimal part
       return price.replace(/\.00$/, '');
     }
     return price;
