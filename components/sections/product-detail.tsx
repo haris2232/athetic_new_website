@@ -948,7 +948,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                           key={index}
                           className="relative overflow-hidden transition-all duration-200 flex-shrink-0 hover:scale-105"
                           style={{
-                            width: '100px',
+                            width: '120px',
                             height: '120px',
                             borderRadius: '8px',
                             border: index === activeImageIndex ? '2px solid #000000' : '1px solid #D1D5DB',
