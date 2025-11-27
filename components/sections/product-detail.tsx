@@ -1092,7 +1092,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     className="uppercase text-black mb-4 w-full"
                     style={{
                       fontFamily: "'Bebas Neue', sans-serif",
-                      fontSize: 'clamp(41px, 8vw, 50px)',
+                      fontSize: 'clamp(41px, 5vw, 43px)',
                       fontWeight: 400,
                       lineHeight: 'clamp(40px, 7.5vw, 52px)',
                       letterSpacing: '0.5px',
@@ -1107,8 +1107,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       let name = product.name || "MEN'S HYBRID CLASSIC";
 
                       // Limit product name to 22 characters
-                      if (name.length > 22) {
-                        name = name.substring(0, 22) + '';
+                      if (name.length > 26) {
+                        name = name.substring(0, 26) + '';
                       }
 
                       if (name.startsWith("MEN'S ")) {
