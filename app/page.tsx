@@ -1196,6 +1196,10 @@ export default function HomePage() {
               <button
                 onClick={() => scrollCommunityCarousel('left')}
                 className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                onClick={() => scrollCommunityCarousel('left')}                
+                className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-6 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
                   height: 'clamp(32px, 8vw, 48px)',
@@ -1208,6 +1212,10 @@ export default function HomePage() {
               <button
                 onClick={() => scrollCommunityCarousel('right')}
                 className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                onClick={() => scrollCommunityCarousel('right')}                
+                className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-6 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
                   height: 'clamp(32px, 8vw, 48px)',
@@ -1221,6 +1229,7 @@ export default function HomePage() {
               <div
                 ref={communityCarouselRef}
                 className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 community-slider px-4 md:px-0"
+                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 community-slider px-4 md:px-0 md:max-w-[1192px] md:mx-auto"
                 style={{
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none'
@@ -1496,8 +1505,10 @@ export default function HomePage() {
             <div className="relative mt-8 md:mt-12">
               {/* Navigation Arrows */}
               <button
-                onClick={() => scrollBundleCarousel('left')}
+                onClick={() => scrollCommunityCarousel('left')}
                 className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                onClick={() => scrollBundleCarousel('left')}
+                className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
                   height: 'clamp(32px, 8vw, 48px)',
@@ -1508,8 +1519,10 @@ export default function HomePage() {
               </button>
               
               <button
-                onClick={() => scrollBundleCarousel('right')}
+                onClick={() => scrollCommunityCarousel('right')}
                 className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                onClick={() => scrollBundleCarousel('right')}
+                className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
                   height: 'clamp(32px, 8vw, 48px)',
@@ -1523,6 +1536,7 @@ export default function HomePage() {
               <div
                 ref={bundleCarouselRef}
                 className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 bundle-slider px-4 md:px-0"
+                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 bundle-slider px-4 md:px-0 md:max-w-[1192px] md:mx-auto"
                 style={{
                   scrollbarWidth: 'none',
                   msOverflowStyle: 'none'
@@ -1672,6 +1686,7 @@ export default function HomePage() {
               className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
               style={{
                 left: '-12px',
+                left: 'clamp(-48px, -5vw, -24px)',
                 width: 'clamp(32px, 8vw, 48px)',
                 height: 'clamp(32px, 8vw, 48px)',
                 border: '1px solid #000000',
@@ -1686,6 +1701,7 @@ export default function HomePage() {
               className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
               style={{
                 right: '-12px',
+                right: 'clamp(-48px, -5vw, -24px)',
                 width: 'clamp(32px, 8vw, 48px)',
                 height: 'clamp(32px, 8vw, 48px)',
                 border: '1px solid #000000',
