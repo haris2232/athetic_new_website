@@ -250,7 +250,7 @@ export default function CheckoutPage() {
 
       const mappedItems = cartItems.map(item => {
         const baseItem = {
-          id: item.id, // The backend expects the ID in the 'id' field for bundles
+          productId: item.id,
           productName: item.name || "Unknown Product",
           size: item.size || "Standard",
           color: item.color || (item.isBundle ? item.bundleColorName : "Default"),
