@@ -692,8 +692,6 @@ export default function HomePage() {
       
       {/* Section 1: CLOUDINARY GIF SECTION */}
       <section className="relative w-full overflow-x-hidden">
-        <div className=""></div>
-        
         <div className="bg-white relative w-full overflow-hidden mx-auto"
           style={{
             marginTop: 'clamp(1rem, 3vw, 2.5rem)',
@@ -934,6 +932,11 @@ export default function HomePage() {
                 ref={whatsNewCarouselRef}
                 onWheel={handleWhatsNewWheel}
                 className="whats-new-scroll flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-2 px-4 md:px-0"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch'
+                }}
               >
                 {recentProducts.map((product, index) => {
                   const productId = product.id || product._id || `product-${index}`;
@@ -1067,13 +1070,13 @@ export default function HomePage() {
                 {/* View All Button */}
                 <Link
                   href="/collection"
-                  className="bg-white text-black  uppercase px-6 md:px-8 py-3 md:py-4 rounded-lg hover:bg-gray-100 transition-colors font-medium inline-block"
+                  className="bg-white text-black border border-black uppercase px-6 md:px-8 py-3 md:py-4 rounded-lg hover:bg-gray-100 transition-colors font-medium inline-block"
                   style={{
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                     fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
                     letterSpacing: '0.5px',
                     fontWeight: 500,
-                    minWidth: '50px',
+                    minWidth: '120px',
                     textAlign: 'center',
                   }}
                 >
@@ -1123,9 +1126,9 @@ export default function HomePage() {
         </div>
         
         {/* Mobile Image */}
-        <div className="block md:hidden w-full">
+        <div className="block md:hidden w-full px-4">
           <div 
-            className="relative w-full"
+            className="relative w-full mx-auto"
             style={{
               position: 'relative',
               width: '100%',
@@ -1137,28 +1140,31 @@ export default function HomePage() {
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
               opacity: 1,
+              borderRadius: '20px',
             }}
           />
         </div>
         
         {/* Desktop Image */}
-        <div className="hidden md:block w-full">
-          <img
-            src={homepageSettings.homepageImage2 
-              ? getImageUrl(homepageSettings.homepageImage2) 
-              : '/images/move-desk.png'
-            }
-            alt="What make us move"
-            className="w-full h-auto object-cover"
-            style={{
-              objectPosition: 'center'
-            }}
-          />
+        <div className="hidden md:block w-full px-4">
+          <div className="max-w-[1250px] mx-auto">
+            <img
+              src={homepageSettings.homepageImage2 
+                ? getImageUrl(homepageSettings.homepageImage2) 
+                : '/images/move-desk.png'
+              }
+              alt="What make us move"
+              className="w-full h-auto object-cover rounded-2xl"
+              style={{
+                objectPosition: 'center'
+              }}
+            />
+          </div>
         </div>
       </section>
 
       {/* Section 5: COMMUNITY FAVOURITES */}
-      <section className="bg-white text-[#212121] py-8">
+      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="mb-6 md:mb-8 text-left md:text-left">
             <div className="flex items-left center gap-2 md:gap-3 mb-4 md:mb-6 md:justify-start">
@@ -1195,11 +1201,7 @@ export default function HomePage() {
               {/* Navigation Arrows */}
               <button
                 onClick={() => scrollCommunityCarousel('left')}
-                className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                onClick={() => scrollCommunityCarousel('left')}                
                 className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-6 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
                   height: 'clamp(32px, 8vw, 48px)',
@@ -1211,11 +1213,7 @@ export default function HomePage() {
               
               <button
                 onClick={() => scrollCommunityCarousel('right')}
-                className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                onClick={() => scrollCommunityCarousel('right')}                
                 className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-6 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
                   height: 'clamp(32px, 8vw, 48px)',
@@ -1229,10 +1227,10 @@ export default function HomePage() {
               <div
                 ref={communityCarouselRef}
                 className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 community-slider px-4 md:px-0"
-                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 community-slider px-4 md:px-0 md:max-w-[1192px] md:mx-auto"
                 style={{
                   scrollbarWidth: 'none',
-                  msOverflowStyle: 'none'
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch'
                 }}
               >
                 {communityFavorites.map((product, index) => {
@@ -1360,20 +1358,19 @@ export default function HomePage() {
 
       {/* Section 6: WHY ATHLEKT - OUR STORY */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-0 max-w-[1250px]">
+        <div className="container mx-auto px-4 max-w-[1250px]">
           {/* Mobile Layout */}
-          <div className="flex flex-col items-left gap-4 py-8 lg:hidden text-left px-4">
-            
-            <div className="relative w-full max-w-sm">
-              <div className="relative z-10 overflow-hidden bg-white shadow-lg rounded-2xl">
+          <div className="flex flex-col items-left gap-8 py-8 lg:hidden text-left">
+            <div className="relative w-full max-w-sm mx-auto">
+              <div className="relative z-10 overflow-hidden bg-white rounded-2xl">
                 <img
                   src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : "/9.png"}
                   alt="Why Athlekt"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover rounded-2xl"
                 />
               </div>
             </div>
-            <div className="flex w-full max-w-sm flex-col items-left gap-4 px-0">
+            <div className="flex w-full max-w-sm mx-auto flex-col items-left gap-4 px-0">
               <h2
                 className="text-black uppercase w-full text-left"
                 style={ourStoryHeadingStyle}
@@ -1407,21 +1404,22 @@ export default function HomePage() {
                 style={{
                   position: 'absolute',
                   left: '0px',
-                  top: 'clamp(-95px, -15vw, -125px)',
+                  top: 'clamp(-75px, -15vw, -125px)',
                   height: 'clamp(200px, 27.5vw, 420px)',
                   opacity: 1,
                   overflow: 'hidden',
-                  zIndex: 10
+                  zIndex: 10,
+                  width: 'clamp(500px, 47vw, 650px)',
                 }}
               >
                 <img 
                   src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : '/9.png'} 
                   alt="Why Athlekt" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-2xl"
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover',
+                    objectFit: 'contain',
                     objectPosition: 'center top',
                     display: 'block'
                   }}
@@ -1470,7 +1468,7 @@ export default function HomePage() {
       </section>
 
       {/* Section 7: COMPLETE THE LOOK */}
-      <section className="bg-white text-[#212121]">
+      <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
           <div className="mb-6 md:mb-8 text-left md:text-left">
             <h1 
@@ -1505,10 +1503,8 @@ export default function HomePage() {
             <div className="relative mt-8 md:mt-12">
               {/* Navigation Arrows */}
               <button
-                onClick={() => scrollCommunityCarousel('left')}
-                className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 onClick={() => scrollBundleCarousel('left')}
-                className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-6 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
                   height: 'clamp(32px, 8vw, 48px)',
@@ -1519,10 +1515,8 @@ export default function HomePage() {
               </button>
               
               <button
-                onClick={() => scrollCommunityCarousel('right')}
-                className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 onClick={() => scrollBundleCarousel('right')}
-                className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
+                className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-6 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
                   height: 'clamp(32px, 8vw, 48px)',
@@ -1536,10 +1530,10 @@ export default function HomePage() {
               <div
                 ref={bundleCarouselRef}
                 className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 bundle-slider px-4 md:px-0"
-                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 bundle-slider px-4 md:px-0 md:max-w-[1192px] md:mx-auto"
                 style={{
                   scrollbarWidth: 'none',
-                  msOverflowStyle: 'none'
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch'
                 }}
               >
                 {bundles.slice(0, 4).map((bundle) => {
@@ -1685,7 +1679,6 @@ export default function HomePage() {
               onClick={() => scrollCarousel('left')}
               className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
               style={{
-                left: '-12px',
                 left: 'clamp(-48px, -5vw, -24px)',
                 width: 'clamp(32px, 8vw, 48px)',
                 height: 'clamp(32px, 8vw, 48px)',
@@ -1700,7 +1693,6 @@ export default function HomePage() {
               onClick={() => scrollCarousel('right')}
               className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
               style={{
-                right: '-12px',
                 right: 'clamp(-48px, -5vw, -24px)',
                 width: 'clamp(32px, 8vw, 48px)',
                 height: 'clamp(32px, 8vw, 48px)',
@@ -1881,7 +1873,7 @@ export default function HomePage() {
 
       <Footer />
 
-      <style jsx>{`
+      <style jsx global>{`
         .whats-new-scroll {
           scrollbar-width: none;
           -ms-overflow-style: none;
@@ -1910,6 +1902,27 @@ export default function HomePage() {
         .bundle-slider::-webkit-scrollbar {
           width: 0;
           height: 0;
+        }
+
+        /* Safari specific fixes */
+        @media not all and (min-resolution:.001dpcm) { 
+          @supports (-webkit-appearance:none) {
+            .container {
+              -webkit-transform: translateZ(0);
+            }
+            
+            img {
+              -webkit-transform: translateZ(0);
+            }
+          }
+        }
+
+        /* Cross-browser smooth scrolling */
+        .whats-new-scroll,
+        .community-slider,
+        .bundle-slider {
+          -webkit-overflow-scrolling: touch;
+          scroll-behavior: smooth;
         }
       `}</style>
     </div>
