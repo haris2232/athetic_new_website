@@ -1020,15 +1020,14 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
             <div className="w-full lg:w-1/2 flex-shrink-0">
               
               {/* Desktop & Tablet */}
-              <div className="hidden md:flex gap-6 lg:gap-8 flex-shrink-0">
+              <div className="hidden md:flex gap-6 lg:gap-8 flex-shrink-0 items-start">
                 
                 {/* Thumbnails - Left side - NO ARROWS */}
                 {currentImages && currentImages.length > 0 && (
-                  <div className="flex flex-col items-center gap-3">
+                  <div className="flex flex-col items-center">
                     {/* Scrollable Thumbnails Container */}
                     <div 
-                      ref={galleryScrollRef}
-                      className="flex flex-col gap-4 max-h-[500px] overflow-y-auto hide-scrollbar"
+                      className="flex flex-col gap-4 max-h-[392px] overflow-y-auto hide-scrollbar"
                       style={{ scrollBehavior: 'smooth' }}
                     >
                       {currentImages.map((image, index) => (
@@ -1042,19 +1041,14 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                             border: index === activeImageIndex ? '2px solid #000000' : '1px solid #D1D5DB',
                             backgroundColor: '#FFFFFF',
                           }}
-                          onClick={() => {
-                            setActiveImageIndex(index)
-                            setGalleryScrollPosition(index)
-                          }}
+                          onClick={() => setActiveImageIndex(index)}
                         >
                           <Image
                             src={getFullImageUrl(image)}
                             alt={`${product.name} ${index + 1}`}
                             fill
                             className="object-cover"
-                            style={{
-                              borderRadius: '6px'
-                            }}
+                            style={{ borderRadius: '6px' }}
                           />
                         </button>
                       ))}
