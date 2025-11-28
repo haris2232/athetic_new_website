@@ -1360,29 +1360,31 @@ export default function HomePage() {
 
       {/* Section 6: WHY ATHLEKT - OUR STORY */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-0 max-w-[1250px]">
+        <div 
+          className="container mx-auto px-4 max-w-[1250px]" 
+          style={{ paddingRight: 'clamp(12px, 4vw, 80px)' }} // added right padding for whole section
+        >
           {/* Mobile Layout */}
-          <div className="flex flex-col items-left gap-4 py-8 lg:hidden text-left px-4">
-            
-            <div className="relative w-full max-w-sm">
-              <div className="relative z-10 overflow-hidden bg-white shadow-lg rounded-2xl">
+          <div className="flex flex-col items-left gap-8 py-8 lg:hidden text-left">
+            <div className="relative w-full max-w-sm mx-auto">
+              <div className="relative z-10 overflow-hidden bg-white rounded-2xl">
                 <img
                   src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : "/9.png"}
                   alt="Why Athlekt"
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-cover rounded-2xl"
                 />
               </div>
             </div>
-            <div className="flex w-full max-w-sm flex-col items-left gap-4 px-0">
+            <div className="flex w-full max-w-sm mx-auto flex-col items-left gap-4 px-0">
               <h2
                 className="text-black uppercase w-full text-left"
-                style={ourStoryHeadingStyle}
+                style={{ ...ourStoryHeadingStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }}
               >
                 OUR STORY
               </h2>
               <div
                 className="text-black w-full text-left"
-                style={ourStoryDescriptionStyle}
+                style={{ ...ourStoryDescriptionStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }} // description padding
               >
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
                     At Athlekt, we started with a simple question, why should activewear only fit a few?
@@ -1407,21 +1409,22 @@ export default function HomePage() {
                 style={{
                   position: 'absolute',
                   left: '0px',
-                  top: 'clamp(-95px, -15vw, -125px)',
+                  top: 'clamp(-75px, -15vw, -125px)',
                   height: 'clamp(200px, 27.5vw, 420px)',
                   opacity: 1,
                   overflow: 'hidden',
-                  zIndex: 10
+                  zIndex: 10,
+                  width: 'clamp(500px, 47vw, 650px)',
                 }}
               >
                 <img 
                   src={homepageSettings.homepageImage3 ? getImageUrl(homepageSettings.homepageImage3) : '/9.png'} 
                   alt="Why Athlekt" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-2xl"
                   style={{
                     width: '100%',
                     height: '100%',
-                    objectFit: 'cover',
+                    objectFit: 'contain',
                     objectPosition: 'center top',
                     display: 'block'
                   }}
@@ -1433,7 +1436,7 @@ export default function HomePage() {
                 className="absolute"
                 style={{
                   position: 'absolute',
-                  left: 'clamp(450px, 60vw, 750px)',
+                  left: 'clamp(450px, 46vw, 750px)',
                   top: 'clamp(-25px, -2.5vw, -12px)',
                   width: 'clamp(350px, 45vw, 600px)',
                   maxWidth: '600px',
@@ -1443,7 +1446,7 @@ export default function HomePage() {
                 {/* Heading */}
                 <h2 
                   className="uppercase text-black text-left"
-                  style={ourStoryHeadingStyle}
+                  style={{ ...ourStoryHeadingStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }}
                 >
                   OUR STORY
                 </h2>
@@ -1451,7 +1454,7 @@ export default function HomePage() {
                 {/* Body Text */}
                 <div
                   className="text-black text-left"
-                  style={ourStoryDescriptionStyle}
+                  style={{ ...ourStoryDescriptionStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }} // description padding on desktop
                 >
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
                     At Athlekt, we started with a simple question, why should activewear only fit a few?
@@ -1468,6 +1471,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
 
       {/* Section 7: COMPLETE THE LOOK */}
       <section className="bg-white text-[#212121]">
