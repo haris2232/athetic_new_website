@@ -1747,7 +1747,7 @@ export default function HomePage() {
                     onClick={() => openLightbox(index)}
                     style={{
                       scrollSnapAlign: 'start',
-                      width: 'clamp(280px, 25vw, 380px)',
+                      width: 'clamp(280px, 25vw, 180px)',
                       height: 'clamp(240px, 60vw, 380px)',
                       minWidth: '160px',
                       minHeight: '240px'
