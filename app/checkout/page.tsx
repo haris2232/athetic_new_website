@@ -264,6 +264,7 @@ export default function CheckoutPage() {
           return {
             ...baseItem,
             isBundle: true,
+            bundleId: item.bundleId,
             bundleDetails: {
               selectedPack: item.bundlePack ? {
                 name: item.bundlePack.name,
