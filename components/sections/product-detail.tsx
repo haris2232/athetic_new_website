@@ -26,6 +26,7 @@ interface BundleProduct {
   image?: string;
   images?: string[];
   slug?: string;
+  stock?: number;
 }
 
 interface Bundle {
@@ -89,9 +90,29 @@ const limitDescription = (description: string, charLimit: number = 100): string 
 export default function ProductDetail({ product }: { product: Product }) {
   const { addToCart, showNotification, cartItems } = useCart()
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist()
-  const [selectedSize, setSelectedSize] = useState<string>(product.sizes && product.sizes.length > 0 ? product.sizes[0] : "M")
+  
+  // Initialize selected size and color with available stock
+  const getInitialSize = () => {
+    if (!product.variants || product.variants.length === 0) return "M";
+    
+    const availableSize = product.variants.find(v => 
+      v.stock > 0 && product.colors?.some(c => c.name === v.color.name)
+    );
+    return availableSize?.size || (product.sizes && product.sizes.length > 0 ? product.sizes[0] : "M");
+  };
+
+  const getInitialColor = () => {
+    if (!product.variants || product.variants.length === 0) return "Coral";
+    
+    const availableColor = product.variants.find(v => 
+      v.stock > 0 && product.sizes?.includes(v.size)
+    );
+    return availableColor?.color.name || (product.colors && product.colors.length > 0 ? product.colors[0].name : "Coral");
+  };
+
+  const [selectedSize, setSelectedSize] = useState<string>(getInitialSize())
   const [quantity, setQuantity] = useState(1)
-  const [selectedColor, setSelectedColor] = useState<string>(product.colors && product.colors.length > 0 ? product.colors[0].name : "Coral")
+  const [selectedColor, setSelectedColor] = useState<string>(getInitialColor())
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   // Color to image mapping - this will be populated from product data
   const [colorImageMapping, setColorImageMapping] = useState<Record<string, string[]>>({})
@@ -174,6 +195,69 @@ export default function ProductDetail({ product }: { product: Product }) {
   const currentImages = getImagesForColor(selectedColor)
 
   const sizeOptions = product.sizes || ["S", "M", "L", "XL", "XXL"]
+
+  // NEW: Check if a variant is in stock
+  const isVariantInStock = (size: string, color: string): boolean => {
+    if (!product.variants || product.variants.length === 0) return true;
+    
+    const variant = product.variants.find(
+      v => v.size === size && v.color.name === color
+    );
+    
+    return variant ? variant.stock > 0 : true;
+  };
+
+  // NEW: Check if current selected variant is in stock
+  const isCurrentVariantInStock = useMemo(() => {
+    return isVariantInStock(selectedSize, selectedColor);
+  }, [selectedSize, selectedColor, product.variants]);
+
+  // NEW: Get available sizes for selected color
+  const getAvailableSizesForColor = (color: string): string[] => {
+    if (!product.variants || product.variants.length === 0) return sizeOptions;
+    
+    const availableSizes = product.variants
+      .filter(v => v.color.name === color && v.stock > 0)
+      .map(v => v.size);
+    
+    return availableSizes.length > 0 ? availableSizes : sizeOptions;
+  };
+
+  // NEW: Get available colors for selected size
+  const getAvailableColorsForSize = (size: string): string[] => {
+    if (!product.variants || product.variants.length === 0) return colorOptions.map(c => c.name);
+    
+    const availableColors = product.variants
+      .filter(v => v.size === size && v.stock > 0)
+      .map(v => v.color.name);
+    
+    return availableColors.length > 0 ? availableColors : colorOptions.map(c => c.name);
+  };
+
+  // NEW: Handle size selection with stock validation
+  const handleSizeSelect = (size: string) => {
+    if (!isVariantInStock(size, selectedColor)) {
+      // Find first available color for this size
+      const availableColor = getAvailableColorsForSize(size)[0];
+      if (availableColor) {
+        setSelectedColor(availableColor);
+      }
+    }
+    setSelectedSize(size);
+  };
+
+  // NEW: Handle color selection with stock validation
+  const handleColorSelect = (color: string) => {
+    if (!isVariantInStock(selectedSize, color)) {
+      // Find first available size for this color
+      const availableSize = getAvailableSizesForColor(color)[0];
+      if (availableSize) {
+        setSelectedSize(availableSize);
+      }
+    }
+    setSelectedColor(color);
+    setActiveImageIndex(0);
+  };
 
   // NEW: Handle mouse move for zoom effect
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -781,6 +865,11 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
   }
 
   const handleAddToCart = () => {
+    if (!isCurrentVariantInStock) {
+      showNotification("This variant is out of stock!");
+      return;
+    }
+
     // Use final price (with discount)
     addToCart({
       id: product.id,
@@ -940,7 +1029,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     <div 
                       ref={galleryScrollRef}
                       className="flex flex-col gap-4 max-h-[500px] overflow-y-auto hide-scrollbar"
-                      className="flex flex-col gap-4 max-h-[400px] overflow-y-auto hide-scrollbar"
                       style={{ scrollBehavior: 'smooth' }}
                     >
                       {currentImages.map((image, index) => (
@@ -996,7 +1084,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       className="object-cover transition-transform duration-200"
                       style={{
                         objectFit: 'cover',
-                        objectPosition: 'center top',
                         objectPosition: 'center',
                         borderRadius: '12px',
                         transform: isZoomed ? 'scale(1.5)' : 'scale(1)',
@@ -1032,7 +1119,6 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     className="object-cover"
                     style={{
                       objectFit: 'cover',
-                      objectPosition: 'center top',
                       objectPosition: 'center',
                       borderRadius: '12px'
                     }}
@@ -1122,7 +1208,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 </div>
 
                 {/* Desktop Price - INCREASED SIZE */}
-                <div className="hidden md:flex flex-col items-end text-right ml-4 mt-0 ">
+                <div className="hidden md:flex flex-col items-end text-right ml-4 mt-0">
                   {product.discountPercentage > 0 && basePrice > finalPrice && (
                     <span 
                       className="line-through mb-1"
@@ -1207,6 +1293,22 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 </span>
               </div>
 
+              {/* Out of Stock Banner */}
+              {!isCurrentVariantInStock && (
+                <div className="mb-5 w-full">
+                  <div 
+                    className="bg-red-500 text-white px-4 py-3 rounded-lg text-center"
+                    style={{
+                      fontFamily: "'Gilroy-Bold', 'Gilroy', sans-serif",
+                      fontSize: '16px',
+                      fontWeight: 700
+                    }}
+                  >
+                    OUT OF STOCK
+                  </div>
+                </div>
+              )}
+
               {/* Middle Section */}
               <div className="flex flex-col mb-5 w-full">
 
@@ -1254,28 +1356,40 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     )}
                   </div>
                   <div className="flex flex-wrap gap-3">
-                    {sizeOptions.map((size) => (
-                      <button 
-                        key={size}
-                        className="transition-all duration-200 cursor-pointer flex items-center justify-center flex-shrink-0 hover:scale-105"
-                        style={{
-                          fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
-                          fontSize: '14px',
-                          fontWeight: 600,
-                          width: '45px',
-                          height: '35px',
-                          borderRadius: '15px',
-                          border: '2px solid #000000',
-                          backgroundColor: selectedSize === size ? '#000000' : '#FFFFFF',
-                          color: selectedSize === size ? '#FFFFFF' : '#000000',
-                          lineHeight: '1',
-                          padding: 0
-                        }}
-                        onClick={() => setSelectedSize(size)}
-                      >
-                        {size}
-                      </button>
-                    ))}
+                    {sizeOptions.map((size) => {
+                      const isSizeInStock = isVariantInStock(size, selectedColor);
+                      const isSelected = selectedSize === size;
+                      
+                      return (
+                        <button 
+                          key={size}
+                          className={`transition-all duration-200 cursor-pointer flex items-center justify-center flex-shrink-0 hover:scale-105 ${
+                            !isSizeInStock ? 'cursor-not-allowed' : ''
+                          }`}
+                          style={{
+                            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                            fontSize: '14px',
+                            fontWeight: 600,
+                            width: '45px',
+                            height: '35px',
+                            borderRadius: '15px',
+                            border: isSelected ? '2px solid #000000' : '1px solid #D1D5DB',
+                            backgroundColor: isSelected ? '#000000' : '#FFFFFF',
+                            color: isSelected ? '#FFFFFF' : '#000000',
+                            lineHeight: '1',
+                            padding: 0,
+                            opacity: isSizeInStock ? 1 : 0.4,
+                          }}
+                          onClick={() => isSizeInStock && handleSizeSelect(size)}
+                          disabled={!isSizeInStock}
+                        >
+                          {size}
+                          {!isSizeInStock && (
+                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -1298,25 +1412,31 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     {colorOptions.map((color, idx) => {
                       const defaultColors = ['#808080', '#000000', '#FFFF00', '#0066FF']
                       const colorHex = color.hex || defaultColors[idx] || '#808080'
+                      const isColorInStock = isVariantInStock(selectedSize, color.name);
+                      const isSelected = selectedColor === color.name;
                       
                       return (
                         <div
                           key={color.name}
-                          className="transition-all duration-200 cursor-pointer flex-shrink-0 hover:scale-105"
+                          className={`transition-all duration-200 cursor-pointer flex-shrink-0 hover:scale-105 relative ${
+                            !isColorInStock ? 'cursor-not-allowed' : ''
+                          }`}
                           style={{
                             width: '40px',
                             height: '40px',
                             borderRadius: '6px',
-                            border: selectedColor === color.name
+                            border: isSelected
                               ? '2px solid #000000'
                               : '1px solid #D1D5DB',
                             backgroundColor: colorHex,
+                            opacity: isColorInStock ? 1 : 0.4,
                           }}
-                          onClick={() => {
-                            setSelectedColor(color.name)
-                            setActiveImageIndex(0)
-                          }}
-                        />
+                          onClick={() => isColorInStock && handleColorSelect(color.name)}
+                        >
+                          {!isColorInStock && (
+                            <div className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></div>
+                          )}
+                        </div>
                       )
                     })}
                   </div>
@@ -1338,7 +1458,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                       border: '2px solid #000000',
                       backgroundColor: '#FFFFFF',
                       padding: '0 20px',
-                      flexShrink: 0
+                      flexShrink: 0,
+                      opacity: isCurrentVariantInStock ? 1 : 0.6
                     }}
                   >
                     <Button
@@ -1352,6 +1473,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                         borderRadius: '0'
                       }}
                       onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                      disabled={!isCurrentVariantInStock}
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -1377,6 +1499,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                         borderRadius: '0'
                       }}
                       onClick={() => setQuantity(prev => prev + 1)}
+                      disabled={!isCurrentVariantInStock}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -1391,16 +1514,18 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                         fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                         fontSize: '16px',
                         fontWeight: 600,
-                        color: '#EBFF00',
-                        backgroundColor: '#000000',
+                        color: isCurrentVariantInStock ? '#EBFF00' : '#666666',
+                        backgroundColor: isCurrentVariantInStock ? '#000000' : '#CCCCCC',
                         height: '50px',
                         borderRadius: '25px',
                         border: 'none',
                         padding: '12px 20px',
+                        cursor: isCurrentVariantInStock ? 'pointer' : 'not-allowed',
                       }}
                       onClick={handleAddToCart}
+                      disabled={!isCurrentVariantInStock}
                     >
-                      ADD TO BAG
+                      {isCurrentVariantInStock ? 'ADD TO BAG' : 'OUT OF STOCK'}
                     </Button>
                     
                     {/* Wishlist Button */}
@@ -1413,7 +1538,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                         border: '2px solid #000000',
                         backgroundColor: '#FFFFFF',
                         padding: '10px',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        opacity: isCurrentVariantInStock ? 1 : 0.6
                       }}
                       onClick={handleWishlistToggle}
                     >
