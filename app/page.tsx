@@ -271,6 +271,15 @@ export default function HomePage() {
     }
   }
 
+  // Auto-scroll pause when hovering over carousels
+  const handleMouseEnter = () => {
+    setIsCarouselHovered(true)
+  }
+
+  const handleMouseLeave = () => {
+    setIsCarouselHovered(false)
+  }
+
   // Auto-scroll effect for community favorites slider
   useEffect(() => {
     if (communityFavorites.length === 0) return
@@ -1358,7 +1367,10 @@ export default function HomePage() {
 
       {/* Section 6: WHY ATHLEKT - OUR STORY */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
-        <div className="container mx-auto px-4 max-w-[1250px]">
+        <div 
+          className="container mx-auto px-4 max-w-[1250px]" 
+          style={{ paddingRight: 'clamp(12px, 4vw, 80px)' }} // added right padding for whole section
+        >
           {/* Mobile Layout */}
           <div className="flex flex-col items-left gap-8 py-8 lg:hidden text-left">
             <div className="relative w-full max-w-sm mx-auto">
@@ -1373,13 +1385,13 @@ export default function HomePage() {
             <div className="flex w-full max-w-sm mx-auto flex-col items-left gap-4 px-0">
               <h2
                 className="text-black uppercase w-full text-left"
-                style={ourStoryHeadingStyle}
+                style={{ ...ourStoryHeadingStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }}
               >
                 OUR STORY
               </h2>
               <div
                 className="text-black w-full text-left"
-                style={ourStoryDescriptionStyle}
+                style={{ ...ourStoryDescriptionStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }} // description padding
               >
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
                     At Athlekt, we started with a simple question, why should activewear only fit a few?
@@ -1431,7 +1443,7 @@ export default function HomePage() {
                 className="absolute"
                 style={{
                   position: 'absolute',
-                  left: 'clamp(450px, 60vw, 750px)',
+                  left: 'clamp(450px, 46vw, 750px)',
                   top: 'clamp(-25px, -2.5vw, -12px)',
                   width: 'clamp(350px, 45vw, 600px)',
                   maxWidth: '600px',
@@ -1441,7 +1453,7 @@ export default function HomePage() {
                 {/* Heading */}
                 <h2 
                   className="uppercase text-black text-left"
-                  style={ourStoryHeadingStyle}
+                  style={{ ...ourStoryHeadingStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }}
                 >
                   OUR STORY
                 </h2>
@@ -1449,7 +1461,7 @@ export default function HomePage() {
                 {/* Body Text */}
                 <div
                   className="text-black text-left"
-                  style={ourStoryDescriptionStyle}
+                  style={{ ...ourStoryDescriptionStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }} // description padding on desktop
                 >
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
                     At Athlekt, we started with a simple question, why should activewear only fit a few?
