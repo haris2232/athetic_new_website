@@ -1,12 +1,18 @@
 'use client'
 
 import { Button } from "@/components/ui/button"
-import { useCart } from "@/lib/cart-context"
+import { useCart, type BundleCartItem } from "@/lib/cart-context"
 import type { Bundle, BundlePackOption, BundleColorOption } from "@/lib/api"
+
+type Variation = {
+  sku: string
+  [key: string]: any
+}
 
 interface BundleAddToCartProps {
   bundle: Bundle
   selection: BundleSelectionState
+  selectedVariation: Variation | null
 }
 
 type BundleSelectionState = {
@@ -16,7 +22,7 @@ type BundleSelectionState = {
   color?: BundleColorOption
 }
 
-export function BundleAddToCart({ bundle, selection }: BundleAddToCartProps) {
+export function BundleAddToCart({ bundle, selection, selectedVariation }: BundleAddToCartProps) {
   const { addBundleToCart, isBundleInCart } = useCart()
   const bundleId = bundle._id || bundle.id
   const bundleKey = [
@@ -40,7 +46,7 @@ export function BundleAddToCart({ bundle, selection }: BundleAddToCartProps) {
   const handleAddToCart = () => {
     if (!bundleId || !selection.pack) return
 
-    addBundleToCart({
+    const cartItem: BundleCartItem = {
       id: bundleId,
       name: bundle.name,
       thumbnail:
@@ -60,13 +66,17 @@ export function BundleAddToCart({ bundle, selection }: BundleAddToCartProps) {
       totalPrice,
       unitPrice: packUnitPrice,
       dealTag: bundle.dealTag,
-    })
+      // This is the crucial part: add the SKU from the selected variation
+      sku: selectedVariation?.sku,
+    }
+
+    addBundleToCart(cartItem)
   }
 
   return (
     <Button
       onClick={handleAddToCart}
-      disabled={alreadyInCart || !selection.pack}
+      disabled={alreadyInCart || !selection.pack || !selectedVariation}
       className={`w-full h-12 rounded-full font-semibold ${
         alreadyInCart ? "bg-emerald-600 hover:bg-emerald-600" : "bg-black hover:bg-zinc-900"
       }`}
@@ -77,4 +87,3 @@ export function BundleAddToCart({ bundle, selection }: BundleAddToCartProps) {
 }
 
 export type { BundleSelectionState }
-
