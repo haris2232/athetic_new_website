@@ -253,8 +253,8 @@ export default function CheckoutPage() {
           productId: item.id,
           productName: item.name || "Unknown Product",
           size: item.size || "Standard",
-          color: item.color || (item.isBundle ? item.bundleColorName : "Default"),
-          sku: item.sku || item.id, // Use the item's SKU, fallback to ID
+          color: item.color || "Default",
+          sku: item.id,
           quantity: item.quantity || 1,
           price: item.price || 0
         };
@@ -279,8 +279,7 @@ export default function CheckoutPage() {
                 name: item.bundleColorName,
                 description: item.bundleColorDescription
               } : undefined,
-              dealTag: item.bundleDealTag,
-              sku: item.sku, // Explicitly add the SKU here
+              dealTag: item.bundleDealTag
             }
           };
         }

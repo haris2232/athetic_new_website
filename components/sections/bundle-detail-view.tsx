@@ -118,16 +118,6 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
     }
   }, [selection.color])
 
-  const selectedVariation = useMemo(() => {
-    if (!bundle.variations || !selection.pack || !selection.color || !selection.size) {
-      return null
-    }
-    return bundle.variations.find(
-      (v) =>
-        v.pack === selection.pack?.name && v.color === selection.color?.name && v.size === selection.size,
-    )
-  }, [bundle.variations, selection.pack, selection.color, selection.size])
-
   const activeImage = overrideImage || mediaImages[activeImageIndex] || "/placeholder.svg"
 
   const packQuantity = selection.pack?.quantity ?? 1
@@ -474,7 +464,7 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
               )}
             </div>
 
-            <BundleAddToCart bundle={bundle} selection={selection} selectedVariation={selectedVariation} />
+            <BundleAddToCart bundle={bundle} selection={selection} />
 
             {descriptionParagraphs.length > 0 && (
               <div className="space-y-2 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
