@@ -1079,7 +1079,7 @@ export default function HomePage() {
                 {/* View All Button */}
                 <Link
                   href="/collection"
-                  className="bg-white text-black uppercase px-6 md:px-8 py-3 md:py-4 rounded-lg hover:bg-gray-100 transition-colors font-medium inline-block"
+                  className="bg-white text-black border border-black uppercase px-6 md:px-8 py-3 md:py-4 rounded-lg hover:bg-gray-100 transition-colors font-medium inline-block"
                   style={{
                     fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
                     fontSize: 'clamp(0.75rem, 2vw, 0.875rem)',
@@ -1155,18 +1155,20 @@ export default function HomePage() {
         </div>
         
         {/* Desktop Image */}
-        <div className="hidden md:block w-full">
-          <img
-            src={homepageSettings.homepageImage2 
-              ? getImageUrl(homepageSettings.homepageImage2) 
-              : '/images/move-desk.png'
-            }
-            alt="What make us move"
-            className="w-full h-auto object-cover"
-            style={{
-              objectPosition: 'center'
-            }}
-          />
+        <div className="hidden md:block w-full px-4">
+          <div className="max-w-[1250px] mx-auto">
+            <img
+              src={homepageSettings.homepageImage2 
+                ? getImageUrl(homepageSettings.homepageImage2) 
+                : '/images/move-desk.png'
+              }
+              alt="What make us move"
+              className="w-full h-auto object-cover rounded-2xl"
+              style={{
+                objectPosition: 'center'
+              }}
+            />
+          </div>
         </div>
       </section>
 
