@@ -79,9 +79,9 @@ export default function ProductCard({
 
         {/* Product Info */}
         <div className="rounded-b-[20px] md:rounded-b-[30px] bg-[#212121] text-white p-3 md:p-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between">
             {/* Product Name - Left Side */}
-            <h3 className="text-xs font-medium leading-tight line-clamp-2 flex-1 mr-2 md:mr-3">
+            <h3 className="text-sm md:text-base font-medium leading-tight line-clamp-2 flex-1 mr-2 md:mr-3 min-h-[2.5rem] md:min-h-[3rem]">
               {name}
             </h3>
 
@@ -92,7 +92,7 @@ export default function ProductCard({
                   {displayOriginalPrice}
                 </span>
               )}
-              <span className="text-sm font-bold text-white">
+              <span className="text-base md:text-lg font-bold text-white">
                 {displayPrice}
               </span>
             </div>
