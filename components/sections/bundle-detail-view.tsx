@@ -464,7 +464,16 @@ export function BundleDetailView({ bundle }: BundleDetailViewProps) {
               )}
             </div>
 
-            <BundleAddToCart bundle={bundle} selection={selection} />
+            {bundle.stock && bundle.stock > 0 ? (
+              <BundleAddToCart bundle={bundle} selection={selection} />
+            ) : (
+              <div className="rounded-2xl border border-zinc-200 bg-zinc-100 p-4 text-center">
+                <p className="font-semibold text-zinc-900">Out of Stock</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  This bundle is currently unavailable. Please check back later.
+                </p>
+              </div>
+            )}
 
             {descriptionParagraphs.length > 0 && (
               <div className="space-y-2 rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
