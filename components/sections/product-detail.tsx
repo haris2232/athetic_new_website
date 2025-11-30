@@ -207,6 +207,17 @@ export default function ProductDetail({ product }: { product: Product }) {
     return variant ? variant.stock > 0 : true;
   };
 
+  // NEW: Get available stock for current variant
+  const getCurrentVariantStock = (): number => {
+    if (!product.variants || product.variants.length === 0) return 100; // Default high stock if no variants
+    
+    const variant = product.variants.find(
+      v => v.size === selectedSize && v.color.name === selectedColor
+    );
+    
+    return variant ? variant.stock : 0;
+  };
+
   // NEW: Check if current selected variant is in stock
   const isCurrentVariantInStock = useMemo(() => {
     return isVariantInStock(selectedSize, selectedColor);
@@ -257,6 +268,34 @@ export default function ProductDetail({ product }: { product: Product }) {
     }
     setSelectedColor(color);
     setActiveImageIndex(0);
+  };
+
+  // NEW: Handle quantity changes with stock validation
+  const handleQuantityChange = (newQuantity: number) => {
+    const currentStock = getCurrentVariantStock();
+    if (newQuantity > currentStock) {
+      showNotification(`Only ${currentStock} items available in stock!`);
+      setQuantity(currentStock);
+    } else if (newQuantity < 1) {
+      setQuantity(1);
+    } else {
+      setQuantity(newQuantity);
+    }
+  };
+
+  // NEW: Handle increment quantity with stock validation
+  const handleIncrementQuantity = () => {
+    const currentStock = getCurrentVariantStock();
+    if (quantity >= currentStock) {
+      showNotification(`Only ${currentStock} items available in stock!`);
+      return;
+    }
+    setQuantity(prev => prev + 1);
+  };
+
+  // NEW: Handle decrement quantity
+  const handleDecrementQuantity = () => {
+    setQuantity(prev => Math.max(1, prev - 1));
   };
 
   // NEW: Handle mouse move for zoom effect
@@ -339,6 +378,9 @@ export default function ProductDetail({ product }: { product: Product }) {
   const basePrice = getBasePrice(selectedVariation);
   const finalPrice = getDiscountedPrice(selectedVariation);
   const discountAmount = (basePrice * (product.discountPercentage || 0)) / 100;
+
+  // Get current variant stock
+  const currentVariantStock = getCurrentVariantStock();
 
   const remainingBundles = bundles;
 
@@ -870,6 +912,15 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
       return;
     }
 
+    const currentStock = getCurrentVariantStock();
+    
+    // Check if requested quantity exceeds available stock
+    if (quantity > currentStock) {
+      showNotification(`Only ${currentStock} items available in stock!`);
+      setQuantity(currentStock);
+      return;
+    }
+
     // Use final price (with discount)
     addToCart({
       id: product.id,
@@ -879,7 +930,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
       color: selectedColor,
       size: selectedSize,
       quantity: quantity,
-      fit: "REGULAR FIT"
+      fit: "REGULAR FIT",
+      maxStock: currentStock // Add max stock information to cart item
     })
   }
 
@@ -1027,7 +1079,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                   <div className="flex flex-col items-center">
                     {/* Scrollable Thumbnails Container */}
                     <div 
-                      className="flex flex-col gap-4 max-h-[392px] overflow-y-auto hide-scrollbar"
+                      className="flex flex-col gap-4 max-h-[450px] overflow-y-auto hide-scrollbar"
                       style={{ scrollBehavior: 'smooth' }}
                     >
                       {currentImages.map((image, index) => (
@@ -1036,7 +1088,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                           className="relative overflow-hidden transition-all duration-200 flex-shrink-0 hover:scale-105"
                           style={{
                             width: '120px',
-                            height: '120px',
+                            height: '140px',
                             borderRadius: '8px',
                             border: index === activeImageIndex ? '2px solid #000000' : '1px solid #D1D5DB',
                             backgroundColor: '#FFFFFF',
@@ -1062,7 +1114,7 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     className="relative overflow-hidden bg-white flex-shrink-0 cursor-zoom-in"
                     style={{
                       width: '500px',
-                      height: '395px',
+                      height: '450px',
                       borderRadius: '12px',
                       backgroundColor: '#FFFFFF'
                     }}
@@ -1287,6 +1339,22 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                 </span>
               </div>
 
+              {/* Stock Information */}
+              {isCurrentVariantInStock && (
+                <div className="mb-3">
+                  <p 
+                    className="text-green-600"
+                    style={{
+                      fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                      fontSize: '14px',
+                      fontWeight: 500,
+                    }}
+                  >
+                    {currentVariantStock > 10 ? 'In Stock' : `Only ${currentVariantStock} left in stock!`}
+                  </p>
+                </div>
+              )}
+
               {/* Out of Stock Banner */}
               {!isCurrentVariantInStock && (
                 <div className="mb-5 w-full">
@@ -1466,8 +1534,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                         border: 'none',
                         borderRadius: '0'
                       }}
-                      onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                      disabled={!isCurrentVariantInStock}
+                      onClick={handleDecrementQuantity}
+                      disabled={!isCurrentVariantInStock || quantity <= 1}
                     >
                       <Minus className="h-4 w-4" />
                     </Button>
@@ -1492,8 +1560,8 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                         border: 'none',
                         borderRadius: '0'
                       }}
-                      onClick={() => setQuantity(prev => prev + 1)}
-                      disabled={!isCurrentVariantInStock}
+                      onClick={handleIncrementQuantity}
+                      disabled={!isCurrentVariantInStock || quantity >= currentVariantStock}
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -1547,6 +1615,22 @@ const fetchProductList = async (queryString = ''): Promise<ProductCardItem[]> =>
                     </div>
                   </div>
                 </div>
+
+                {/* Stock Limit Message */}
+                {isCurrentVariantInStock && currentVariantStock <= 10 && (
+                  <div className="mt-3 text-center">
+                    <p 
+                      className="text-orange-600"
+                      style={{
+                        fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+                        fontSize: '14px',
+                        fontWeight: 500,
+                      }}
+                    >
+                      Only {currentVariantStock} items left in stock!
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
