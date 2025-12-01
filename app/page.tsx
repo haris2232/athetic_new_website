@@ -17,6 +17,51 @@ const CLOUDINARY_URLS = {
   desktop: "/video/desktop.gif"
 };
 
+// Optimized GIF component for better performance
+const OptimizedGif = ({ 
+  src, 
+  alt, 
+  className = "", 
+  objectFit = "cover", 
+  objectPosition = "center center" 
+}: { 
+  src: string; 
+  alt: string; 
+  className?: string;
+  objectFit?: "cover" | "contain" | "fill";
+  objectPosition?: string;
+}) => {
+  return (
+    <div className={`relative overflow-hidden ${className}`}>
+      <picture>
+        <source srcSet={src} type="image/gif" />
+        <img
+          src={src}
+          alt={alt}
+          loading="eager"
+          decoding="async"
+          className="w-full h-full"
+          style={{
+            objectFit,
+            objectPosition,
+            contentVisibility: 'auto',
+          }}
+          onError={(e) => {
+            // Fallback if GIF fails to load
+            const target = e.target as HTMLImageElement;
+            target.style.display = 'none';
+            target.parentElement!.innerHTML = `
+              <div style="width:100%; height:100%; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); display:flex; align-items:center; justify-content:center;">
+                <span style="color:white; font-weight:bold;">${alt}</span>
+              </div>
+            `;
+          }}
+        />
+      </picture>
+    </div>
+  );
+};
+
 interface HomepageSettings {
   homepageImage1?: string;
   homepageImage1Type?: 'image' | 'video';
@@ -692,8 +737,6 @@ export default function HomePage() {
       
       {/* Section 1: CLOUDINARY GIF SECTION */}
       <section className="relative w-full overflow-x-hidden">
-        <div className=""></div>
-        
         <div className="bg-white relative w-full overflow-hidden mx-auto"
           style={{
             marginTop: 'clamp(1rem, 3vw, 2.5rem)',
@@ -703,27 +746,23 @@ export default function HomePage() {
         >
           {/* Mobile GIF */}
           <div className="block md:hidden w-full h-full">
-            <img
+            <OptimizedGif
               src={CLOUDINARY_URLS.mobile}
               alt="Athlekt"
-              className="w-full h-full object-cover"
-              style={{
-                objectFit: 'contain',
-                objectPosition: 'center center',
-              }}
+              objectFit="contain"
+              objectPosition="center center"
+              className="w-full h-full"
             />
           </div>
           
           {/* Desktop GIF */}
           <div className="hidden md:block w-full h-full">
-            <img
+            <OptimizedGif
               src={CLOUDINARY_URLS.desktop}
-              alt="Athlekt" 
-              className="w-full h-full object-cover"
-              style={{
-                objectFit: 'cover',
-                objectPosition: 'center center',
-              }}
+              alt="Athlekt"
+              objectFit="cover"
+              objectPosition="center center"
+              className="w-full h-full"
             />
           </div>
         </div>
@@ -1195,10 +1234,6 @@ export default function HomePage() {
               {/* Navigation Arrows */}
               <button
                 onClick={() => scrollCommunityCarousel('left')}
-                className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                onClick={() => scrollCommunityCarousel('left')}                
-                className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-6 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
@@ -1211,10 +1246,6 @@ export default function HomePage() {
               
               <button
                 onClick={() => scrollCommunityCarousel('right')}
-                className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
-                onClick={() => scrollCommunityCarousel('right')}                
-                className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-6 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
                   width: 'clamp(32px, 8vw, 48px)',
@@ -1228,7 +1259,6 @@ export default function HomePage() {
               {/* Community Favorites Slider Container */}
               <div
                 ref={communityCarouselRef}
-                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 community-slider px-4 md:px-0"
                 className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 community-slider px-4 md:px-0 md:max-w-[1192px] md:mx-auto"
                 style={{
                   scrollbarWidth: 'none',
@@ -1362,7 +1392,7 @@ export default function HomePage() {
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div 
           className="container mx-auto px-4 max-w-[1250px]" 
-          style={{ paddingRight: 'clamp(12px, 4vw, 80px)' }} // added right padding for whole section
+          style={{ paddingRight: 'clamp(12px, 4vw, 80px)' }}
         >
           {/* Mobile Layout */}
           <div className="flex flex-col items-left gap-8 py-8 lg:hidden text-left">
@@ -1384,7 +1414,7 @@ export default function HomePage() {
               </h2>
               <div
                 className="text-black w-full text-left"
-                style={{ ...ourStoryDescriptionStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }} // description padding
+                style={{ ...ourStoryDescriptionStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }}
               >
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
                     At Athlekt, we started with a simple question, why should activewear only fit a few?
@@ -1454,7 +1484,7 @@ export default function HomePage() {
                 {/* Body Text */}
                 <div
                   className="text-black text-left"
-                  style={{ ...ourStoryDescriptionStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }} // description padding on desktop
+                  style={{ ...ourStoryDescriptionStyle, paddingRight: 'clamp(12px, 4vw, 80px)' }}
                 >
                   <p style={{ marginBottom: 'clamp(18px, 2vw, 24px)' }}>
                     At Athlekt, we started with a simple question, why should activewear only fit a few?
@@ -1509,8 +1539,6 @@ export default function HomePage() {
             <div className="relative mt-8 md:mt-12">
               {/* Navigation Arrows */}
               <button
-                onClick={() => scrollCommunityCarousel('left')}
-                className="absolute top-1/2 -translate-y-1/2 -left-4 md:-left-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 onClick={() => scrollBundleCarousel('left')}
                 className="absolute top-1/2 -translate-y-1/2 -left-2 md:-left-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
@@ -1523,8 +1551,6 @@ export default function HomePage() {
               </button>
               
               <button
-                onClick={() => scrollCommunityCarousel('right')}
-                className="absolute top-1/2 -translate-y-1/2 -right-4 md:-right-12 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 onClick={() => scrollBundleCarousel('right')}
                 className="absolute top-1/2 -translate-y-1/2 -right-2 md:-right-14 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
                 style={{
@@ -1539,7 +1565,6 @@ export default function HomePage() {
               {/* Bundle Slider Container */}
               <div
                 ref={bundleCarouselRef}
-                className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 bundle-slider px-4 md:px-0"
                 className="flex gap-4 md:gap-6 overflow-x-auto scroll-smooth pb-4 bundle-slider px-4 md:px-0 md:max-w-[1192px] md:mx-auto"
                 style={{
                   scrollbarWidth: 'none',
@@ -1689,7 +1714,6 @@ export default function HomePage() {
               onClick={() => scrollCarousel('left')}
               className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
               style={{
-                left: '-12px',
                 left: 'clamp(-48px, -5vw, -24px)',
                 width: 'clamp(32px, 8vw, 48px)',
                 height: 'clamp(32px, 8vw, 48px)',
@@ -1704,7 +1728,6 @@ export default function HomePage() {
               onClick={() => scrollCarousel('right')}
               className="absolute top-1/2 -translate-y-1/2 z-10 rounded-full border border-black bg-white flex items-center justify-center transition-colors hover:bg-gray-100"
               style={{
-                right: '-12px',
                 right: 'clamp(-48px, -5vw, -24px)',
                 width: 'clamp(32px, 8vw, 48px)',
                 height: 'clamp(32px, 8vw, 48px)',
