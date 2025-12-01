@@ -11,14 +11,14 @@ import { useCurrency } from "@/lib/currency-context"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/backendnew/api';
 
-// CLOUDINARY URLs - GIF VERSION
-const CLOUDINARY_URLS = {
-  mobile: "/video/mobile.gif",
-  desktop: "/video/desktop.gif"
+// VIDEO URLs - MP4 VERSION
+const VIDEO_URLS = {
+  mobile: "/video/move-mob.mp4",
+  desktop: "/video/move-desk.mp4"
 };
 
-// iOS Compatible GIF Component
-const IOSGif = ({ 
+// Auto-play Video Component (No User Controls)
+const AutoPlayVideo = ({ 
   src, 
   alt, 
   className = "", 
@@ -33,13 +33,56 @@ const IOSGif = ({
   objectPosition?: string;
   isMobile?: boolean;
 }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [hasError, setHasError] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
-  
+
   useEffect(() => {
-    // Check if user is on iOS
-    const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    setIsIOS(isIOSDevice);
+    const video = videoRef.current;
+    if (!video) return;
+
+    // Function to play video
+    const playVideo = () => {
+      video.play().then(() => {
+        console.log('Video autoplay successful');
+      }).catch(error => {
+        console.error('Video autoplay failed:', error);
+        // For iOS, try playing muted video
+        if (error.name === 'NotAllowedError') {
+          video.muted = true;
+          video.play().catch(e => {
+            console.error('Video play with mute failed:', e);
+            setHasError(true);
+          });
+        } else {
+          setHasError(true);
+        }
+      });
+    };
+
+    // Play video when loaded
+    if (video.readyState >= 3) {
+      playVideo();
+    } else {
+      video.addEventListener('loadeddata', playVideo);
+    }
+
+    // Restart video when it ends
+    video.addEventListener('ended', () => {
+      video.currentTime = 0;
+      video.play();
+    });
+
+    // Error handling
+    video.addEventListener('error', () => {
+      console.error('Video loading error');
+      setHasError(true);
+    });
+
+    return () => {
+      video.removeEventListener('loadeddata', playVideo);
+      video.removeEventListener('ended', () => {});
+      video.removeEventListener('error', () => {});
+    };
   }, []);
 
   if (hasError) {
@@ -49,78 +92,45 @@ const IOSGif = ({
         height: '100%',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        borderRadius: '8px'
       }}>
         <span className="text-white font-bold text-lg">{alt}</span>
       </div>
     );
   }
 
-  // iOS کے لیے خاص properties
-  const iosSpecificProps = isIOS ? {
-    style: {
-      WebkitTransform: 'translateZ(0)',
-      transform: 'translateZ(0)',
-      backfaceVisibility: 'hidden',
-      WebkitBackfaceVisibility: 'hidden',
-      perspective: 1000,
-      WebkitPerspective: 1000
-    }
-  } : {};
-
   return (
     <div className={`relative overflow-hidden ${className}`} style={{
-      ...iosSpecificProps.style,
       width: '100%',
       height: '100%'
     }}>
-      <img
-        src={src}
-        alt={alt}
-        loading="eager"
-        decoding="async"
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
         className="w-full h-full"
         style={{
           objectFit,
           objectPosition,
-          // iOS specific optimizations
-          imageRendering: 'crisp-edges',
+          // iOS optimizations
           WebkitTransform: 'translateZ(0)',
           transform: 'translateZ(0)',
           backfaceVisibility: 'hidden',
           WebkitBackfaceVisibility: 'hidden'
         }}
-        onError={(e) => {
-          console.error(`Failed to load GIF: ${src}`);
-          setHasError(true);
-        }}
-        onLoad={() => {
-          console.log(`GIF loaded successfully: ${src}`);
-        }}
-        // iOS پر GIF کو force play کرنے کے لیے
-        ref={(img) => {
-          if (img && isIOS) {
-            // iOS پر GIF کو restart کرنے کی کوشش
-            const src = img.src;
-            img.src = '';
-            setTimeout(() => {
-              img.src = src;
-            }, 100);
-          }
-        }}
-      />
-      
-      {/* iOS پر GIF نہ چلنے کی صورت میں fallback image */}
-      {isIOS && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{
-          backgroundColor: 'rgba(0,0,0,0.3)',
-          display: 'none' // By default hidden
-        }}>
-          <p className="text-white text-sm bg-black/50 px-4 py-2 rounded-full">
-            Tap to play GIF
-          </p>
-        </div>
-      )}
+        // Hide all controls
+        controls={false}
+        controlsList="nodownload nofullscreen noremoteplayback"
+        disablePictureInPicture
+        disableRemotePlayback
+      >
+        <source src={src} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
     </div>
   );
 };
@@ -236,19 +246,6 @@ export default function HomePage() {
 
   // Auto-scroll pause state
   const [isCarouselHovered, setIsCarouselHovered] = useState(false)
-  
-  // iOS detection
-  const [isIOS, setIsIOS] = useState(false)
-
-  useEffect(() => {
-    // Detect iOS device
-    const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
-    const isIOSDevice = /iPad|iPhone|iPod/.test(userAgent) && !(window as any).MSStream;
-    setIsIOS(isIOSDevice);
-    
-    console.log('iOS Device:', isIOSDevice);
-    console.log('User Agent:', userAgent);
-  }, []);
 
   // Lightbox helpers
   const openLightbox = (index: number) => {
@@ -790,7 +787,7 @@ export default function HomePage() {
     return '/bundles';
   };
 
-  // OUR STORY جیسا فونٹ سٹائل تمام سیکشنز کے لیے
+  // OUR STORY font style for all sections
   const ourStoryHeadingStyle = {
     fontFamily: "'Bebas Neue', sans-serif",
     fontSize: 'clamp(40px, 5vw, 80px)',
@@ -811,7 +808,19 @@ export default function HomePage() {
     <div className="min-h-screen bg-white overflow-x-hidden">
       <Header />
       
-      {/* Section 1: CLOUDINARY GIF SECTION */}
+      {/* Text Section Above Video */}
+      <div className="bg-white text-white text-center">
+        <p 
+          className="font-medium uppercase tracking-wider"
+          style={{
+            fontFamily: "'Gilroy-Medium', 'Gilroy', sans-serif",
+            fontSize: 'clamp(0.1rem, 0vw, 0.1rem)'
+          }}>
+          Free Shipping on all orders over AED 200
+        </p>
+      </div>
+
+      {/* Section 1: VIDEO SECTION */}
       <section className="relative w-full overflow-x-hidden">
         <div className="bg-white relative w-full overflow-hidden mx-auto"
           style={{
@@ -820,28 +829,10 @@ export default function HomePage() {
             maxWidth: '100%',
           }}
         >
-          {/* iOS کے لیے GIF optimization notice */}
-          {isIOS && (
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4 mx-4 rounded">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm text-yellow-700">
-                    iOS پر GIFs کو optimize کیا جا رہا ہے۔ اگر GIF نہ چلے تو page کو refresh کریں۔
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Mobile GIF */}
+          {/* Mobile Video */}
           <div className="block md:hidden w-full h-full">
-            <IOSGif
-              src={CLOUDINARY_URLS.mobile}
+            <AutoPlayVideo
+              src={VIDEO_URLS.mobile}
               alt="Athlekt"
               objectFit="contain"
               objectPosition="center center"
@@ -850,10 +841,10 @@ export default function HomePage() {
             />
           </div>
           
-          {/* Desktop GIF */}
+          {/* Desktop Video */}
           <div className="hidden md:block w-full h-full">
-            <IOSGif
-              src={CLOUDINARY_URLS.desktop}
+            <AutoPlayVideo
+              src={VIDEO_URLS.desktop}
               alt="Athlekt"
               objectFit="cover"
               objectPosition="center center"
@@ -861,32 +852,10 @@ export default function HomePage() {
               isMobile={false}
             />
           </div>
-          
-          {/* iOS پر GIF کو force کرنے کا button */}
-          {isIOS && (
-            <div className="absolute bottom-4 right-4 z-10">
-              <button
-                onClick={() => {
-                  // Force reload GIFs on iOS
-                  const gifElements = document.querySelectorAll('img[src*=".gif"]');
-                  gifElements.forEach((img: HTMLImageElement) => {
-                    const src = img.src;
-                    img.src = '';
-                    setTimeout(() => {
-                      img.src = src;
-                    }, 50);
-                  });
-                }}
-                className="bg-black text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg"
-              >
-                Reload GIF
-              </button>
-            </div>
-          )}
         </div>
       </section>
 
-      {/* باقی تمام سیکشنز وہی رہیں گی جو آپ کے اصل کوڈ میں تھیں */}
+      {/* REST OF THE SECTIONS REMAIN THE SAME */}
       {/* Section 2: DISCOVER YOUR FIT */}
       <section className="bg-white text-[#212121] py-8 md:py-12 lg:py-16">
         <div className="container mx-auto px-4 max-w-[1250px]">
@@ -2056,16 +2025,6 @@ export default function HomePage() {
         .bundle-slider::-webkit-scrollbar {
           width: 0;
           height: 0;
-        }
-        
-        /* iOS specific GIF fixes */
-        @supports (-webkit-touch-callout: none) {
-          img[src*=".gif"] {
-            -webkit-transform: translateZ(0);
-            transform: translateZ(0);
-            backface-visibility: hidden;
-            -webkit-backface-visibility: hidden;
-          }
         }
       `}</style>
     </div>
