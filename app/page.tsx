@@ -13,8 +13,8 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://athlekt.com/bac
 
 // CLOUDINARY URLs - GIF VERSION
 const CLOUDINARY_URLS = {
-  mobile: "/video/move-mob-com.gif",
-  desktop: "/video/move-desk-com.gif"
+  mobile: "/video/mobile.gif",
+  desktop: "/video/desktop.gif"
 };
 
 interface HomepageSettings {
